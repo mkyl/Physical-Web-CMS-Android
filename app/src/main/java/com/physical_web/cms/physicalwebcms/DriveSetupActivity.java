@@ -1,7 +1,6 @@
 package com.physical_web.cms.physicalwebcms;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.support.design.widget.Snackbar;
@@ -23,7 +22,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
     final int RESOLVE_CONNECTION_REQUEST_CODE = 1;
     private GoogleApiClient apiClient;
     private Snackbar snackbar;
-    private boolean busyAuthourizing;
+    private boolean busyAuthorizing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +44,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
                 findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
                 findViewById(R.id.indeterminateBar).setVisibility(View.VISIBLE);
                 findViewById(R.id.start_setup_button).setEnabled(false);
-                busyAuthourizing = true;
+                busyAuthorizing = true;
             }
         });
 
@@ -106,7 +105,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
                     findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
                     this.findViewById(R.id.textViewWarning).setVisibility(View.VISIBLE);
                     this.findViewById(R.id.start_setup_button).setEnabled(true);
-                    busyAuthourizing = false;
+                    busyAuthorizing = false;
                 }
                 break;
         }
@@ -128,7 +127,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
         } else {
             if (snackbar != null)
                 snackbar.dismiss();
-            if (!busyAuthourizing)
+            if (!busyAuthorizing)
                 this.findViewById(R.id.start_setup_button).setEnabled(true);
         }
     }
