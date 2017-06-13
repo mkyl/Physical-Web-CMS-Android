@@ -15,7 +15,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
-import com.google.android.gms.tasks.RuntimeExecutionException;
 
 /**
  * This class takes care of authourizing Google Drive for storage of the media that the user
@@ -145,7 +144,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
     private void setupConnectivitySnackbar() {
         if (!SetupManager.networkIsConnected(this)) {
             snackbar = Snackbar
-                    .make(this.findViewById(R.id.imageView3), "No Internet Connectivity",
+                    .make(this.findViewById(R.id.googleDriveLogo), "No Internet Connectivity",
                             Snackbar.LENGTH_INDEFINITE)
                     .setAction("RETRY", new View.OnClickListener() {
                         @Override
@@ -170,7 +169,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
         if (snackbar == null) {
             if (!isGooglePlayServicesAvailable(this)) {
                 snackbar = Snackbar
-                        .make(this.findViewById(R.id.imageView3),
+                        .make(this.findViewById(R.id.googleDriveLogo),
                                 "Google Play services not installed",
                                 Snackbar.LENGTH_INDEFINITE);
                 snackbar.show();

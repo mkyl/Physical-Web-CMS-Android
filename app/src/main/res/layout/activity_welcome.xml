@@ -21,8 +21,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include
-        layout="@layout/content_welcome"
-        android:layout_width="match_parent" />
+    <include layout="@layout/content_welcome" />
 
 </android.support.design.widget.CoordinatorLayout>

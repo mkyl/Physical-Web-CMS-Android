@@ -9,17 +9,18 @@
     tools:layout_editor_absoluteX="0dp">
 
     <RelativeLayout
-        android:layout_width="368dp"
+        android:layout_width="0dp"
         android:layout_height="495dp"
-        tools:layout_editor_absoluteY="8dp"
+        android:layout_margin="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent">
+        tools:layout_editor_absoluteY="8dp">
 
         <TextView
-            android:id="@+id/textView4"
+            android:id="@+id/recommendationText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textView3"
+            android:layout_below="@+id/authReasonText"
             android:layout_marginBottom="15dp"
             android:text="We recommend using a dedicated institution account for this."
             android:textAppearance="@android:style/TextAppearance.Material.Medium" />
@@ -32,7 +33,7 @@
             android:text="Authorize" />
 
         <ImageView
-            android:id="@+id/imageView3"
+            android:id="@+id/googleDriveLogo"
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_alignParentTop="true"
@@ -41,10 +42,10 @@
             app:srcCompat="@drawable/drive" />
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/authReasonText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/imageView3"
+            android:layout_below="@id/googleDriveLogo"
             android:layout_marginBottom="10dp"
             android:text="Physical Web CMS needs your permission to sync with Google Drive™ - this allows your changes to be updated in real-time to your organization's server."
             android:textAppearance="@android:style/TextAppearance.Material.Medium" />
@@ -53,7 +54,7 @@
             android:id="@+id/textViewWarning"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/textView4"
+            android:layout_below="@id/recommendationText"
             android:layout_marginBottom="15dp"
             android:text="Google Drive authorization is required to continue"
             android:textAppearance="@android:style/TextAppearance.Material.Medium"
@@ -65,7 +66,7 @@
             android:id="@+id/textViewSuccess"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/textView4"
+            android:layout_below="@id/recommendationText"
             android:layout_marginBottom="15dp"
             android:text="Authorization successful."
             android:textAppearance="@android:style/TextAppearance.Material.Medium"
@@ -77,7 +78,7 @@
             android:id="@+id/indeterminateBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/textView4"
+            android:layout_below="@id/recommendationText"
             android:visibility="invisible" />
     </RelativeLayout>
 
