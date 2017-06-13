@@ -8,22 +8,19 @@ import android.os.Bundle;
 
 public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
+    public static final String TAG = "Physical Web CMS";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        setupDrive();
     }
 
-    private void setupDrive() {
-        Boolean driveSetupComplete = sharedPreferences.getBoolean("drive-setup-complete", true);
-        if (!driveSetupComplete) {
-            Intent driveSetupIntent = new Intent(this, DriveSetupActivity.class);
-            startActivity(driveSetupIntent);
-            sharedPreferences.edit().putBoolean("drive-setup-complete", true).apply();
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SetupManager setupManager = new SetupManager(this.getApplicationContext());
+        setupManager.checkRequirements(this.getApplicationContext());
     }
 }
