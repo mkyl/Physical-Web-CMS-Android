@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 public class MainActivity extends AppCompatActivity {
-    SharedPreferences sharedPreferences;
     public static final String TAG = "Physical Web CMS";
 
     @Override
@@ -20,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        // ensure drive authorization, internet connection, etc. are all set up
         SetupManager setupManager = new SetupManager(this.getApplicationContext());
         setupManager.checkRequirements(this.getApplicationContext());
     }

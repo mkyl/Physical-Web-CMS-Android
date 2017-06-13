@@ -15,11 +15,17 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
+import com.google.android.gms.tasks.RuntimeExecutionException;
 
+/**
+ * This class takes care of authourizing Google Drive for storage of the media that the user
+ * will upload, as well as storage of information about the Physical Web beacons.
+ */
 public class DriveSetupActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
     final int RESOLVE_CONNECTION_REQUEST_CODE = 1;
+    final int GOOGLE_PLAY_SERVICES_ERROR = 2;
+
     private GoogleApiClient apiClient;
     private Snackbar snackbar;
     private boolean busyAuthorizing;
@@ -29,9 +35,11 @@ public class DriveSetupActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drive_setup);
 
+        // Need a Google Drive client with access to the APPFOLDER, a hidden folder in Drive
+        // only visible to us programatically
         apiClient = new GoogleApiClient.Builder(this)
                 .addApi(Drive.API)
-                .addScope(Drive.SCOPE_FILE)
+                .addScope(Drive.SCOPE_APPFOLDER)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -39,31 +47,30 @@ public class DriveSetupActivity extends AppCompatActivity implements
         final Button setupButton = (Button) findViewById(R.id.start_setup_button);
         setupButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                // start setup
-                apiClient.connect();
-                findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
-                findViewById(R.id.indeterminateBar).setVisibility(View.VISIBLE);
-                findViewById(R.id.start_setup_button).setEnabled(false);
-                busyAuthorizing = true;
+                startSetup();
             }
         });
 
+        // Services API is installed or not installed, only need to check on activity startup
         setupGoogleAPISnackbar();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // connectivity can change often, check whenever focus is lost
         setupConnectivitySnackbar();
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
     }
 
     @Override
     public void onConnected(Bundle connectionHint) {
         Log.d(MainActivity.TAG, "Drive connection successful");
 
-        findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
-        this.findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
-        this.findViewById(R.id.textViewSuccess).setVisibility(View.VISIBLE);
+        unlockInterface();
 
         Button button = (Button) this.findViewById(R.id.start_setup_button);
         button.setText("Next");
@@ -78,16 +85,13 @@ public class DriveSetupActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onConnectionSuspended(int cause) {
-    }
-
-    @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         if (connectionResult.hasResolution()) {
             try {
                 connectionResult.startResolutionForResult(this, RESOLVE_CONNECTION_REQUEST_CODE);
             } catch (IntentSender.SendIntentException e) {
-                // TODO Unable to resolve, message user appropriately
+                // TODO check which cases this exception is encountered
+                throw new RuntimeException("There is no resolution to the Drive API error");
             }
         } else {
             GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this, 0).show();
@@ -102,19 +106,47 @@ public class DriveSetupActivity extends AppCompatActivity implements
                 if (resultCode == RESULT_OK) {
                     apiClient.connect();
                 } else {
-                    findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
-                    this.findViewById(R.id.textViewWarning).setVisibility(View.VISIBLE);
-                    this.findViewById(R.id.start_setup_button).setEnabled(true);
-                    busyAuthorizing = false;
+                    unlockInterfaceWithWarning();
                 }
                 break;
         }
     }
 
+    private void startSetup() {
+        lockInterface();
+        apiClient.connect();
+    }
+
+    // disable button and show spinner to indicate background work
+    private void lockInterface() {
+        busyAuthorizing = true;
+        findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
+        findViewById(R.id.indeterminateBar).setVisibility(View.VISIBLE);
+        findViewById(R.id.start_setup_button).setEnabled(false);
+    }
+
+    // enable interface interaction after a successful authorization
+    private void unlockInterface() {
+        findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
+        this.findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
+        this.findViewById(R.id.textViewSuccess).setVisibility(View.VISIBLE);
+    }
+
+    // enable button but warn user that authorization failed
+    private void unlockInterfaceWithWarning() {
+        findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
+        this.findViewById(R.id.textViewWarning).setVisibility(View.VISIBLE);
+        this.findViewById(R.id.start_setup_button).setEnabled(true);
+        busyAuthorizing = false;
+    }
+
+    // this snackbar indicates to the user that there is no internet connection, disables next
+    // button until problem is resolved
     private void setupConnectivitySnackbar() {
         if (!SetupManager.networkIsConnected(this)) {
             snackbar = Snackbar
-                    .make(this.findViewById(R.id.imageView3), "No Internet Connectivity", Snackbar.LENGTH_INDEFINITE)
+                    .make(this.findViewById(R.id.imageView3), "No Internet Connectivity",
+                            Snackbar.LENGTH_INDEFINITE)
                     .setAction("RETRY", new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -132,6 +164,8 @@ public class DriveSetupActivity extends AppCompatActivity implements
         }
     }
 
+    // this snackbar warns user if Google Play isn't installed on device (some custom ROMS, etc.)
+    // and disables further setup
     private void setupGoogleAPISnackbar() {
         if (snackbar == null) {
             if (!isGooglePlayServicesAvailable(this)) {
@@ -146,13 +180,15 @@ public class DriveSetupActivity extends AppCompatActivity implements
         }
     }
 
+    // Google Play Services is mandatory for Drive support, and so is mandatory for the app.
     public boolean isGooglePlayServicesAvailable(Activity activity) {
         GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
         int status = googleApiAvailability.isGooglePlayServicesAvailable(activity);
         if(status != ConnectionResult.SUCCESS) {
             if(googleApiAvailability.isUserResolvableError(status)) {
-                // 2404 is arbitrary code
-                googleApiAvailability.getErrorDialog(activity, status, 2404).show();
+                // not much that we can do if Play Services not installed
+                googleApiAvailability.getErrorDialog(activity, status,
+                        GOOGLE_PLAY_SERVICES_ERROR).show();
             }
             return false;
         }
