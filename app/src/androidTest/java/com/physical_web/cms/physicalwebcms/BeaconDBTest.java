@@ -81,4 +81,21 @@ public class BeaconDBTest {
         // check details of stored beacon
         assertEquals(testBeacon, beaconDBManager.getBeaconByID(storedBeaconID));
     }
+
+    /**
+     * Try to remove beacon from empty DB, observe an IllegalArgumentException
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidDelete(){
+        beaconDBManager.deleteBeacon(0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addDuplicateBeacon() throws InterruptedException {
+        Beacon testBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
+        beaconDBManager.addBeacon(testBeacon);
+
+        Beacon testBeaconTwo = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
+        beaconDBManager.addBeacon(testBeaconTwo);
+    }
 }

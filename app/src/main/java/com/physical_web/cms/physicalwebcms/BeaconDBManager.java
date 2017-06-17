@@ -84,7 +84,7 @@ public class BeaconDBManager {
      *                               DB
      */
     public void deleteBeacon(long id) throws IllegalArgumentException {
-        if (databaseIsOpen()) {
+        if (beaconIsInDB(id) && databaseIsOpen()) {
             String selection = BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ADDRESS + " LIKE ?";
             String[] selectionArgs = {Long.toString(id)};
             db.delete(BeaconDBContract.BeaconEntry.TABLE_NAME, selection, selectionArgs);
@@ -198,6 +198,10 @@ public class BeaconDBManager {
     private Boolean beaconIsInDB(Beacon proposedBeacon) {
         Set<Beacon> existingBeacons = this.getAllBeacons();
         return existingBeacons.contains(proposedBeacon);
+    }
+
+    private Boolean beaconIsInDB(long id) {
+        return getBeaconByID(id) != null;
     }
 
     private class BeaconDBHelper extends SQLiteOpenHelper {

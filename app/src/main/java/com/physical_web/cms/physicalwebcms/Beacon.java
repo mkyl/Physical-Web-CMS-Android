@@ -61,4 +61,12 @@ class Beacon {
         Beacon otherBeacon = (Beacon) other;
         return (this.address.equalsIgnoreCase(otherBeacon.getAddress()));
     }
+
+    /**
+     * Hashcode must be overwritten to be used in a set
+     */
+    @Override
+    public int hashCode() {
+        return address.hashCode();
+    }
 }
