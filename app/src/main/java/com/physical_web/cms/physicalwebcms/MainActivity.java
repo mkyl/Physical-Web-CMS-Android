@@ -11,6 +11,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // open database
         beaconDBManager = new BeaconDBManager(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        // close database
+        beaconDBManager.close();
+        super.onDestroy();
     }
 }
