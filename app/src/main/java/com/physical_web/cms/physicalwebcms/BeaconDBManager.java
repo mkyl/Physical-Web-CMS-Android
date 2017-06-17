@@ -33,7 +33,7 @@ public class BeaconDBManager {
      * @throws IllegalStateException if attempting to close a non-initialized or closed DB
      */
     public void close() {
-        if(db != null && !db.isOpen())
+        if(db != null && db.isOpen())
             dbHelper.close();
         else
             throw new IllegalStateException("Tried to close an non-existent or closed database");
@@ -53,7 +53,7 @@ public class BeaconDBManager {
 
         if (databaseIsOpen()) {
             ContentValues values = new ContentValues();
-            values.put(BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ID,
+            values.put(BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ADDRESS,
                     proposedBeacon.getAddress());
             values.put(BeaconDBContract.BeaconEntry.COLUMN_NAME_FRIENDLY_NAME,
                     proposedBeacon.getFriendlyName());
@@ -74,7 +74,7 @@ public class BeaconDBManager {
      */
     public void deleteBeacon(long id) throws IllegalArgumentException {
         if (databaseIsOpen()) {
-            String selection = BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ID + " LIKE ?";
+            String selection = BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ADDRESS + " LIKE ?";
             String[] selectionArgs = {Long.toString(id)};
             db.delete(BeaconDBContract.BeaconEntry.TABLE_NAME, selection, selectionArgs);
         } else {
@@ -137,7 +137,7 @@ public class BeaconDBManager {
         if(databaseIsOpen()) {
             String[] projection = {
                     BeaconDBContract.BeaconEntry._ID,
-                    BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ID,
+                    BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ADDRESS,
                     BeaconDBContract.BeaconEntry.COLUMN_NAME_FRIENDLY_NAME
             };
             String selection = BeaconDBContract.BeaconEntry._ID + " = ?";
@@ -172,7 +172,7 @@ public class BeaconDBManager {
         long id = cursor.getLong(
                 cursor.getColumnIndexOrThrow(BeaconDBContract.BeaconEntry._ID));
         String address = cursor.getString(
-                cursor.getColumnIndexOrThrow(BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ID));
+                cursor.getColumnIndexOrThrow(BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ADDRESS));
         String friendlyName = cursor.getString(
                 cursor.getColumnIndexOrThrow(BeaconDBContract.BeaconEntry
                         .COLUMN_NAME_FRIENDLY_NAME));
@@ -215,7 +215,7 @@ public class BeaconDBManager {
                 "CREATE TABLE " + BeaconEntry.TABLE_NAME + " (" +
                         BeaconEntry._ID + " INTEGER PRIMARY KEY," +
                         BeaconEntry.COLUMN_NAME_FRIENDLY_NAME + " TEXT," +
-                        BeaconEntry.COLUMN_NAME_BT_ID + " TEXT)";
+                        BeaconEntry.COLUMN_NAME_BT_ADDRESS + " TEXT)";
 
         public static final String SQL_DELETE_ENTRIES =
                 "DROP TABLE IF EXISTS " + BeaconEntry.TABLE_NAME;
@@ -227,8 +227,8 @@ public class BeaconDBManager {
         /* Inner class that defines the table contents */
         class BeaconEntry implements BaseColumns {
             static final String TABLE_NAME = "beacons";
-            static final String COLUMN_NAME_FRIENDLY_NAME = "friendly-name";
-            static final String COLUMN_NAME_BT_ID = "bt-id";
+            static final String COLUMN_NAME_FRIENDLY_NAME = "friendly_name";
+            static final String COLUMN_NAME_BT_ADDRESS = "bt_address";
         }
     }
 }
