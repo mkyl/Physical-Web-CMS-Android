@@ -8,11 +8,19 @@ class Beacon {
     private long id;
     private String address;
     private String friendlyName;
+    private Boolean fullyInitialized;
 
     public Beacon(long id, String address, String friendlyName) {
         this.id = id;
         this.address = address;
         this.friendlyName = friendlyName;
+        fullyInitialized = false;
+    }
+
+    // beacon whose ID we don't know yet
+    public Beacon(String address, String friendlyName) {
+        this(-1 , address, friendlyName);
+        fullyInitialized = false;
     }
 
     public long getId() {
@@ -31,7 +39,26 @@ class Beacon {
         this.friendlyName = friendlyName;
     }
 
-    public boolean equals(Beacon other) {
-        return (this.address.equalsIgnoreCase(other.getAddress()));
+    // can be only called on Beacon created without specifying ID
+    public void setId(long newID) {
+        if(this.fullyInitialized) {
+            throw new IllegalStateException("Cannot change internal ID once its been set");
+        } else {
+            this.id = newID;
+            fullyInitialized = true;
+        }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if(this == other)
+            return true;
+        if(other == null)
+            return false;
+        if(getClass() != other.getClass())
+            return false;
+
+        Beacon otherBeacon = (Beacon) other;
+        return (this.address.equalsIgnoreCase(otherBeacon.getAddress()));
     }
 }
