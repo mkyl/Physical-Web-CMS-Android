@@ -40,6 +40,15 @@ public class BeaconDBManager {
     }
 
     /**
+     * DELETES DATABASE
+     */
+    public void clearDB(Context context) {
+        this.close();
+        context.deleteDatabase(dbHelper.getDatabaseName());
+        db = dbHelper.getWritableDatabase();
+    }
+
+    /**
      * Add a beacon to the database
      *
      * @param proposedBeacon beacon to be added to database
@@ -58,7 +67,9 @@ public class BeaconDBManager {
             values.put(BeaconDBContract.BeaconEntry.COLUMN_NAME_FRIENDLY_NAME,
                     proposedBeacon.getFriendlyName());
 
-            return db.insert(BeaconDBContract.BeaconEntry.TABLE_NAME, null, values);
+            long id = db.insert(BeaconDBContract.BeaconEntry.TABLE_NAME, null, values);
+            proposedBeacon.setId(id);
+            return id;
         } else {
             throw new IllegalStateException("Attempted to add beacon to closed or null DB");
         }
@@ -106,7 +117,7 @@ public class BeaconDBManager {
      */
     public Set<Beacon> getAllBeacons() {
         if(databaseIsOpen()) {
-            Cursor cursor = db.rawQuery("SELECT * FROM" + BeaconDBContract.BeaconEntry.TABLE_NAME,
+            Cursor cursor = db.rawQuery("SELECT * FROM " + BeaconDBContract.BeaconEntry.TABLE_NAME,
                     null);
 
             Set<Beacon> results = new HashSet<>();
