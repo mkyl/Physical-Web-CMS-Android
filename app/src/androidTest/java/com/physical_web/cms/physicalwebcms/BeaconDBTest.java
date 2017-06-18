@@ -11,10 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Iterator;
 import java.util.Set;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Instrumented tests for the BeaconDBManager class
@@ -25,6 +27,10 @@ import static junit.framework.Assert.assertNotNull;
 public class BeaconDBTest {
     private static final String TEST_BEACON_NAME = "testing beacon";
     private static final String TEST_BEACON_MAC = "00:11:22:33:44:55";
+
+    private static final String TEST_BEACON_NAME_2 = "second test beacon";
+    private static final String TEST_BEACON_MAC_2 = "00:DE:AD:BE:EF:00";
+
     private BeaconDBManager beaconDBManager;
 
     @Before
@@ -69,6 +75,21 @@ public class BeaconDBTest {
         assertEquals(storedBeacon.getFriendlyName(), TEST_BEACON_NAME);
     }
 
+    @Test
+    public void checkMultipleBeacons() {
+        Beacon firstBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
+        Beacon secondBeacon = new Beacon(TEST_BEACON_MAC_2, TEST_BEACON_NAME_2);
+
+        beaconDBManager.addBeacon(firstBeacon);
+        beaconDBManager.addBeacon(secondBeacon);
+        Set<Beacon> beaconSet = beaconDBManager.getAllBeacons();
+
+        assertEquals(beaconSet.size(), 2);
+
+        assertTrue(beaconSet.contains(firstBeacon));
+        assertTrue(beaconSet.contains(secondBeacon));
+    }
+
     /**
      * Add a single beacon, attempt to retrieve it by ID, check that we get the
      * same beacon back
@@ -80,6 +101,14 @@ public class BeaconDBTest {
 
         // check details of stored beacon
         assertEquals(testBeacon, beaconDBManager.getBeaconByID(storedBeaconID));
+    }
+
+    @Test
+    public void deleteOne() {
+        Beacon testBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
+        beaconDBManager.addBeacon(testBeacon);
+        beaconDBManager.deleteBeacon(testBeacon);
+        assertEquals(0, beaconDBManager.getAllBeacons().size());
     }
 
     /**
