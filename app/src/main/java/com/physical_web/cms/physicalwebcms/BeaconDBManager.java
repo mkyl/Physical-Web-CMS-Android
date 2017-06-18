@@ -85,7 +85,7 @@ public class BeaconDBManager {
      */
     public void deleteBeacon(long id) throws IllegalArgumentException {
         if (beaconIsInDB(id) && databaseIsOpen()) {
-            String selection = BeaconDBContract.BeaconEntry.COLUMN_NAME_BT_ADDRESS + " LIKE ?";
+            String selection = BeaconDBContract.BeaconEntry._ID + " LIKE ?";
             String[] selectionArgs = {Long.toString(id)};
             db.delete(BeaconDBContract.BeaconEntry.TABLE_NAME, selection, selectionArgs);
         } else {
