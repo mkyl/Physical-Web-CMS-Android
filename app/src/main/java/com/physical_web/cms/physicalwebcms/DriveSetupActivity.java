@@ -71,7 +71,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
 
         unlockInterface();
 
-        Button button = (Button) this.findViewById(R.id.start_setup_button);
+        Button button = (Button) findViewById(R.id.start_setup_button);
         button.setText("Next");
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,15 +127,15 @@ public class DriveSetupActivity extends AppCompatActivity implements
     // enable interface interaction after a successful authorization
     private void unlockInterface() {
         findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
-        this.findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
-        this.findViewById(R.id.textViewSuccess).setVisibility(View.VISIBLE);
+        findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewSuccess).setVisibility(View.VISIBLE);
     }
 
     // enable button but warn user that authorization failed
     private void unlockInterfaceWithWarning() {
         findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
-        this.findViewById(R.id.textViewWarning).setVisibility(View.VISIBLE);
-        this.findViewById(R.id.start_setup_button).setEnabled(true);
+        findViewById(R.id.textViewWarning).setVisibility(View.VISIBLE);
+        findViewById(R.id.start_setup_button).setEnabled(true);
         busyAuthorizing = false;
     }
 
@@ -144,7 +144,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
     private void setupConnectivitySnackbar() {
         if (!SetupManager.networkIsConnected(this)) {
             snackbar = Snackbar
-                    .make(this.findViewById(R.id.googleDriveLogo), "No Internet Connectivity",
+                    .make(findViewById(R.id.googleDriveLogo), "No Internet Connectivity",
                             Snackbar.LENGTH_INDEFINITE)
                     .setAction("RETRY", new View.OnClickListener() {
                         @Override
@@ -154,12 +154,12 @@ public class DriveSetupActivity extends AppCompatActivity implements
                     });
             snackbar.show();
 
-            this.findViewById(R.id.start_setup_button).setEnabled(false);
+            findViewById(R.id.start_setup_button).setEnabled(false);
         } else {
             if (snackbar != null)
                 snackbar.dismiss();
             if (!busyAuthorizing)
-                this.findViewById(R.id.start_setup_button).setEnabled(true);
+                findViewById(R.id.start_setup_button).setEnabled(true);
         }
     }
 
@@ -169,12 +169,12 @@ public class DriveSetupActivity extends AppCompatActivity implements
         if (snackbar == null) {
             if (!isGooglePlayServicesAvailable(this)) {
                 snackbar = Snackbar
-                        .make(this.findViewById(R.id.googleDriveLogo),
+                        .make(findViewById(R.id.googleDriveLogo),
                                 "Google Play services not installed",
                                 Snackbar.LENGTH_INDEFINITE);
                 snackbar.show();
 
-                this.findViewById(R.id.start_setup_button).setEnabled(false);
+                findViewById(R.id.start_setup_button).setEnabled(false);
             }
         }
     }
