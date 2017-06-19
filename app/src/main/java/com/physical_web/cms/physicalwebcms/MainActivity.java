@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         // ensure drive authorization, internet connection, etc. are all set up
-        SetupManager setupManager = new SetupManager(this.getApplicationContext());
-        setupManager.checkRequirements(this.getApplicationContext());
+        SetupManager setupManager = new SetupManager(this);
+        setupManager.checkRequirements();
     }
 }

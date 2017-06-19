@@ -16,14 +16,16 @@ import android.preference.PreferenceManager;
 
 public class SetupManager {
     SharedPreferences sharedPreferences;
+    Context context;
 
-    public SetupManager(Context context) {
+    public SetupManager(Context activityContext) {
+        this.context = activityContext;
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
-    public void checkRequirements(Context context) {
+    public void checkRequirements() {
         if(isFirstRun()) {
-            Intent welcomeIntent = new Intent(context, WelcomeActivity.class);
+            Intent welcomeIntent = new Intent(this.context, WelcomeActivity.class);
             context.startActivity(welcomeIntent);
         } else {
             // TODO: check if connection lost while user is in app, warn them
