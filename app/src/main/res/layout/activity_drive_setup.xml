@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.physical_web.cms.physicalwebcms.DriveSetupActivity"
+        tools:layout_editor_absoluteY="81dp"
+        tools:layout_editor_absoluteX="0dp"
+
+        android:layout_margin="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <TextView
+            android:id="@+id/recommendationText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/authReasonText"
+            android:layout_marginBottom="15dp"
+            android:text="We recommend using a dedicated institution account for this."
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+        <Button
+            android:id="@+id/start_setup_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="Authorize" />
+
+        <ImageView
+            android:id="@+id/googleDriveLogo"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="10dp"
+            app:srcCompat="@drawable/drive" />
+
+    <TextView
+        android:id="@+id/authReasonText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/googleDriveLogo"
+        android:layout_marginBottom="10dp"
+        android:text="Physical Web CMS needs your permission to sync with Google Drive™ - this allows your changes to be updated in real-time to your organization's server."
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+        <TextView
+            android:id="@+id/textViewWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/recommendationText"
+            android:layout_marginBottom="15dp"
+            android:text="Google Drive authorization is required to continue"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/holo_red_dark"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/textViewSuccess"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/recommendationText"
+            android:layout_marginBottom="15dp"
+            android:text="Authorization successful."
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/holo_green_dark"
+            android:textStyle="bold"
+            android:visibility="invisible" />
+
+        <ProgressBar
+            android:id="@+id/indeterminateBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/recommendationText"
+            android:visibility="invisible" />
+    </RelativeLayout>
