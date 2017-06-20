@@ -1,6 +1,8 @@
 package com.physical_web.cms.physicalwebcms;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.Intent;
 
 /**
@@ -13,13 +15,14 @@ public class BluetoothManager {
     public BluetoothManager() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            //startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
         }
     }
 
-    public Boolean deviceSupportsBT() {
+    private void setupPhase() {
+    }
+
+    public Boolean deviceHasBluetoothAdapter() {
         return (BluetoothAdapter.getDefaultAdapter() != null);
     }
 

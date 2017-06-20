@@ -94,6 +94,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
             }
         } else {
             GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this, 0).show();
+            unlockInterfaceWithError();
         }
     }
 
@@ -105,7 +106,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
                 if (resultCode == RESULT_OK) {
                     apiClient.connect();
                 } else {
-                    unlockInterfaceWithWarning();
+                    unlockInterfaceWithUserWarning();
                 }
                 break;
         }
@@ -120,6 +121,8 @@ public class DriveSetupActivity extends AppCompatActivity implements
     private void lockInterface() {
         busyAuthorizing = true;
         findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewOtherWarning).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewSuccess).setVisibility(View.INVISIBLE);
         findViewById(R.id.indeterminateBar).setVisibility(View.VISIBLE);
         findViewById(R.id.start_setup_button).setEnabled(false);
     }
@@ -128,13 +131,25 @@ public class DriveSetupActivity extends AppCompatActivity implements
     private void unlockInterface() {
         findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
         findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewOtherWarning).setVisibility(View.INVISIBLE);
         findViewById(R.id.textViewSuccess).setVisibility(View.VISIBLE);
     }
 
-    // enable button but warn user that authorization failed
-    private void unlockInterfaceWithWarning() {
+    // enable button but warn user that authorization failed (user mistake)
+    private void unlockInterfaceWithUserWarning() {
         findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewOtherWarning).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewSuccess).setVisibility(View.INVISIBLE);
         findViewById(R.id.textViewWarning).setVisibility(View.VISIBLE);
+        findViewById(R.id.start_setup_button).setEnabled(true);
+        busyAuthorizing = false;
+    }
+
+    private void unlockInterfaceWithError() {
+        findViewById(R.id.indeterminateBar).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewWarning).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewSuccess).setVisibility(View.INVISIBLE);
+        findViewById(R.id.textViewOtherWarning).setVisibility(View.VISIBLE);
         findViewById(R.id.start_setup_button).setEnabled(true);
         busyAuthorizing = false;
     }

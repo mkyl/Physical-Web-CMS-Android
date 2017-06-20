@@ -10,11 +10,15 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "Physical Web CMS";
     
     BeaconDBManager beaconDBManager;
+    BluetoothManager bluetoothManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent entrollmentIntent = new Intent(this, EnrollmentActivity.class);
+        startActivity(entrollmentIntent);
 
         // open database
         beaconDBManager = new BeaconDBManager(this);
