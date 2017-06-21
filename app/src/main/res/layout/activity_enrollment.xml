@@ -29,7 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/bluetoothIcon"
-        android:text="Bluetooth must be enabled to communicate with the Physical Web beacons. You will be able to add beacons on the next screen."
+        android:text="Bluetooth must be enabled to communicate with the Physical Web beacons. Location must also be enabled to allow scanning for Beacons. You will be able to add beacons on the next screen."
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:layout_marginBottom="15dp"/>
 
@@ -42,7 +42,7 @@
         android:textColor="@android:color/holo_red_dark"
         android:textStyle="bold"
         android:visibility="invisible"
-        android:text="Bluetooth must be enabled to continue." />
+        android:text="Bluetooth &amp; location services must be enabled to continue." />
 
     <ProgressBar
         android:id="@+id/bluetoothBar"
@@ -79,5 +79,22 @@
         android:visibility="invisible"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:text="Search for beacons..." />
+
+    <TextView
+        android:id="@+id/scannedBeaconsTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:text="Found Bluetooth Devices"
+        android:visibility="invisible"/>
+
+    <ListView
+        android:id="@+id/scannedBeaconsList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/scannedBeaconsTitle"
+        android:visibility="invisible"/>
 
 </RelativeLayout>
