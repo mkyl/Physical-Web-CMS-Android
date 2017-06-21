@@ -10,7 +10,13 @@ import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -25,8 +31,9 @@ public class EnrollmentActivity extends AppCompatActivity {
     private static final long SCAN_PERIOD = 10000;
 
     private BluetoothManager bluetoothManager;
-    private List<BluetoothDevice> bluetoothDevices = new ArrayList<>();
+    private List<BluetoothDevice> bluetoothDevices;
     private Handler scanHandler = new Handler();
+    private BeaconAdapter beaconListAdapter;
     private Snackbar snackbar;
 
     @Override
@@ -36,6 +43,9 @@ public class EnrollmentActivity extends AppCompatActivity {
 
         bluetoothManager = new BluetoothManager();
         displayBTErrorSnackBar();
+
+        bluetoothDevices = new ArrayList<>();
+        beaconListAdapter = new BeaconAdapter();
     }
 
     public void enableBluetooth(View view) {
@@ -87,7 +97,9 @@ public class EnrollmentActivity extends AppCompatActivity {
             bluetoothDevices.add(device);
             findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.INVISIBLE);
             findViewById(R.id.noDevicesYetText).setVisibility(View.INVISIBLE);
+            findViewById(R.id.scannedBeaconsList).setVisibility(View.VISIBLE);
             // TODO update list
+            beaconListAdapter.notifyDataSetChanged();
         }
     };
 
@@ -97,6 +109,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     public void prepareForScan(View v) {
         displayBeaconEnrollment();
+        ((ListView) findViewById(R.id.scannedBeaconsList)).setAdapter(beaconListAdapter);
         startScan();
     }
 
@@ -168,6 +181,39 @@ public class EnrollmentActivity extends AppCompatActivity {
         findViewById(R.id.bluetoothBar).setVisibility(View.INVISIBLE);
         findViewById(R.id.userWarning).setVisibility(View.VISIBLE);
         findViewById(R.id.enableButton).setEnabled(true);
+    }
+
+    class BeaconAdapter extends BaseAdapter {
+        private LayoutInflater inflater = (LayoutInflater) EnrollmentActivity.this
+                .getSystemService(LAYOUT_INFLATER_SERVICE);
+        private List<BluetoothDevice> bluetoothDevices = EnrollmentActivity.this.bluetoothDevices;
+
+        @Override
+        public int getCount() {
+            return bluetoothDevices.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return bluetoothDevices.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            // Get view for row item
+            View rowView = inflater.inflate(R.layout.simple_beacon_item, parent, false);
+            TextView titleTextView = (TextView) rowView.findViewById(R.id.beaconName);
+
+            BluetoothDevice beacon = (BluetoothDevice) getItem(position);
+            titleTextView.setText(beacon.getAddress());
+
+            return rowView;
+        }
     }
 }
 
