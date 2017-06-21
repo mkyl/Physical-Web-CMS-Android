@@ -11,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,31 +42,6 @@ public class EnrollmentActivity extends AppCompatActivity {
         displayWaitingUI();
         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-    }
-
-    private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            bluetoothDevices.add(device);
-            findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.INVISIBLE);
-            findViewById(R.id.noDevicesYetText).setVisibility(View.INVISIBLE);
-            // TODO update list
-        }
-    };
-
-    private void prepareForScan() {
-        displayBeaconEnrollment();
-        startScan();
-    }
-
-    private void startScan() {
-        BluetoothAdapter.getDefaultAdapter().startLeScan(leScanCallback);
-        scanHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                BluetoothAdapter.getDefaultAdapter().stopLeScan(leScanCallback);
-            }
-        }, SCAN_PERIOD);
     }
 
     @Override
@@ -105,6 +81,45 @@ public class EnrollmentActivity extends AppCompatActivity {
         }
     }
 
+    private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            bluetoothDevices.add(device);
+            findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.INVISIBLE);
+            findViewById(R.id.noDevicesYetText).setVisibility(View.INVISIBLE);
+            // TODO update list
+        }
+    };
+
+    public void prepareForScan() {
+        prepareForScan(null);
+    }
+
+    public void prepareForScan(View v) {
+        displayBeaconEnrollment();
+        startScan();
+    }
+
+    private void startScan() {
+        BluetoothAdapter.getDefaultAdapter().startLeScan(leScanCallback);
+        scanHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                BluetoothAdapter.getDefaultAdapter().stopLeScan(leScanCallback);
+                if(bluetoothDevices.isEmpty()) {
+                    noDevicesFound();
+                }
+            }
+        }, SCAN_PERIOD);
+    }
+
+    private void noDevicesFound() {
+        findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.INVISIBLE);
+        findViewById(R.id.noDevicesYetText).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.noDevicesYetText)).setText("Nothing found");
+        findViewById(R.id.retryScanButton).setVisibility(View.VISIBLE);
+    }
+
     private void displayBTErrorSnackBar() {
         if (!bluetoothManager.deviceHasBluetoothAdapter()) {
             snackbar = Snackbar
@@ -133,18 +148,20 @@ public class EnrollmentActivity extends AppCompatActivity {
     }
 
     private void displayBeaconEnrollment() {
-        // hide the old
+        // out the old
         findViewById(R.id.bluetoothIcon).setVisibility(View.INVISIBLE);
         findViewById(R.id.btDescription).setVisibility(View.INVISIBLE);
         findViewById(R.id.userWarning).setVisibility(View.INVISIBLE);
         findViewById(R.id.bluetoothBar).setVisibility(View.INVISIBLE);
         findViewById(R.id.enableButton).setVisibility(View.INVISIBLE);
+        findViewById(R.id.retryScanButton).setVisibility(View.INVISIBLE);
 
-        // out with the new!
+        // in with the new!
         findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.VISIBLE);
         findViewById(R.id.noDevicesYetText).setVisibility(View.VISIBLE);
         findViewById(R.id.scannedBeaconsTitle).setVisibility(View.VISIBLE);
         findViewById(R.id.scannedBeaconsList).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.noDevicesYetText)).setText("Seaching for beacons...");
     }
 
     private void displayUserWarning() {
