@@ -12,3 +12,7 @@ its storage backend. The app will also allow the curators to create a map of the
 the beacons deployed, with the map also being stored on Google Drive. The app will also
 support storing multiple entire configurations (a map and its associated beacon content) so that
 the end-user can quickly deploy the content they need when exhibits change.
+
+### Icon Credits
+Wireless by Edward Boatman from the Noun Project
+sculpture by Ivan Novelo from the Noun Project
