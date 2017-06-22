@@ -21,11 +21,12 @@ import android.widget.TextView;
 
 import com.flipboard.bottomsheet.BottomSheetLayout;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class allows the user to enroll new beacons into the beacon DB.
+ */
 public class EnrollmentActivity extends AppCompatActivity {
     // internal routing codes
     private static final int REQUEST_ENABLE_BT = 1;
@@ -33,7 +34,6 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     private static final long SCAN_PERIOD = 10000;
 
-    private BluetoothManager bluetoothManager;
     private List<BluetoothDevice> bluetoothDevices;
     private Handler scanHandler = new Handler();
     private BeaconAdapter beaconListAdapter;
@@ -44,17 +44,10 @@ public class EnrollmentActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enrollment);
 
-        bluetoothManager = new BluetoothManager();
         displayBTErrorSnackBar();
 
         bluetoothDevices = new ArrayList<>();
         beaconListAdapter = new BeaconAdapter();
-    }
-
-    public void enableBluetooth(View view) {
-        displayWaitingUI();
-        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
     }
 
     @Override
@@ -82,6 +75,20 @@ public class EnrollmentActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Shows system dialog asking to enable bluetooth
+     * @param view
+     */
+    public void enableBluetooth(View view) {
+        displayWaitingUI();
+        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    }
+
+    /**
+     * On Android 6.0+, shows dialog to ask for coarse location. This permission is required to
+     * scan for BLE beacons on these versions of Android.
+     */
     private void enableNetworkIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -94,21 +101,8 @@ public class EnrollmentActivity extends AppCompatActivity {
         }
     }
 
-    private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            if(!isDuplicate(device)) {
-                bluetoothDevices.add(device);
-                findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.INVISIBLE);
-                findViewById(R.id.noDevicesYetText).setVisibility(View.INVISIBLE);
-                findViewById(R.id.scannedBeaconsList).setVisibility(View.VISIBLE);
-                // TODO update list
-                beaconListAdapter.notifyDataSetChanged();
-            }
-        }
-    };
-
-    private boolean isDuplicate(BluetoothDevice device) {
+    // returns wether we've seen this device in the latest scan
+    private boolean hasBeenAlreadyScanned(BluetoothDevice device) {
         for (BluetoothDevice storedDevice: bluetoothDevices) {
             if (device.getAddress().equalsIgnoreCase(storedDevice.getAddress()))
                 return true;
@@ -116,12 +110,16 @@ public class EnrollmentActivity extends AppCompatActivity {
         return false;
     }
 
-    public void prepareForScan() {
+    private void prepareForScan() {
         prepareForScan(null);
     }
 
-    public void prepareForScan(final View v) {
-        displayBeaconEnrollment();
+    /**
+     * Setups up interface to display scan results, starts scan
+     * @param v
+     */
+    public void prepareForScan(View v) {
+        displayBeaconSearch();
         ((ListView) findViewById(R.id.scannedBeaconsList)).setAdapter(beaconListAdapter);
         ((ListView) findViewById(R.id.scannedBeaconsList)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -139,6 +137,25 @@ public class EnrollmentActivity extends AppCompatActivity {
         startScan();
     }
 
+    // callback on each BLE advertisement received
+    private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            if(!hasBeenAlreadyScanned(device)) {
+                bluetoothDevices.add(device);
+                findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.INVISIBLE);
+                findViewById(R.id.noDevicesYetText).setVisibility(View.INVISIBLE);
+                findViewById(R.id.scannedBeaconsList).setVisibility(View.VISIBLE);
+                beaconListAdapter.notifyDataSetChanged();
+            }
+        }
+    };
+
+    /**
+     * Called by addBeacon method from a BottomSheet containing info about the beacon the user
+     * wants to add. Creates a beacon object and adds it to database.
+     * @param v
+     */
     public void onAddBeacon(View v) {
         BeaconDBManager beaconDBManager = new BeaconDBManager(v.getContext());
         String name = ((TextView) findViewById(R.id.editBeaconNameText)).getText().toString();
@@ -150,6 +167,7 @@ public class EnrollmentActivity extends AppCompatActivity {
         beaconDBManager.close();
     }
 
+    // start the BLE scan for SCAN_PERIOD milliseconds, results returned to specified callback
     private void startScan() {
         BluetoothAdapter.getDefaultAdapter().startLeScan(leScanCallback);
         scanHandler.postDelayed(new Runnable() {
@@ -163,6 +181,7 @@ public class EnrollmentActivity extends AppCompatActivity {
         }, SCAN_PERIOD);
     }
 
+    // display UI elements in case no devices found after scan
     private void noDevicesFound() {
         findViewById(R.id.scanningZeroDevicesBar).setVisibility(View.INVISIBLE);
         findViewById(R.id.noDevicesYetText).setVisibility(View.VISIBLE);
@@ -170,8 +189,10 @@ public class EnrollmentActivity extends AppCompatActivity {
         findViewById(R.id.retryScanButton).setVisibility(View.VISIBLE);
     }
 
+    // displays a snackbar that warns the user if the device doesn't have bluetooth
+    // stops them from continuing
     private void displayBTErrorSnackBar() {
-        if (!bluetoothManager.deviceHasBluetoothAdapter()) {
+        if (!deviceHasBluetoothAdapter()) {
             snackbar = Snackbar
                     .make(findViewById(R.id.enrollmentLayout), "This device does not support Bluetooth",
                             Snackbar.LENGTH_INDEFINITE)
@@ -191,13 +212,23 @@ public class EnrollmentActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Indicates whether the device is equiped with bluetooth.
+     * @return
+     */
+    public Boolean deviceHasBluetoothAdapter() {
+        return (BluetoothAdapter.getDefaultAdapter() != null);
+    }
+
+    // show the user that we are waiting on bluetooth enabling
     private void displayWaitingUI() {
         findViewById(R.id.userWarning).setVisibility(View.INVISIBLE);
         findViewById(R.id.bluetoothBar).setVisibility(View.VISIBLE);
         findViewById(R.id.enableButton).setEnabled(false);
     }
 
-    private void displayBeaconEnrollment() {
+    // pull up UI for beacon search
+    private void displayBeaconSearch() {
         // out the old
         findViewById(R.id.bluetoothIcon).setVisibility(View.INVISIBLE);
         findViewById(R.id.btDescription).setVisibility(View.INVISIBLE);
@@ -214,13 +245,15 @@ public class EnrollmentActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.noDevicesYetText)).setText("Seaching for beacons...");
     }
 
+    // warn the user that they have made an error by not allowing BT or location access
     private void displayUserWarning() {
         findViewById(R.id.bluetoothBar).setVisibility(View.INVISIBLE);
         findViewById(R.id.userWarning).setVisibility(View.VISIBLE);
         findViewById(R.id.enableButton).setEnabled(true);
     }
 
-    class BeaconAdapter extends BaseAdapter {
+    // this class is a list adapter that allows BluetoothDevice info be to placed into a UI list
+    private class BeaconAdapter extends BaseAdapter {
         private LayoutInflater inflater = (LayoutInflater) EnrollmentActivity.this
                 .getSystemService(LAYOUT_INFLATER_SERVICE);
         private List<BluetoothDevice> bluetoothDevices = EnrollmentActivity.this.bluetoothDevices;
@@ -245,6 +278,7 @@ public class EnrollmentActivity extends AppCompatActivity {
             BluetoothDevice beacon = (BluetoothDevice) getItem(position);
             ViewHolder holder;
 
+            // standard holder optimizing code
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.simple_beacon_item, parent, false);
 
@@ -254,6 +288,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
                 convertView.setTag(holder);
             } else {
+                // if we've seen view before, don't need to inflate again
                 holder = (ViewHolder) convertView.getTag();
             }
 
@@ -273,5 +308,3 @@ public class EnrollmentActivity extends AppCompatActivity {
         public TextView addressTextView;
     }
 }
-
-
