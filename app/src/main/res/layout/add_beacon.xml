@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:colorBackground"
+    android:padding="15dp">
+
+    <TextView
+        android:id="@+id/addBeaconTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="15dp"
+        android:layout_marginLeft="3dp"
+        android:text="Add Beacon"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/editBeaconName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/addBeaconTitle">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/editBeaconNameText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Beacon Name"
+            android:inputType="textNoSuggestions"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editBeaconName"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="16dp"
+        android:id="@+id/textInputLayout">
+
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/textBeaconAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:enabled="false"
+            android:hint="Hardware Address"
+            android:text="some address" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/textInputLayout"
+        android:onClick="onAddBeacon"
+        android:text="Confirm" />
+
+</RelativeLayout>

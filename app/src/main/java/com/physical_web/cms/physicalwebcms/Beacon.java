@@ -69,4 +69,11 @@ class Beacon {
     public int hashCode() {
         return address.hashCode();
     }
+
+    public String toString() {
+        String result = "";
+        result += "Beacon '" + friendlyName + "' ";
+        result += "with address " + address;
+        return result;
+    }
 }
