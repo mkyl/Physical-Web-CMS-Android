@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -42,6 +43,7 @@ public class EnrollmentActivity extends AppCompatActivity {
     private BeaconAdapter beaconListAdapter;
     private Snackbar snackbar;
     private Menu appBar;
+    private View clickedView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,6 +158,7 @@ public class EnrollmentActivity extends AppCompatActivity {
                 bottomSheet.showWithSheetView(LayoutInflater.from(view.getContext()).inflate(R.layout.add_beacon, bottomSheet, false));
                 ((TextView) findViewById(R.id.editBeaconNameText)).setText(selectedDevice.getName());
                 ((TextView) findViewById(R.id.textBeaconAddress)).setText(selectedDevice.getAddress());
+                clickedView = view;
             }
 
         });
@@ -193,6 +196,10 @@ public class EnrollmentActivity extends AppCompatActivity {
 
         ((BottomSheetLayout) findViewById(R.id.bottomsheet)).dismissSheet();
         beaconDBManager.close();
+
+        // display tick on added device in list
+        clickedView.findViewById(R.id.tickView).setVisibility(View.VISIBLE);
+        clickedView = null;
     }
 
     // start the BLE scan for SCAN_PERIOD milliseconds, results returned to specified callback
@@ -312,6 +319,7 @@ public class EnrollmentActivity extends AppCompatActivity {
                 holder = new ViewHolder();
                 holder.nameTextView = (TextView) convertView.findViewById(R.id.beaconName);
                 holder.addressTextView = (TextView) convertView.findViewById(R.id.beaconAddress);
+                holder.tickView = (ImageView) convertView.findViewById(R.id.tickView);
 
                 convertView.setTag(holder);
             } else {
@@ -333,5 +341,6 @@ public class EnrollmentActivity extends AppCompatActivity {
     private static class ViewHolder {
         public TextView nameTextView;
         public TextView addressTextView;
+        public ImageView tickView;
     }
 }
