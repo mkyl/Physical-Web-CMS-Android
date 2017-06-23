@@ -76,33 +76,23 @@
             android:layout_marginBottom="15dp"
             android:text="Searching for beacons..." />
 
-        <Button
-            android:id="@+id/retryScanButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/noDevicesYetText"
-            android:layout_centerHorizontal="true"
-            android:onClick="prepareForScan"
-            android:text="Scan Again"
-            android:visibility="invisible" />
-
-        <ProgressBar
-            android:id="@+id/scanningZeroDevicesBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_above="@id/noDevicesYetText"
-            android:layout_marginBottom="15dp"
-            android:visibility="invisible" />
-
         <TextView
             android:id="@+id/scannedBeaconsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:text="Bluetooth Devices"
+            android:text="Available Bluetooth Devices"
             android:visibility="invisible"/>
+
+        <ProgressBar
+            android:id="@+id/scanningDevicesBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/scannedBeaconsTitle"
+            android:layout_alignBottom="@id/scannedBeaconsTitle"
+            android:layout_alignParentEnd="true"
+            android:visibility="invisible" />
 
         <ListView
             android:id="@+id/scannedBeaconsList"
