@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.flipboard.bottomsheet.BottomSheetLayout android:id="@+id/bottomsheet"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.physical_web.cms.physicalwebcms.EnrollmentActivity"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:layout_editor_absoluteX="0dp"
+    tools:layout_editor_absoluteY="81dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="15dp"
+        android:id="@+id/enrollmentLayout">
+
+        <ImageView
+            android:id="@+id/bluetoothIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="15dp"
+            android:adjustViewBounds="true"
+            android:cropToPadding="false"
+            android:paddingLeft="75dp"
+            android:paddingRight="75dp"
+            app:srcCompat="@drawable/bluetooth" />
+
+        <TextView
+            android:id="@+id/btDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/bluetoothIcon"
+            android:text="Bluetooth must be enabled to communicate with the Physical Web beacons. Location must also be enabled to allow scanning for Beacons. You will be able to add beacons on the next screen."
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_marginBottom="15dp"/>
+
+        <TextView
+            android:id="@+id/userWarning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btDescription"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@android:color/holo_red_dark"
+            android:textStyle="bold"
+            android:visibility="invisible"
+            android:text="Bluetooth &amp; location services must be enabled to continue." />
+
+        <ProgressBar
+            android:id="@+id/bluetoothBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btDescription"
+            android:visibility="invisible" />
+
+        <Button
+            android:id="@+id/enableButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:enabled="false"
+            android:onClick="enableBluetooth"
+            android:text="Enable Bluetooth" />
+
+        <TextView
+            android:id="@+id/noDevicesYetText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:visibility="invisible"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_marginBottom="15dp"
+            android:text="Searching for beacons..." />
+
+        <TextView
+            android:id="@+id/scannedBeaconsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:text="Available Bluetooth Devices"
+            android:visibility="invisible"/>
+
+        <ProgressBar
+            android:id="@+id/scanningDevicesBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/scannedBeaconsTitle"
+            android:layout_alignBottom="@id/scannedBeaconsTitle"
+            android:layout_alignParentEnd="true"
+            android:visibility="invisible" />
+
+        <ListView
+            android:id="@+id/scannedBeaconsList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/scannedBeaconsTitle"
+            android:visibility="invisible"/>
+
+    </RelativeLayout>
+</com.flipboard.bottomsheet.BottomSheetLayout>

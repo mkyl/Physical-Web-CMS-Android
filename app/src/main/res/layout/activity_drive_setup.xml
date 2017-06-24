@@ -53,11 +53,23 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/recommendationText"
             android:layout_marginBottom="15dp"
-            android:text="Google Drive authorization is required to continue"
+            android:text="Google Drive authorization is required to continue."
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             android:textColor="@android:color/holo_red_dark"
             android:textStyle="bold"
             android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/textViewOtherWarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/recommendationText"
+        android:layout_marginBottom="15dp"
+        android:text="Interal error in Google Drive. Cannot proceed."
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@android:color/holo_red_dark"
+        android:textStyle="bold"
+        android:visibility="invisible" />
 
         <TextView
             android:id="@+id/textViewSuccess"

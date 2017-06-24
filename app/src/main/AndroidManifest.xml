@@ -2,28 +2,39 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.physical_web.cms.physicalwebcms">
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- ACCESS_COARSE_LOCATION required to call BluetoothLeScanner.startScan() -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+    <!-- also needed for BLE -->
+    <uses-feature android:name="android.hardware.location.network" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DriveSetupActivity"
-            android:label="Drive Setup"/>
+        <activity
+            android:name=".DriveSetupActivity"
+            android:label="Drive Setup" />
         <activity
             android:name=".WelcomeActivity"
             android:label="@string/title_activity_welcome"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".EnrollmentActivity"
+            android:label="Beacon Enrollment" />
     </application>
 
 </manifest>
