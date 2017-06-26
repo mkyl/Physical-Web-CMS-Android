@@ -4,14 +4,12 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import static junit.framework.Assert.assertEquals;
@@ -19,7 +17,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 /**
- * Instrumented tests for the BeaconDBManager class
+ * Instrumented tests for the DatabaseManager class
  */
 
 @LargeTest
@@ -31,29 +29,29 @@ public class BeaconDBTest {
     private static final String TEST_BEACON_NAME_2 = "second test beacon";
     private static final String TEST_BEACON_MAC_2 = "00:DE:AD:BE:EF:00";
 
-    private BeaconDBManager beaconDBManager;
+    private DatabaseManager DatabaseManager;
 
     @Before
     public void SetUp() {
         Context context = InstrumentationRegistry.getTargetContext();
-        beaconDBManager = new BeaconDBManager(context);
-        beaconDBManager.clearDB(context);
+        DatabaseManager = new DatabaseManager(context);
+        DatabaseManager.clearDB(context);
     }
 
     @After
     public void finish() {
-        beaconDBManager.close();
+        DatabaseManager.close();
     }
 
     @Test
     public void testPreConditions() {
-        assertNotNull(beaconDBManager);
+        assertNotNull(DatabaseManager);
     }
 
     @Test
     public void addBeacon() {
         Beacon testBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
-        beaconDBManager.addBeacon(testBeacon);
+        DatabaseManager.addBeacon(testBeacon);
     }
 
     /**
@@ -62,8 +60,8 @@ public class BeaconDBTest {
     @Test
     public void checkBeacon() {
         Beacon testBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
-        beaconDBManager.addBeacon(testBeacon);
-        Set<Beacon> beaconSet = beaconDBManager.getAllBeacons();
+        DatabaseManager.addBeacon(testBeacon);
+        Set<Beacon> beaconSet = DatabaseManager.getAllBeacons();
 
         // check number of beacons stored
         assertEquals(beaconSet.size(), 1);
@@ -80,9 +78,9 @@ public class BeaconDBTest {
         Beacon firstBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
         Beacon secondBeacon = new Beacon(TEST_BEACON_MAC_2, TEST_BEACON_NAME_2);
 
-        beaconDBManager.addBeacon(firstBeacon);
-        beaconDBManager.addBeacon(secondBeacon);
-        Set<Beacon> beaconSet = beaconDBManager.getAllBeacons();
+        DatabaseManager.addBeacon(firstBeacon);
+        DatabaseManager.addBeacon(secondBeacon);
+        Set<Beacon> beaconSet = DatabaseManager.getAllBeacons();
 
         assertEquals(beaconSet.size(), 2);
 
@@ -97,18 +95,18 @@ public class BeaconDBTest {
     @Test
     public void checkAssignedID() {
         Beacon testBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
-        long storedBeaconID = beaconDBManager.addBeacon(testBeacon);
+        long storedBeaconID = DatabaseManager.addBeacon(testBeacon);
 
         // check details of stored beacon
-        assertEquals(testBeacon, beaconDBManager.getBeaconByID(storedBeaconID));
+        assertEquals(testBeacon, DatabaseManager.getBeaconByID(storedBeaconID));
     }
 
     @Test
     public void deleteOne() {
         Beacon testBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
-        beaconDBManager.addBeacon(testBeacon);
-        beaconDBManager.deleteBeacon(testBeacon);
-        assertEquals(0, beaconDBManager.getAllBeacons().size());
+        DatabaseManager.addBeacon(testBeacon);
+        DatabaseManager.deleteBeacon(testBeacon);
+        assertEquals(0, DatabaseManager.getAllBeacons().size());
     }
 
     /**
@@ -116,15 +114,15 @@ public class BeaconDBTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void invalidDelete(){
-        beaconDBManager.deleteBeacon(0);
+        DatabaseManager.deleteBeacon(0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addDuplicateBeacon() throws InterruptedException {
         Beacon testBeacon = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
-        beaconDBManager.addBeacon(testBeacon);
+        DatabaseManager.addBeacon(testBeacon);
 
         Beacon testBeaconTwo = new Beacon(TEST_BEACON_MAC, TEST_BEACON_NAME);
-        beaconDBManager.addBeacon(testBeaconTwo);
+        DatabaseManager.addBeacon(testBeaconTwo);
     }
 }

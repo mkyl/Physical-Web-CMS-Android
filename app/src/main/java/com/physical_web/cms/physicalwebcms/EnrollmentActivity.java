@@ -188,14 +188,14 @@ public class EnrollmentActivity extends AppCompatActivity {
      * @param v
      */
     public void onAddBeacon(View v) {
-        BeaconDBManager beaconDBManager = new BeaconDBManager(v.getContext());
+        DatabaseManager DatabaseManager = new DatabaseManager(v.getContext());
         String name = ((TextView) findViewById(R.id.editBeaconNameText)).getText().toString();
         String address = ((TextView) findViewById(R.id.textBeaconAddress)).getText().toString();
         Beacon newBeacon = new Beacon(address, name);
-        beaconDBManager.addBeacon(newBeacon);
+        DatabaseManager.addBeacon(newBeacon);
 
         ((BottomSheetLayout) findViewById(R.id.bottomsheet)).dismissSheet();
-        beaconDBManager.close();
+        DatabaseManager.close();
 
         // display tick on added device in list
         clickedView.findViewById(R.id.tickView).setVisibility(View.VISIBLE);
