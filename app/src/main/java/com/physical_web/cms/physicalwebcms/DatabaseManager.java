@@ -15,11 +15,11 @@ import java.util.Set;
  * CLOSE() WHEN DONE
  */
 
-public class BeaconDBManager {
+public class DatabaseManager {
     private BeaconDBHelper dbHelper;
     private SQLiteDatabase db;
 
-    public BeaconDBManager(Context context) {
+    public DatabaseManager(Context context) {
         dbHelper = new BeaconDBHelper(context);
         // Writable database is used because there is no performance advantage over read-only one
         db = dbHelper.getWritableDatabase();
