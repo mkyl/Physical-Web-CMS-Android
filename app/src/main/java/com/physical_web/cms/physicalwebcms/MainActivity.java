@@ -1,15 +1,15 @@
 package com.physical_web.cms.physicalwebcms;
 
 import android.bluetooth.BluetoothDevice;
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements  findBeaconsScanComplete{
+public class MainActivity extends AppCompatActivity implements EddstoneBeaconEvents {
     public static final String TAG = MainActivity.class.getSimpleName();
     BluetoothManager bluetoothManager;
 
@@ -41,17 +41,25 @@ public class MainActivity extends AppCompatActivity implements  findBeaconsScanC
 
     public void checkGatt(View v) {
         bluetoothManager = new BluetoothManager(this);
-        bluetoothManager.listBeacons(this);
+        bluetoothManager.listConfigurableEddystoneBeacons(this);
     }
 
     @Override
     public void onScanComplete(List<BluetoothDevice> beacons) {
         for(BluetoothDevice device : beacons) {
-
-            if(device.getAddress().contains("C0:02:C2")) { // device I'm testing right now, num 2
-                Log.d(TAG, "Connecting to device with address: " + device.getAddress());
-                bluetoothManager.supportsEddystoneURL(device);
-            }
+            Log.d(TAG, "Connecting to device with address: " + device.getAddress());
+            //bluetoothManager.supportsEddystoneURL(device, this);
+            bluetoothManager.updateBeaconUri(device, "example.com", this);
         }
     }
+
+    @Override
+    public void uriWriteCallback (BluetoothDevice device, final int status) {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView) findViewById(R.id.helloWorld)).setText("Updated URI status = " + status);
+            }
+        });
+    };
 }
