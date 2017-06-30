@@ -20,10 +20,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
-import static android.bluetooth.BluetoothProfile.GATT;
 
 /**
- * Handles connecting to beacons that utilize Bluetooth Low Energy.
+ * Handles discovering and configuring to Eddystone beacons over a Bluetooth Low Energy link.
  */
 public class BluetoothManager {
     public final static int WRITE_SUCCESS = 0;
@@ -31,7 +30,6 @@ public class BluetoothManager {
     public final static int WRITE_FAIL_NOT_EDDYSTONE = 2;
     public final static int WRITE_FAIL_LOCKED = 3;
     public final static int WRITE_FAIL_OTHER = 4;
-
 
     private final static String TAG = BluetoothManager.class.getSimpleName();
     private final static int SCAN_PERIOD = 5000; // milliseconds
@@ -42,23 +40,23 @@ public class BluetoothManager {
             UUID.fromString("a3c87506-8ed3-4bdf-8a39-a01bebede295");
     private final static UUID EDDYSTONE_ADV_SLOT_CHARACTERISTIC =
             UUID.fromString("a3c8750a-8ed3-4bdf-8a39-a01bebede295");
-    private final static UUID NON_EXISTANT_CHARACTERISTIC =
-            UUID.fromString("a3c27e0a-9ed3-4bdf-8a39-a01b6bedef95");
 
     private final static byte[] EDDYSTONE_LOCKED = new byte[] {(byte) 0x00};
     private final static byte[] EDDYSTONE_UNLOCKED = new byte[] {(byte) 0x01};
     private final static byte[] EDDYSTONE_UNLOCKED_WITH_NO_RELOCK = new byte[] {(byte) 0x02};
 
     private final static byte EDDYSTONE_URL_FRAMETYPE = (byte) 0x10;
-    //private final static byte EDDYSTONE_NORMAL_TX_POWER = (byte) 0xEE;
-    private final static byte EDDSTONE_URL_HTTPS_PREFIX = (byte) 0x03; //prefix for "https://"
+    private final static byte EDDSTONE_URL_HTTPS_PREFIX = (byte) 0x03; // prefix for "https://"
+
+    private final static byte ASCII_SPACE = (byte) 0x20;
+    private final static int MAX_URI_LENGTH = 16;
 
     private Activity context;
     private BluetoothAdapter bluetoothAdapter;
     private Handler scanHandler;
 
     private List<BluetoothDevice> scannedDevices;
-    private Map<BluetoothDevice, EddstoneBeaconEvents> eventParentMap = new HashMap<>();
+    private Map<BluetoothDevice, BeaconEventListener> eventParentMap = new HashMap<>();
     private String shortenedUri;
     private byte[] newFrameValue = new byte[19];
 
@@ -75,7 +73,7 @@ public class BluetoothManager {
      *
      * @param event Callback called when scan complete
      */
-    public void listConfigurableEddystoneBeacons(final EddstoneBeaconEvents event) {
+    public void listConfigurableEddystoneBeacons(final BeaconEventListener event) {
         // in case there are old beacons stored in the device list
         scannedDevices.clear();
         UUID[] desiredServices = new UUID[] {EDDYSTONE_CONFIGURATION_SERVICE};
@@ -115,25 +113,27 @@ public class BluetoothManager {
     }
 
     /**
-     * Indicates whether a particular bluetooth device supports the Eddystone URL protocol. Requires
-     * beacon to be in range.
+     * Configures the passed beacon to broadcast the given URI. Result of configuration returned
+     * through callback
      *
-     * @param beacon subject of inquiry
+     * @param beacon Eddystone beacon to be updated
+     * @param Uri ASCII encoded webpage address
+     * @param eventListener where callbacks will be returned
      */
     public void updateBeaconUri(final BluetoothDevice beacon, final String Uri,
-                                EddstoneBeaconEvents event) {
+                                BeaconEventListener eventListener) {
         this.shortenedUri = shortenIfNeeded(Uri);
-        eventParentMap.put(beacon, event);
+        eventParentMap.put(beacon, eventListener);
         context.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                beacon.connectGatt(context, false, checkBeaconCallback);
+                beacon.connectGatt(context, false, updateUriCallback);
             }
         });
     }
 
-    // called when status of GATT connection to the beacon in supportsEddystoneURL is updated
-    private final BluetoothGattCallback checkBeaconCallback = new BluetoothGattCallback() {
+    // actions to be taken when connection to beacon is made
+    private final BluetoothGattCallback updateUriCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                             int newState) {
@@ -155,6 +155,7 @@ public class BluetoothManager {
                     gatt.readCharacteristic(lockCharacteristic);
                     // continues in onCharacteristicRead
                 } else {
+                    // beacon doesn't support eddystone configuration service
                     eventParentMap.get(device).uriWriteCallback(device, WRITE_FAIL_NOT_EDDYSTONE);
                     gatt.close();
                 }
@@ -184,7 +185,7 @@ public class BluetoothManager {
             }
         }
 
-        // New services discovered
+        // all conditions needed to configure beacon met, write advertisement frame
         private void writeToBeacon(BluetoothGatt gatt, int status) {
             BluetoothGattService eddystoneConfig =
                     gatt.getService(EDDYSTONE_CONFIGURATION_SERVICE);
@@ -195,7 +196,8 @@ public class BluetoothManager {
             byte[] frameStoredURI = shortenedUri.getBytes(Charset.forName("ASCII"));
 
             for(int i = 0; i < newFrameValue.length; i++) {
-                newFrameValue[i] = 0x20;
+                // fill unused bytes with spaces
+                newFrameValue[i] = ASCII_SPACE;
             }
 
             // newFrameValue = framePrefix + frameStoredURI
@@ -205,19 +207,23 @@ public class BluetoothManager {
 
             dataSlot.setValue(newFrameValue);
 
+            // this will send the data over to the beacon and ask it to confirm with us
+            // what it received before applying any changes
             gatt.beginReliableWrite();
             gatt.writeCharacteristic(dataSlot);
         }
 
+        // called because we're using reliable write
         @Override
         public void onCharacteristicWrite (BluetoothGatt gatt,
                                            BluetoothGattCharacteristic characteristic,
                                            int status) {
-            EddstoneBeaconEvents eventToCallback = eventParentMap.get(gatt.getDevice());
+            BeaconEventListener eventToCallback = eventParentMap.get(gatt.getDevice());
             BluetoothDevice device = gatt.getDevice();
 
             if (status == GATT_SUCCESS) {
                 if (Arrays.equals(characteristic.getValue(), newFrameValue)) {
+                    // data on beacon side matches our side, proceed
                     gatt.executeReliableWrite();
                     eventToCallback.uriWriteCallback(device, WRITE_SUCCESS);
                 } else {
@@ -235,17 +241,34 @@ public class BluetoothManager {
 
     };
 
+    // due to length constraints, URIs of over MAX_URI_LENGTH bytes length must be shortened
     private String shortenIfNeeded(String Uri) {
-        if(Uri.getBytes(Charset.forName("ASCII")).length < 17) {
+        if(Uri.getBytes(Charset.forName("ASCII")).length < MAX_URI_LENGTH) {
             return Uri;
         } else {
             // TODO connect to google shortner API
-            throw new UnsupportedOperationException("URIs over 17 bytes large must be shortned.");
+            throw new UnsupportedOperationException("URIs over MAX_URI_LENGTH bytes" +
+                    " large must be shortened.");
         }
     }
 }
 
-interface EddstoneBeaconEvents {
+/**
+ * This interface must be implemented to receive data from the BluetoothManager class.
+ */
+interface BeaconEventListener {
+    /**
+     * Returns list of configurable Eddystone beacons after scan complete.
+     *
+     * @param beacons Beacons in configuration mode
+     */
     void onScanComplete(List<BluetoothDevice> beacons);
+
+    /**
+     * Returns result of beacon URI update attempt.
+     *
+     * @param device beacon which operation was attempted on.
+     * @param status WRITE_SUCCESS if succesful
+     */
     void uriWriteCallback(BluetoothDevice device, int status);
 }
