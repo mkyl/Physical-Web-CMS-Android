@@ -37,4 +37,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     compile 'com.flipboard:bottomsheet-core:1.5.3'
+    compile 'com.mikhaellopez:circularimageview:3.0.2'
 }
