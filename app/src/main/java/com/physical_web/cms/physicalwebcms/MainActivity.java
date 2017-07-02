@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private ListView drawerList;
 
+    private SetupManager setupManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +46,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         // ensure drive authorization, internet connection, etc. are all set up
-        SetupManager setupManager = new SetupManager(this);
+        if(setupManager == null) {
+            setupManager = new SetupManager(this);
+        }
         setupManager.checkRequirements();
     }
 
