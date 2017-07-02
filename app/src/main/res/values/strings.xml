@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Beacon Curator</string>
     <string name="title_activity_welcome">Welcome</string>
+    <string name="title_activity_beacon">Beacons</string>
 </resources>
