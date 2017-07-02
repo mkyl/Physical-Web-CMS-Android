@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 case "Exhibits":
                     throw new UnsupportedOperationException("Not implemented yet");
                 case "Beacons":
-                    switchItent = new Intent(MainActivity.this, EnrollmentActivity.class);
+                    switchItent = new Intent(MainActivity.this, BeaconActivity.class);
                     break;
                 case "Analytics":
                     throw new UnsupportedOperationException("Not implemented yet");
