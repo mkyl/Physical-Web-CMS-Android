@@ -31,47 +31,9 @@ public class Beacon {
     public String friendlyName;
     // public Bitmap locationImage;
 
-    @Ignore
-    private Boolean fullyInitialized;
-
-    @Ignore
-    public Beacon(long id, String address, String friendlyName) {
-        this.id = id;
+    public Beacon(String address, String friendlyName) {
         this.address = address;
         this.friendlyName = friendlyName;
-        fullyInitialized = false;
-    }
-
-    // beacon whose ID we don't know yet
-    public Beacon(String address, String friendlyName) {
-        this(-1 , address, friendlyName);
-        fullyInitialized = false;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getFriendlyName() {
-        return friendlyName;
-    }
-
-    public void setFriendlyName(String friendlyName) {
-        this.friendlyName = friendlyName;
-    }
-
-    // can be only called on Beacon created without specifying ID
-    public void setId(long newID) {
-        if(this.fullyInitialized) {
-            throw new IllegalStateException("Cannot change internal ID once its been set");
-        } else {
-            this.id = newID;
-            fullyInitialized = true;
-        }
     }
 
     @Override
@@ -84,7 +46,7 @@ public class Beacon {
             return false;
 
         Beacon otherBeacon = (Beacon) other;
-        return (this.address.equalsIgnoreCase(otherBeacon.getAddress()));
+        return (this.address.equalsIgnoreCase(otherBeacon.address));
     }
 
     /**

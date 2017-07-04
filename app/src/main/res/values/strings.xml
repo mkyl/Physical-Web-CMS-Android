@@ -13,4 +13,5 @@
         Cabrera. \n\nLicensed under Apache version 2.0.\n\nBug reports and feature requests
     can be filed at https://github.com/mkyl/Physical-Web-CMS-Android/issues/ </string>
     <string name="about_icon_description">App icon</string>
+    <string name="add_beacon">Add Beacon</string>
 </resources>

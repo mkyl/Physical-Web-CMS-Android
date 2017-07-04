@@ -81,6 +81,27 @@ public class BeaconFragment extends ContentFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(adapter != null) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    adapter = new BeaconFragment.InstalledBeaconAdapter();
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            recyclerView.setAdapter(adapter);
+                        }
+                    });
+                }
+            });
+            thread.start();
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -149,7 +170,6 @@ public class BeaconFragment extends ContentFragment {
     }
 
     class InstalledBeaconAdapter extends RecyclerView.Adapter<InstalledBeaconAdapter.ViewHolder> {
-        private BeaconDatabase db;
         private List<Beacon> beacons;
 
         class ViewHolder extends RecyclerView.ViewHolder {
@@ -165,8 +185,9 @@ public class BeaconFragment extends ContentFragment {
         }
 
         public InstalledBeaconAdapter() {
-            db = BeaconDatabase.getDatabase(getActivity().getApplicationContext());
+            BeaconDatabase db = BeaconDatabase.getDatabase(getActivity());
             beacons = db.beaconDao().getAllBeacons();
+            db.close();
         }
 
         @Override
