@@ -67,7 +67,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d(MainActivity.TAG, "Drive connection successful");
+        Log.d(BaseActivity.TAG, "Drive connection successful");
 
         unlockInterface();
 
