@@ -12,10 +12,10 @@ import java.util.List;
 @Dao
 public interface BeaconDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    public void insertBeacons(Beacon... beacons);
+    void insertBeacons(Beacon... beacons);
 
     @Update
-    public void updateBeacons(Beacon... beacons);
+    void updateBeacons(Beacon... beacons);
 
     @Query("select * from beacons")
     List<Beacon> getAllBeacons();

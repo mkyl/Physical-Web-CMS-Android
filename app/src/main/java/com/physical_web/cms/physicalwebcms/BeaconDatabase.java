@@ -16,7 +16,7 @@ public abstract class BeaconDatabase extends RoomDatabase {
             instance = Room.databaseBuilder(context.getApplicationContext(),
                     BeaconDatabase.class, DATABASE_NAME).build();
         }
-        return  instance;
+        return instance;
     }
 
     public abstract BeaconDao beaconDao();
