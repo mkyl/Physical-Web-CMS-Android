@@ -5,7 +5,8 @@
     android:layout_width="170dp"
     android:layout_height="200dp"
     android:layout_gravity="center"
-    card_view:cardCornerRadius="6dp">
+    card_view:cardCornerRadius="6dp"
+    card_view:cardElevation="2dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -26,7 +27,7 @@
             android:layout_alignBottom="@+id/beacon_picture"
             android:layout_alignParentStart="true"
             android:gravity="bottom"
-            android:padding="6dp"
+            android:padding="10dp"
             android:text="placeholder"
             android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse" />
 
@@ -35,18 +36,25 @@
             style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delete"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:text="Delete"
+            android:textColor="@android:color/holo_red_dark" />
 
         <Button
             android:id="@+id/edit_button"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Edit"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true" />
+            android:layout_alignParentStart="true"
+            android:text="Edit" />
+
+        <TextView
+            android:id="@+id/beacon_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="invisible" />
 
 
     </RelativeLayout>
