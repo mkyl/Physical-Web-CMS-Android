@@ -39,6 +39,14 @@ public class DatabaseManager {
             throw new IllegalStateException("Tried to close an non-existent or closed database");
     }
 
+    public void open() {
+        if(db == null || !db.isOpen())
+            dbHelper.getWritableDatabase();
+        // TODO see if this is needed
+        // else
+        //    throw new IllegalStateException("Tried to open already open database");
+    }
+
     /**
      * DELETES DATABASE
      */

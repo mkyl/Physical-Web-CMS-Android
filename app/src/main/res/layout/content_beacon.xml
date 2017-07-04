@@ -8,4 +8,13 @@
     tools:context="com.physical_web.cms.physicalwebcms.BeaconActivity"
     tools:showIn="@layout/activity_beacon">
 
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/installedBeaconsView"
+        android:layout_width="368dp"
+        android:layout_height="495dp"
+        android:padding="8dp"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
+
 </android.support.constraint.ConstraintLayout>
