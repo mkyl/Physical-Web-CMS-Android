@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +34,8 @@ import java.util.List;
  * create an instance of this fragment.
  */
 public class BeaconFragment extends ContentFragment {
+    private final static String TAG = BeaconFragment.class.getSimpleName();
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -47,7 +51,9 @@ public class BeaconFragment extends ContentFragment {
 
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
-    private RecyclerView.Adapter adapter;
+    private InstalledBeaconAdapter adapter;
+
+    private BeaconDatabase db;
 
     public BeaconFragment() {
         // Required empty public constructor
@@ -72,33 +78,29 @@ public class BeaconFragment extends ContentFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public void onResume() {
+        super.onResume();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                db = BeaconDatabase.getDatabase(getContext());
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.refresh();
+                        getActivity().findViewById(R.id.progressBar2).
+                                setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+        });
+        thread.start();
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if(adapter != null) {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    adapter = new BeaconFragment.InstalledBeaconAdapter();
-
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            recyclerView.setAdapter(adapter);
-                        }
-                    });
-                }
-            });
-            thread.start();
-        }
+    public void onPause() {
+        super.onPause();
+        db.close();
     }
 
     @Override
@@ -121,21 +123,8 @@ public class BeaconFragment extends ContentFragment {
         layoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
         recyclerView.setLayoutManager(layoutManager);
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                adapter = new BeaconFragment.InstalledBeaconAdapter();
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        recyclerView.setAdapter(adapter);
-                        result.findViewById(R.id.progressBar2).setVisibility(View.INVISIBLE);
-                    }
-                });
-            }
-        });
-        thread.start();
+        adapter = new BeaconFragment.InstalledBeaconAdapter();
+        recyclerView.setAdapter(adapter);
 
         return result;
     }
@@ -184,10 +173,20 @@ public class BeaconFragment extends ContentFragment {
             }
         }
 
-        public InstalledBeaconAdapter() {
-            BeaconDatabase db = BeaconDatabase.getDatabase(getActivity());
-            beacons = db.beaconDao().getAllBeacons();
-            db.close();
+        public void refresh() {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    beacons = db.beaconDao().getAllBeacons();
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            InstalledBeaconAdapter.this.notifyDataSetChanged();
+                        }
+                    });
+                }
+            }).start();
+
         }
 
         @Override
@@ -195,6 +194,7 @@ public class BeaconFragment extends ContentFragment {
             View cardView = LayoutInflater.from(parent.getContext()).
                     inflate(R.layout.beacon_card, parent, false);
 
+            cardView.findViewById(R.id.delete_button).setOnClickListener(removeBeacons);
             ViewHolder vh = new ViewHolder(cardView);
             return vh;
         }
@@ -207,7 +207,62 @@ public class BeaconFragment extends ContentFragment {
 
         @Override
         public int getItemCount() {
-            return beacons.size();
+            if (beacons == null)
+                return 0;
+            else
+                return beacons.size();
         }
+
+        private View.OnClickListener removeBeacons = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int beaconIndex = cardIndex(v);
+                final Beacon beaconToDelete = beacons.get(beaconIndex);
+
+                Log.d(TAG, "Deleting beacon with name: " + beaconToDelete.friendlyName);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        db.beaconDao().deleteBeacons(beaconToDelete);
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                InstalledBeaconAdapter.this.refresh();
+                                showUndoSnackbar(beaconToDelete);
+                            }
+                        });
+                    }
+                }).start();
+            }
+
+            private int cardIndex(View clickedButton) {
+                View parentCard = (View) clickedButton.getParent().getParent();
+                return recyclerView.indexOfChild(parentCard);
+            }
+
+            private void showUndoSnackbar(final Beacon deletedBeacon) {
+                Snackbar undoSnackbar = Snackbar.
+                        make(getView(), "Deleted beacon '" + deletedBeacon.friendlyName + "'",
+                                Snackbar.LENGTH_LONG).
+                        setAction("UNDO", new View.OnClickListener(){
+                            @Override
+                            public void onClick(View view) {
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        db.beaconDao().insertBeacons(deletedBeacon);
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                InstalledBeaconAdapter.this.refresh();
+                                            }
+                                        });
+                                    }
+                                }).start();
+                            }
+                        });
+                undoSnackbar.show();
+            }
+        };
     }
 }
