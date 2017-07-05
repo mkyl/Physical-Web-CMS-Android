@@ -14,11 +14,13 @@ public class Beacon {
 
     public String address;
     public String friendlyName;
+    public Boolean unconfigured;
     // public Bitmap locationImage;
 
     public Beacon(String address, String friendlyName) {
         this.address = address;
         this.friendlyName = friendlyName;
+        this.unconfigured = false;
     }
 
     @Override

@@ -56,14 +56,6 @@ public class EnrollmentActivity extends AppCompatActivity {
 
         bluetoothDevices = new ArrayList<>();
         beaconListAdapter = new BeaconAdapter();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                Log.d(TAG, "Database ready");
-            }
-        }).start();
     }
 
     @Override
@@ -212,7 +204,6 @@ public class EnrollmentActivity extends AppCompatActivity {
                 Beacon newBeacon = new Beacon(address, name);
                 BeaconDatabase db = BeaconDatabase.getDatabase(EnrollmentActivity.this);
                 db.beaconDao().insertBeacons(newBeacon);
-                Log.d(TAG, "Added beacon. DB size: " + db.beaconDao().getAllBeacons().size());
                 db.close();
             }
         }).start();
