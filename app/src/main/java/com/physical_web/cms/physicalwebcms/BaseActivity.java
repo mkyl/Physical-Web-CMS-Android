@@ -1,21 +1,18 @@
 package com.physical_web.cms.physicalwebcms;
 
-import android.app.Fragment;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ListView;
 
 import layout.AboutFragment;
@@ -38,16 +35,10 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        menuTitles = getResources().getStringArray(R.array.navigation_drawer_items);
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerList = (ListView) findViewById(R.id.drawer_top_list);
-
-        drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, menuTitles));
-        drawerList.setOnItemClickListener(new DrawerItemClickListener());
-
         // TODO make async
         setupManager = new SetupManager(this);
 
+        setupNavigationDrawer();
         setupActionBar();
         // if statement to avoid overlapping fragments
         if (savedInstanceState == null)
@@ -57,13 +48,22 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
     @Override
     protected void onResume() {
         super.onResume();
-
         // ensure drive authorization, internet connection, etc. are all set up
         setupManager.checkRequirements();
     }
 
+    private void setupNavigationDrawer() {
+        menuTitles = getResources().getStringArray(R.array.navigation_drawer_items);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerList = (ListView) findViewById(R.id.drawer_top_list);
+
+        drawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, menuTitles));
+        drawerList.setOnItemClickListener(new DrawerItemClickListener());
+    }
+
     private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();
+
         if(actionBar == null) {
             throw new IllegalStateException("Current theme doesn't have an action bar");
         } else {
@@ -76,7 +76,7 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
                 R.string.drawer_open,
                 R.string.drawer_close);
 
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
     }
 
     private void setupWelcomeFragment() {
@@ -118,7 +118,7 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
         }
 
         private void switchFragment(String name) {
-            changeActionBarTitle(name);
+            getSupportActionBar().setTitle(name);
 
             ContentFragment switchFragment;
             Bundle args = new Bundle();
@@ -147,18 +147,9 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
 
             drawerLayout.closeDrawer(Gravity.START);
         }
-
-        private void changeActionBarTitle(String name) {
-            if (getSupportActionBar() == null)
-                throw new IllegalStateException("Current theme doesn't have an action bar");
-            else
-                getSupportActionBar().setTitle(name);
-        }
-
     }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
     }
 }
-

@@ -24,5 +24,5 @@ public interface BeaconDao {
     Beacon getBeaconById(long id);
 
     @Delete
-    public void deleteBeacons(Beacon... beacons);
+    void deleteBeacons(Beacon... beacons);
 }
