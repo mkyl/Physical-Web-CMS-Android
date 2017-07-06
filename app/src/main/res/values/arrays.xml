@@ -2,6 +2,7 @@
 <resources>
     <string-array
         name="navigation_drawer_items">
+        <item>Home</item>
         <item>Exhibits</item>
         <item>Beacons</item>
         <item>Analytics</item>

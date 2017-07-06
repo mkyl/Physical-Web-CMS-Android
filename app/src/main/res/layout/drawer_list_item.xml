@@ -8,6 +8,6 @@
     android:layout_centerVertical="true"
     android:gravity="center_vertical|start"
     android:paddingStart="15dp"
-    android:text="sample textss"
-    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-    android:textColor="#000" />
+    android:paddingEnd="15dp"
+    android:text="sample texts"
+    android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
