@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,16 +15,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.flipboard.bottomsheet.BottomSheetLayout;
 import com.physical_web.cms.physicalwebcms.Beacon;
 import com.physical_web.cms.physicalwebcms.BeaconDatabase;
 import com.physical_web.cms.physicalwebcms.EnrollmentActivity;
 import com.physical_web.cms.physicalwebcms.R;
 
 import java.util.List;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,46 +37,19 @@ import java.util.List;
  */
 public class BeaconFragment extends ContentFragment {
     private final static String TAG = BeaconFragment.class.getSimpleName();
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    private OnFragmentInteractionListener mListener;
-
     private final static int COLUMN_COUNT = 2;
 
+    private OnFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private InstalledBeaconAdapter adapter;
+    private View sheetView;
 
     private BeaconDatabase db;
+    private Beacon selectedBeacon;
 
     public BeaconFragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment BeaconFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static BeaconFragment newInstance(String param1, String param2) {
-        BeaconFragment fragment = new BeaconFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
@@ -117,6 +92,11 @@ public class BeaconFragment extends ContentFragment {
             }
         });
 
+        BottomSheetLayout bottomSheet = (BottomSheetLayout) result.
+                findViewById(R.id.beacon_bottomsheet);
+        sheetView = inflater.inflate(R.layout.sheet_beacon_edit, bottomSheet, false);
+        sheetView.findViewById(R.id.edit_beacon_close).setOnClickListener(updateBeacon);
+
         recyclerView = (RecyclerView) result.findViewById(R.id.installedBeaconsViewFragment);
         recyclerView.setHasFixedSize(true);
 
@@ -129,12 +109,39 @@ public class BeaconFragment extends ContentFragment {
         return result;
     }
 
+    private View.OnClickListener updateBeacon = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            sheetView.findViewById(R.id.edit_beacon_progress).setVisibility(View.VISIBLE);
+            selectedBeacon.friendlyName = ((EditText) sheetView.
+                    findViewById(R.id.edit_beacon_name)).getText().toString();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    db.beaconDao().updateBeacons(selectedBeacon);
+                    selectedBeacon = null;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            sheetView.findViewById(R.id.edit_beacon_progress)
+                                    .setVisibility(View.INVISIBLE);
+                            BottomSheetLayout bottomSheet = (BottomSheetLayout) getActivity().
+                                    findViewById(R.id.beacon_bottomsheet);
+                            bottomSheet.dismissSheet();
+                            adapter.refresh();
+                        }
+                    });
+                }
+            }).start();
+        }
+    };
+
     private void startBeaconEnrollment() {
         Intent enrollmentIntent = new Intent(getActivity(), EnrollmentActivity.class);
         startActivity(enrollmentIntent);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
@@ -186,7 +193,6 @@ public class BeaconFragment extends ContentFragment {
                     });
                 }
             }).start();
-
         }
 
         @Override
@@ -195,6 +201,8 @@ public class BeaconFragment extends ContentFragment {
                     inflate(R.layout.beacon_card, parent, false);
 
             cardView.findViewById(R.id.delete_button).setOnClickListener(removeBeacons);
+            cardView.findViewById(R.id.edit_button).setOnClickListener(editBeacon);
+
             ViewHolder vh = new ViewHolder(cardView);
             return vh;
         }
@@ -235,11 +243,6 @@ public class BeaconFragment extends ContentFragment {
                 }).start();
             }
 
-            private int cardIndex(View clickedButton) {
-                View parentCard = (View) clickedButton.getParent().getParent();
-                return recyclerView.indexOfChild(parentCard);
-            }
-
             private void showUndoSnackbar(final Beacon deletedBeacon) {
                 Snackbar undoSnackbar = Snackbar.
                         make(getView(), "Deleted beacon '" + deletedBeacon.friendlyName + "'",
@@ -264,5 +267,26 @@ public class BeaconFragment extends ContentFragment {
                 undoSnackbar.show();
             }
         };
+
+        private View.OnClickListener editBeacon = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int beaconIndex = cardIndex(v);
+                selectedBeacon = beacons.get(beaconIndex);
+
+                BottomSheetLayout bottomSheet = (BottomSheetLayout) getActivity().
+                        findViewById(R.id.beacon_bottomsheet);
+                ((EditText) sheetView.findViewById(R.id.edit_beacon_name)).
+                        setText(selectedBeacon.friendlyName);
+                ((EditText) sheetView.findViewById(R.id.edit_beacon_mac)).
+                        setText(selectedBeacon.address);
+                bottomSheet.showWithSheetView(sheetView);
+            }
+        };
+
+        private int cardIndex(View clickedButton) {
+            View parentCard = (View) clickedButton.getParent().getParent();
+            return recyclerView.indexOfChild(parentCard);
+        }
     }
 }
