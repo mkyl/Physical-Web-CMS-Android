@@ -62,11 +62,14 @@
         <ListView
             android:id="@+id/drawer_top_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_below="@id/drawer_header"
             android:choiceMode="singleChoice"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp" />
+
+        <View style="@style/Divider"
+            android:layout_below="@+id/drawer_top_list"/>
 
     </RelativeLayout>
 

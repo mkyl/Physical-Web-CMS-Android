@@ -123,6 +123,9 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
             ContentFragment switchFragment;
             Bundle args = new Bundle();
             switch(name) {
+                case "Home":
+                    switchFragment = new WelcomeFragment();
+                    break;
                 case "Exhibits":
                     throw new UnsupportedOperationException("Not implemented yet");
                 case "Beacons":
