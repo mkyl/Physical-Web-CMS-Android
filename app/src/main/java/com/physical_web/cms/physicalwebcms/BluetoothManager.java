@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.util.Log;
 
@@ -65,6 +66,14 @@ public class BluetoothManager {
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.scanHandler = new Handler(context.getMainLooper());
         this.scannedDevices = new ArrayList<>();
+    }
+
+    /**
+     * Indicates whether the device is equipped with a Bluetooth Low Energy adapter.
+     */
+    public Boolean deviceSupportsBLE() {
+        PackageManager pm = context.getPackageManager();
+        return pm.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
     }
 
     /**
@@ -271,4 +280,8 @@ interface BeaconEventListener {
      * @param status WRITE_SUCCESS if succesful
      */
     void uriWriteCallback(BluetoothDevice device, int status);
+}
+
+interface BeaconScanningListener {
+    void onBeaconDiscovered(BluetoothDevice beacon);
 }
