@@ -115,7 +115,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private void handleNetworkChange(NetworkInfo info) {
         int updatedStatus;
 
-        if (info.isConnected()) {
+        if (info != null && info.isConnected()) {
             resumeSynchronization();
             updatedStatus = SYNC_IN_PROGRESS;
         } else {
@@ -508,7 +508,3 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 }
 
-interface SyncStatusListener {
-    void syncStatusChanged(int status);
-    void driveFolderIsEmpty(Boolean result);
-}

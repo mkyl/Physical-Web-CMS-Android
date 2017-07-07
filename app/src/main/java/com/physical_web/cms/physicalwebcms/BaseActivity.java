@@ -102,6 +102,7 @@ public class BaseActivity extends AppCompatActivity implements
 
     private void setupWelcomeFragment() {
         WelcomeFragment welcomeFragment = new WelcomeFragment();
+        contentSynchronizer.registerSyncStatusListener(welcomeFragment);
         getSupportFragmentManager().beginTransaction().
                 add(R.id.fragment_container, welcomeFragment).commit();
     }
@@ -146,6 +147,7 @@ public class BaseActivity extends AppCompatActivity implements
             switch(name) {
                 case "Home":
                     switchFragment = new WelcomeFragment();
+                    contentSynchronizer.registerSyncStatusListener((WelcomeFragment)switchFragment);
                     break;
                 case "Exhibits":
                     throw new UnsupportedOperationException("Not implemented yet");
