@@ -23,7 +23,6 @@ import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -31,7 +30,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import util.RecursiveFileObserver;
 
@@ -60,17 +62,15 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private Boolean syncInProgress;
     private List<SyncStatusListener> syncStatusListeners;
     private File localStorageFolder;
-    private File localFolderBeingSynced;
-    private DriveFolder remoteFolderBeingSynced;
 
-    private File fileBeingUploaded;
-    private File fileBeingDownloaded;
-    private File folderBeingDownloaded;
-    private File folderBeingUploaded;
+    private Map<ResultCallback, File> callbackTracker;
+    private Map<ResultCallback, DriveFolder> remoteCallbackTracker;
 
     public ContentSynchronizer(Context ctx, File internalStorage) {
         context = ctx;
         localStorageFolder = internalStorage;
+        callbackTracker = new HashMap<>();
+        remoteCallbackTracker = new HashMap<>();
 
         setupNetworkHandling();
         setupDriveSync(internalStorage);
@@ -184,6 +184,12 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
                     MetadataBuffer result = metadataBufferResult.getMetadataBuffer();
                     Boolean appFolderIsEmpty = !result.iterator().hasNext();
+                    Log.d(TAG, "Drive folder is empty: " + appFolderIsEmpty);
+                    for(Metadata md : result) {
+                        Log.d(TAG, "Found in drive folder: " + md.getTitle());
+                        md.getDriveId().asDriveFolder()
+                                .listChildren(apiClient).setResultCallback(childrenRetreievedCallback);
+                    }
                     notifyAllListenersAppFolder(appFolderIsEmpty);
                     result.release();
                 }
@@ -194,218 +200,269 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 
     public void syncFolders(File localFolder, DriveFolder remoteFolder) {
-        localFolderBeingSynced = localFolder;
-        remoteFolderBeingSynced = remoteFolder;
-        remoteFolder.listChildren(apiClient).setResultCallback(folderSyncCallback);
+        ResultCallback<DriveApi.MetadataBufferResult> callback = folderSyncCallback();
+        callbackTracker.put(callback, localFolder);
+        remoteCallbackTracker.put(callback, remoteFolder);
+        remoteFolder.listChildren(apiClient).setResultCallback(callback);
     }
 
-    private ResultCallback<DriveApi.MetadataBufferResult> folderSyncCallback =
-            new ResultCallback<DriveApi.MetadataBufferResult>() {
-                @Override
-                public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
-                    MetadataBuffer remoteFiles = metadataBufferResult.getMetadataBuffer();
-                    File[] localFiles = localFolderBeingSynced.listFiles();
+    private ResultCallback<DriveApi.MetadataBufferResult> folderSyncCallback() {
+        return new ResultCallback<DriveApi.MetadataBufferResult>() {
+            @Override
+            public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
+                File localFolderBeingSynced = callbackTracker.get(this);
+                DriveFolder remoteFolderBeingSynced = remoteCallbackTracker.get(this);
 
-                    try {
-                        for (File file : localFiles) {
-                            if (file.isFile()) {
-                                if (driveFolderContainsFile(file, remoteFiles)) {
-                                    // TODO conflict resolution
-                                } else {
-                                    // file in local, but not in remote
-                                    uploadFileToDriveFolder(file, remoteFolderBeingSynced);
-                                }
+                MetadataBuffer remoteFiles = metadataBufferResult.getMetadataBuffer();
+                File[] localFiles = localFolderBeingSynced.listFiles();
+
+                try {
+                    for (File file : localFiles) {
+                        if (file.isFile()) {
+                            Metadata remoteCopy = driveFolderContainsFile(file, remoteFiles);
+                            if (remoteCopy != null) {
+                                // TODO conflict resolution
+                                resolveConflict(file, remoteCopy);
                             } else {
-                                Metadata remoteCopy =
-                                        driveFolderContainsLocalFolder(file, remoteFiles);
-                                if (remoteCopy != null) {
-                                    DriveFolder remoteFolder = remoteCopy.getDriveId()
-                                            .asDriveFolder();
-                                    syncFolders(file, remoteFolder);
-                                } else {
-                                    uploadFolderToDriveFolder(file, remoteFolderBeingSynced);
-                                }
+                                // file in local, but not in remote
+                                uploadFileToDriveFolder(file, remoteFolderBeingSynced);
+                            }
+                        } else {
+                            Metadata remoteCopy =
+                                    driveFolderContainsLocalFolder(file, remoteFiles);
+                            if (remoteCopy != null) {
+                                DriveFolder remoteFolder = remoteCopy.getDriveId()
+                                        .asDriveFolder();
+                                syncFolders(file, remoteFolder);
+                            } else {
+                                uploadFolderToDriveFolderCallback(file, remoteFolderBeingSynced);
                             }
                         }
-
-                        for (Metadata remoteFile : remoteFiles) {
-                            if (!remoteFile.isFolder()) {
-                                if (localFolderContainsDriveFile(remoteFile,
-                                        localFolderBeingSynced)) {
-                                    // TODO conflict resolution
-                                } else {
-                                    downloadFileFromDriveFolder(remoteFile, localFolderBeingSynced);
-                                }
-                            } else {
-                                File localCopy = localFolderContainsDriveFolder(remoteFile,
-                                        localFolderBeingSynced);
-                                if (localCopy != null) {
-                                    DriveFolder remoteFolder = remoteFile.getDriveId()
-                                            .asDriveFolder();
-                                    syncFolders(localCopy, remoteFolder);
-                                } else {
-                                    downloadFolderFromDriveFolder(remoteFile,
-                                            localFolderBeingSynced);
-                                }
-                            }
-                        }
-
-                        notifyAllSyncListeners(SYNC_COMPLETE);
-                    } catch (Exception e) {
-                        notifyAllSyncListeners(NO_SYNC_DRIVE_ERROR);
-                    } finally {
-                        remoteFiles.release();
                     }
+
+                    for (Metadata remoteFile : remoteFiles) {
+                        if (!remoteFile.isFolder()) {
+                            File localCopy = localFolderContainsDriveFile(remoteFile,
+                                    localFolderBeingSynced);
+                            if (localCopy != null) {
+                                // TODO conflict resolution
+                                resolveConflict(localCopy, remoteFile);
+                            } else {
+                                downloadFileFromDriveFolder(remoteFile, localFolderBeingSynced);
+                            }
+                        } else {
+                            File localCopy = localFolderContainsDriveFolder(remoteFile,
+                                    localFolderBeingSynced);
+                            if (localCopy != null) {
+                                DriveFolder remoteFolder = remoteFile.getDriveId()
+                                        .asDriveFolder();
+                                syncFolders(localCopy, remoteFolder);
+                            } else {
+                                downloadFolderFromDriveFolder(remoteFile,
+                                        localFolderBeingSynced);
+                            }
+                        }
+                    }
+
+                    notifyAllSyncListeners(SYNC_COMPLETE);
+                } catch (Exception e) {
+                    notifyAllSyncListeners(NO_SYNC_DRIVE_ERROR);
+                } finally {
+                    remoteFiles.release();
+                    callbackTracker.remove(this);
+                    remoteCallbackTracker.remove(this);
                 }
-            };
+            }
+        };
+    }
+
+    private void resolveConflict(File localCopy, Metadata remoteCopy) {
+        Date localModified = new Date(localCopy.lastModified());
+        Date remoteModified = remoteCopy.getModifiedDate();
+
+        if(localModified.after(remoteModified)) {
+            // overwrite remote with local
+        } else if (remoteModified.after(localModified)){
+            // overwrite local with remote
+        } else {
+            // already synced do nothing
+        }
+    }
 
     private void downloadFolderFromDriveFolder(Metadata remoteFolder, File localFolderBeingSynced) {
         String folderName = remoteFolder.getTitle();
         DriveFolder driveFolder = remoteFolder.getDriveId().asDriveFolder();
 
-        folderBeingDownloaded = new File(localFolderBeingSynced, folderName);
+        File folderBeingDownloaded = new File(localFolderBeingSynced, folderName);
         folderBeingDownloaded.mkdir();
 
+        ResultCallback<DriveApi.MetadataBufferResult> callback =
+                downloadFolderFromDriveFolderCallback();
+
+        callbackTracker.put(callback, folderBeingDownloaded);
+
         driveFolder.listChildren(apiClient)
-                .setResultCallback(downloadFolderFromDriveFolderCallback);
+                .setResultCallback(callback);
     }
 
-    private ResultCallback<DriveApi.MetadataBufferResult> downloadFolderFromDriveFolderCallback =
-            new ResultCallback<DriveApi.MetadataBufferResult>() {
-                @Override
-                public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
-                    MetadataBuffer results = metadataBufferResult.getMetadataBuffer();
-                    for(Metadata result : results) {
-                        if (!result.isFolder()) {
-                            downloadFileFromDriveFolder(result, folderBeingDownloaded);
-                        } else {
-                            downloadFolderFromDriveFolder(result, folderBeingDownloaded);
-                        }
+    private ResultCallback<DriveApi.MetadataBufferResult> downloadFolderFromDriveFolderCallback() {
+        return new ResultCallback<DriveApi.MetadataBufferResult>() {
+            @Override
+            public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
+                File folderBeingDownloaded = callbackTracker.get(this);
+                MetadataBuffer results = metadataBufferResult.getMetadataBuffer();
+                for (Metadata result : results) {
+                    if (!result.isFolder()) {
+                        downloadFileFromDriveFolder(result, folderBeingDownloaded);
+                    } else {
+                        downloadFolderFromDriveFolder(result, folderBeingDownloaded);
                     }
-                    results.release();
                 }
-            };
+                results.release();
+                callbackTracker.remove(this);
+            }
+        };
+    }
 
-    private void uploadFolderToDriveFolder(File folder, DriveFolder remoteFolderBeingSynced) {
-        folderBeingUploaded = folder;
+    private void uploadFolderToDriveFolderCallback(File folder, DriveFolder remoteFolderBeingSynced) {
+        ResultCallback<DriveFolder.DriveFolderResult> callback = folderCreatedCallback();
+        callbackTracker.put(callback, folder);
         String folderName = folder.getName();
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                 .setTitle(folderName).build();
+        Log.d(TAG, "Uploading folder with name: " + folderName);
         remoteFolderBeingSynced.createFolder(apiClient, changeSet)
-                .setResultCallback(folderCreatedCallback);
+                .setResultCallback(callback);
     }
 
-    ResultCallback<DriveFolder.DriveFolderResult> folderCreatedCallback = new
-            ResultCallback<DriveFolder.DriveFolderResult>() {
-                @Override
-                public void onResult(DriveFolder.DriveFolderResult result) {
-                    for(File file : folderBeingUploaded.listFiles()) {
-                        if(file.isFile()) {
-                            uploadFileToDriveFolder(file, result.getDriveFolder());
-                        } else {
-                            uploadFolderToDriveFolder(file, result.getDriveFolder());
+    private ResultCallback<DriveFolder.DriveFolderResult> folderCreatedCallback() {
+        return new ResultCallback<DriveFolder.DriveFolderResult>() {
+                    @Override
+                    public void onResult(DriveFolder.DriveFolderResult result) {
+                        File folderBeingUploaded = callbackTracker.get(this);
+                        for (File file : folderBeingUploaded.listFiles()) {
+                            if (file.isFile()) {
+                                uploadFileToDriveFolder(file, result.getDriveFolder());
+                            } else {
+                                uploadFolderToDriveFolderCallback(file, result.getDriveFolder());
+                            }
                         }
+
+                        callbackTracker.remove(this);
                     }
-                }
-            };
+                };
+    }
 
     private void downloadFileFromDriveFolder(Metadata remoteFile, File localFolderBeingSynced) {
         DriveFile fileToDownload = remoteFile.getDriveId().asDriveFile();
         String filetoDownloadName = getDriveFileName(remoteFile);
 
-        fileBeingDownloaded = new File (localFolderBeingSynced, filetoDownloadName);
+        ResultCallback<DriveApi.DriveContentsResult> callback =
+                downloadFileFromDriveFolderCallback();
+
+        File fileBeingDownloaded = new File (localFolderBeingSynced, filetoDownloadName);
         try {
             fileBeingDownloaded.createNewFile();
         } catch (Exception e) {
             Log.e(TAG, e.toString());
         }
 
+        callbackTracker.put(callback, fileBeingDownloaded);
         fileToDownload.open(apiClient, DriveFile.MODE_READ_ONLY, null).
-                setResultCallback(downloadFileFromDriveFolderCallback);
+                setResultCallback(callback);
     }
 
-    ResultCallback<DriveApi.DriveContentsResult> downloadFileFromDriveFolderCallback =
-            new ResultCallback<DriveApi.DriveContentsResult>() {
-                @Override
-                public void onResult(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
-                    DriveContents contents = driveContentsResult.getDriveContents();
-                    BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(contents.getInputStream()));
+    private ResultCallback<DriveApi.DriveContentsResult> downloadFileFromDriveFolderCallback() {
+        return new ResultCallback<DriveApi.DriveContentsResult>() {
+            @Override
+            public void onResult(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
+                File fileBeingDownloaded = callbackTracker.get(this);
+                DriveContents contents = driveContentsResult.getDriveContents();
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(contents.getInputStream()));
 
-                    try {
-                        FileOutputStream outputStream = new FileOutputStream(fileBeingDownloaded);
-                        int lf;
-                        while((lf = reader.read()) != -1) {
-                            outputStream.write(lf);
-                        }
-
-                        reader.close();
-                        outputStream.close();
-                    } catch (Exception e) {
-                        Log.e(TAG, e.toString());
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(fileBeingDownloaded);
+                    int lf;
+                    while ((lf = reader.read()) != -1) {
+                        outputStream.write(lf);
                     }
+
+                    reader.close();
+                    outputStream.close();
+                    callbackTracker.remove(this);
+                } catch (Exception e) {
+                    Log.e(TAG, e.toString());
                 }
-            };
+            }
+        };
+    }
 
     private void uploadFileToDriveFolder(File file, DriveFolder folder) {
-        fileBeingUploaded = file;
-        remoteFolderBeingSynced = folder;
-        Drive.DriveApi.newDriveContents(apiClient).setResultCallback(uploadFolderToDriveFolder);
+        ResultCallback<DriveApi.DriveContentsResult> callback = uploadFolderToDriveFolderCallback();
+        callbackTracker.put(callback, file);
+        remoteCallbackTracker.put(callback, folder);
+        Drive.DriveApi.newDriveContents(apiClient).setResultCallback(callback);
     }
 
-    private ResultCallback<DriveApi.DriveContentsResult> uploadFolderToDriveFolder =
-            new
-            ResultCallback<DriveApi.DriveContentsResult>() {
-                @Override
-                public void onResult(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
-                    DriveContents driveContents = driveContentsResult.getDriveContents();
+    private ResultCallback<DriveApi.DriveContentsResult> uploadFolderToDriveFolderCallback() {
+        return new ResultCallback<DriveApi.DriveContentsResult>() {
+                    @Override
+                    public void onResult(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
+                        File fileBeingUploaded = callbackTracker.get(this);
+                        DriveFolder remoteFolderBeingSynced = remoteCallbackTracker.get(this);
+                        DriveContents driveContents = driveContentsResult.getDriveContents();
 
-                    try {
-                        InputStream inputStream = new FileInputStream(fileBeingUploaded);
-                        OutputStream outputStream = driveContents.getOutputStream();
+                        try {
+                            InputStream inputStream = new FileInputStream(fileBeingUploaded);
+                            OutputStream outputStream = driveContents.getOutputStream();
 
-                        byte[] buffer = new byte[1024 * 1024];
-                        int len;
-                        while ((len = inputStream.read(buffer)) != -1) {
-                            outputStream.write(buffer, 0, len);
+                            byte[] buffer = new byte[1024 * 1024];
+                            int len;
+                            while ((len = inputStream.read(buffer)) != -1) {
+                                outputStream.write(buffer, 0, len);
+                            }
+
+                            MetadataChangeSet metadataChangeSet = new MetadataChangeSet.Builder()
+                                    .setTitle(fileBeingUploaded.getName())
+                                    .build();
+
+                            remoteFolderBeingSynced.createFile(apiClient, metadataChangeSet,
+                                    driveContents);
+
+                            inputStream.close();
+                            outputStream.close();
+
+                            callbackTracker.remove(this);
+                            remoteCallbackTracker.remove(this);
+
+                        } catch (Exception e) {
+                            Log.e(TAG, e.toString());
                         }
-
-                        MetadataChangeSet metadataChangeSet = new MetadataChangeSet.Builder()
-                                .setTitle(fileBeingUploaded.getName())
-                                .build();
-
-                        remoteFolderBeingSynced.createFile(apiClient, metadataChangeSet,
-                                driveContents);
-
-                        inputStream.close();
-                        outputStream.close();
-
-                    } catch (Exception e) {
-                        Log.e(TAG, e.toString());
                     }
-                }
-            };
+                };
+    }
 
-    private boolean driveFolderContainsFile(File file, MetadataBuffer remoteFiles) {
+    private Metadata driveFolderContainsFile(File file, MetadataBuffer remoteFiles) {
         for(Metadata remoteFile : remoteFiles) {
             // TODO check below line
             if(file.getName().equals(getDriveFileName(remoteFile))) {
-                return true;
+                return remoteFile;
             }
         }
-        return false;
+        return null;
     }
 
-    private boolean localFolderContainsDriveFile(Metadata driveFile, File localFolder) {
+    private File localFolderContainsDriveFile(Metadata driveFile, File localFolder) {
         for(File file : localFolder.listFiles()) {
             if(file.isFile()) {
                 String driveFileName = getDriveFileName(driveFile);
                 if (driveFileName.equals(file.getName()))
-                    return true;
+                    return file;
             }
         }
 
-        return false;
+        return null;
     }
 
     private Metadata driveFolderContainsLocalFolder(File localFolder, MetadataBuffer driveFolders) {
