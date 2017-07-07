@@ -34,6 +34,14 @@ public class WelcomeActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Close the app if the user tries to go back from the welcome screen
+     */
+    @Override
+    public void onBackPressed() {
+        this.finishAffinity();
+    }
+
     // start activity to setup Google Drive
     private void startDrive() {
         Intent driveSetupIntent = new Intent(this, DriveSetupActivity.class);
