@@ -3,9 +3,9 @@ package com.physical_web.cms.physicalwebcms;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -67,7 +67,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d(MainActivity.TAG, "Drive connection successful");
+        Log.d(BaseActivity.TAG, "Drive connection successful");
 
         unlockInterface();
 

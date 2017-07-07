@@ -8,8 +8,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -26,8 +24,6 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         Button next = (Button) findViewById(R.id.nextButton);
         next.setOnClickListener(new View.OnClickListener() {
@@ -36,6 +32,14 @@ public class WelcomeActivity extends AppCompatActivity {
                 startDrive();
             }
         });
+    }
+
+    /**
+     * Close the app if the user tries to go back from the welcome screen
+     */
+    @Override
+    public void onBackPressed() {
+        this.finishAffinity();
     }
 
     // start activity to setup Google Drive

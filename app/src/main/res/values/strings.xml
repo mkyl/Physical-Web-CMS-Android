@@ -1,4 +1,17 @@
 <resources>
     <string name="app_name">Beacon Curator</string>
     <string name="title_activity_welcome">Welcome</string>
+    <string name="title_activity_beacon">Beacons</string>
+    <string name="drawer_open">Open side menu</string>
+    <string name="drawer_close">Close side menu</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="about_description">Created by Mohammad Kayali for Google Summer of Code 2017, with
+        generous help provided by Physical Web Project mentors Andreu Ibáñez, Jorge Carballo and Frank
+        Cabrera. \n\nLicensed under Apache version 2.0.\n\nBug reports and feature requests
+    can be filed at https://github.com/mkyl/Physical-Web-CMS-Android/issues/ </string>
+    <string name="about_icon_description">App icon</string>
+    <string name="add_beacon">Add Beacon</string>
 </resources>

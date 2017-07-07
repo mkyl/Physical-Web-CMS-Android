@@ -14,7 +14,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginBottom="15dp"
         android:layout_marginLeft="3dp"
-        android:text="Add Beacon"
+        android:text="@string/add_beacon"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <android.support.design.widget.TextInputLayout

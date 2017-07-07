@@ -1,52 +1,26 @@
 package com.physical_web.cms.physicalwebcms;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+
 /**
  * This class represents an Eddystone Beacon, with a physical address, internal ID
  * and user friendly name
  */
-class Beacon {
-    private long id;
-    private String address;
-    private String friendlyName;
-    private Boolean fullyInitialized;
+@Entity(tableName = "beacons")
+public class Beacon {
+    @PrimaryKey(autoGenerate = true)
+    public long id;
 
-    public Beacon(long id, String address, String friendlyName) {
-        this.id = id;
+    public String address;
+    public String friendlyName;
+    public Boolean unconfigured;
+    // public Bitmap locationImage;
+
+    public Beacon(String address, String friendlyName) {
         this.address = address;
         this.friendlyName = friendlyName;
-        fullyInitialized = false;
-    }
-
-    // beacon whose ID we don't know yet
-    public Beacon(String address, String friendlyName) {
-        this(-1 , address, friendlyName);
-        fullyInitialized = false;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public String getFriendlyName() {
-        return friendlyName;
-    }
-
-    public void setFriendlyName(String friendlyName) {
-        this.friendlyName = friendlyName;
-    }
-
-    // can be only called on Beacon created without specifying ID
-    public void setId(long newID) {
-        if(this.fullyInitialized) {
-            throw new IllegalStateException("Cannot change internal ID once its been set");
-        } else {
-            this.id = newID;
-            fullyInitialized = true;
-        }
+        this.unconfigured = false;
     }
 
     @Override
@@ -59,7 +33,7 @@ class Beacon {
             return false;
 
         Beacon otherBeacon = (Beacon) other;
-        return (this.address.equalsIgnoreCase(otherBeacon.getAddress()));
+        return (this.address.equalsIgnoreCase(otherBeacon.address));
     }
 
     /**
@@ -77,3 +51,4 @@ class Beacon {
         return result;
     }
 }
+

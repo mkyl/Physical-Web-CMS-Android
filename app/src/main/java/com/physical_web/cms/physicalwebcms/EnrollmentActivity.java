@@ -7,10 +7,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +33,7 @@ import java.util.List;
  * This class allows the user to enroll new beacons into the beacon DB.
  */
 public class EnrollmentActivity extends AppCompatActivity {
+    private final static String TAG = EnrollmentActivity.class.getSimpleName();
     // internal routing codes
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_ENABLE_LOCATION = 2;
@@ -54,6 +56,11 @@ public class EnrollmentActivity extends AppCompatActivity {
 
         bluetoothDevices = new ArrayList<>();
         beaconListAdapter = new BeaconAdapter();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @Override
@@ -188,14 +195,20 @@ public class EnrollmentActivity extends AppCompatActivity {
      * @param v
      */
     public void onAddBeacon(View v) {
-        DatabaseManager DatabaseManager = new DatabaseManager(v.getContext());
-        String name = ((TextView) findViewById(R.id.editBeaconNameText)).getText().toString();
-        String address = ((TextView) findViewById(R.id.textBeaconAddress)).getText().toString();
-        Beacon newBeacon = new Beacon(address, name);
-        DatabaseManager.addBeacon(newBeacon);
+        final String name = ((TextView) findViewById(R.id.editBeaconNameText)).getText().toString();
+        final String address = ((TextView) findViewById(R.id.textBeaconAddress)).getText().toString();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Beacon newBeacon = new Beacon(address, name);
+                BeaconDatabase db = BeaconDatabase.getDatabase(EnrollmentActivity.this);
+                db.beaconDao().insertBeacons(newBeacon);
+                db.close();
+            }
+        }).start();
 
         ((BottomSheetLayout) findViewById(R.id.bottomsheet)).dismissSheet();
-        DatabaseManager.close();
 
         // display tick on added device in list
         clickedView.findViewById(R.id.tickView).setVisibility(View.VISIBLE);
