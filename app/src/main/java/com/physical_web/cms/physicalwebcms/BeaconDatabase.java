@@ -5,9 +5,11 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 
+import java.io.File;
+
 @Database(entities = {Beacon.class}, version = 1)
 public abstract class BeaconDatabase extends RoomDatabase {
-    private final static String DATABASE_NAME = "beacon_db";
+    public final static String DATABASE_NAME = "beacon_db";
 
     private static BeaconDatabase instance;
 

@@ -15,12 +15,16 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.io.File;
+import java.util.List;
+
 import layout.AboutFragment;
 import layout.BeaconFragment;
 import layout.ContentFragment;
 import layout.WelcomeFragment;
 
-public class BaseActivity extends AppCompatActivity implements ContentFragment.OnFragmentInteractionListener {
+public class BaseActivity extends AppCompatActivity implements
+        ContentFragment.OnFragmentInteractionListener, SyncStatusListener {
     public static final String TAG = BaseActivity.class.getSimpleName();
 
     private String[] menuTitles;
@@ -29,14 +33,19 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
     private ActionBarDrawerToggle drawerToggle;
 
     private SetupManager setupManager;
+    private ContentSynchronizer contentSynchronizer;
+    private FileManager fileManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_base);
 
-        // TODO make async
         setupManager = new SetupManager(this);
+        fileManager = new FileManager(this);
+        File folderToSync = fileManager.getFolderNames();
+        contentSynchronizer = new ContentSynchronizer(this, folderToSync);
+        contentSynchronizer.registerSyncStatusListener(this);
 
         setupNavigationDrawer();
         setupActionBar();
@@ -46,10 +55,22 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
     }
 
     @Override
+    public void driveFolderIsEmpty(Boolean result) {
+        fileManager.initializeFolders();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        // ensure drive authorization, internet connection, etc. are all set up
-        setupManager.checkRequirements();
+
+        setupManager.checkRequirements(); // ensure drive authorization setup
+        contentSynchronizer.connectReceiver();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        contentSynchronizer.disconnectReceiver();
     }
 
     private void setupNavigationDrawer() {
@@ -155,4 +176,8 @@ public class BaseActivity extends AppCompatActivity implements ContentFragment.O
     @Override
     public void onFragmentInteraction(Uri uri) {
     }
+
+    @Override
+    public void syncStatusChanged(int status) {}
+
 }
