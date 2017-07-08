@@ -59,7 +59,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     private GoogleApiClient apiClient;
     private RecursiveFileObserver folderObserver;
-    private Boolean syncInProgress;
+    private Boolean syncRoot;
     private List<SyncStatusListener> syncStatusListeners;
     private File localStorageFolder;
 
@@ -113,17 +113,12 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // called when network status changes
     private void handleNetworkChange(NetworkInfo info) {
-        int updatedStatus;
-
         if (info != null && info.isConnected()) {
             resumeSynchronization();
-            updatedStatus = SYNC_IN_PROGRESS;
         } else {
             pauseSynchronization();
-            updatedStatus = NO_SYNC_NETWORK_DOWN;
+            notifyAllSyncListeners(NO_SYNC_NETWORK_DOWN);
         }
-
-        notifyAllSyncListeners(updatedStatus);
     }
 
     private void setupDriveSync(File internalStorage) {
@@ -165,16 +160,18 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 
     private void syncNeeded() {
+        notifyAllSyncListeners(SYNC_IN_PROGRESS);
+        apiClient.disconnect();
         apiClient.connect();
     }
 
     @Override
     public void onConnected(Bundle b) {
-        notifyAllSyncListeners(SYNC_COMPLETE);
-
         DriveFolder appFolder = Drive.DriveApi.getAppFolder(apiClient);
         appFolder.listChildren(apiClient).setResultCallback(childrenRetreievedCallback);
 
+        Log.d(TAG, "Starting drive synchronization");
+        syncRoot = true;
         syncFolders(localStorageFolder, appFolder);
     }
 
@@ -183,13 +180,12 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 @Override
                 public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
                     MetadataBuffer result = metadataBufferResult.getMetadataBuffer();
-                    Boolean appFolderIsEmpty = !result.iterator().hasNext();
-                    Log.d(TAG, "Drive folder is empty: " + appFolderIsEmpty);
+
                     for(Metadata md : result) {
                         Log.d(TAG, "Found in drive folder: " + md.getTitle());
-                        md.getDriveId().asDriveFolder()
-                                .listChildren(apiClient).setResultCallback(childrenRetreievedCallback);
                     }
+
+                    Boolean appFolderIsEmpty = !result.iterator().hasNext();
                     notifyAllListenersAppFolder(appFolderIsEmpty);
                     result.release();
                 }
@@ -210,6 +206,9 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         return new ResultCallback<DriveApi.MetadataBufferResult>() {
             @Override
             public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
+                Boolean isRootFolder = syncRoot;
+                syncRoot = false;
+
                 File localFolderBeingSynced = callbackTracker.get(this);
                 DriveFolder remoteFolderBeingSynced = remoteCallbackTracker.get(this);
 
@@ -264,7 +263,10 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                         }
                     }
 
-                    notifyAllSyncListeners(SYNC_COMPLETE);
+                    if(isRootFolder) {
+                        notifyAllSyncListeners(SYNC_COMPLETE);
+                        Log.d(TAG, "Drive sync success");
+                    }
                 } catch (Exception e) {
                     notifyAllSyncListeners(NO_SYNC_DRIVE_ERROR);
                 } finally {
@@ -324,7 +326,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         };
     }
 
-    private void uploadFolderToDriveFolderCallback(File folder, DriveFolder remoteFolderBeingSynced) {
+    private void uploadFolderToDriveFolderCallback(File folder,
+                                                   DriveFolder remoteFolderBeingSynced) {
         ResultCallback<DriveFolder.DriveFolderResult> callback = folderCreatedCallback();
         callbackTracker.put(callback, folder);
         String folderName = folder.getName();
