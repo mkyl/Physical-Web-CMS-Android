@@ -3,6 +3,7 @@ package com.physical_web.cms.physicalwebcms;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -16,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.io.File;
-import java.util.List;
 
 import layout.AboutFragment;
 import layout.BeaconFragment;
@@ -43,8 +43,11 @@ public class BaseActivity extends AppCompatActivity implements
 
         setupManager = new SetupManager(this);
         fileManager = new FileManager(this);
-        fileManager.createDemoFile();
-        File folderToSync = fileManager.getFolderNames();
+
+        // fileManager.createDemoFile();
+        fileManager.deleteDemoFile();
+
+        File folderToSync = fileManager.getRootFolder();
         contentSynchronizer = new ContentSynchronizer(this, folderToSync);
 
         setupNavigationDrawer();
@@ -52,6 +55,14 @@ public class BaseActivity extends AppCompatActivity implements
         // if statement to avoid overlapping fragments
         if (savedInstanceState == null)
             setupWelcomeFragment();
+
+        final Handler handler = new Handler();
+        final Runnable r = new Runnable() {
+            public void run() {
+                contentSynchronizer.kickStartSync();
+            }
+        };
+        handler.postDelayed(r, 5000);
     }
 
     @Override
@@ -60,7 +71,6 @@ public class BaseActivity extends AppCompatActivity implements
 
         setupManager.checkRequirements(); // ensure drive authorization setup
         contentSynchronizer.connectReceiver();
-        contentSynchronizer.kickStartSync();
     }
 
     @Override

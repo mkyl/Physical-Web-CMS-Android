@@ -253,7 +253,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 if (file.isFile()) {
                     Metadata remoteCopy = driveFolderContainsFile(file, remoteFiles);
                     if (remoteCopy != null) {
-                        // TODO conflict resolution
                         resolveConflict(file, remoteCopy);
                     } else {
                         // file in local, but not in remote
@@ -277,7 +276,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 if (!remoteFile.isFolder()) {
                     File localCopy = localFolderContainsDriveFile(remoteFile, localFolder);
                     if (localCopy != null) {
-                        // TODO conflict resolution
                         resolveConflict(localCopy, remoteFile);
                     } else {
                         downloadFileFromDriveFolder(remoteFile, localFolder);
@@ -316,14 +314,18 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private void resolveConflict(File localCopy, Metadata remoteCopy) {
         Log.d(TAG, "Starting conflict resolution");
         Date localModified = new Date(localCopy.lastModified());
-        Date remoteModified = remoteCopy.getModifiedDate();
+        // drive doesn't allow changing modification time, so we store it in last viewed time
+        Date remoteModified = remoteCopy.getLastViewedByMeDate();
 
         if(localModified.after(remoteModified)) {
+            // TODO implement
             // overwrite remote with local
         } else if (remoteModified.after(localModified)){
+            // TODO implement
             // overwrite local with remote
         } else {
             // already synced do nothing
+            Log.d(TAG, "File already synced: " + localCopy.getName());
         }
     }
 
@@ -378,6 +380,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         // TODO SYNC METADATA or conflict resolution won't work
         DriveFile fileToDownload = remoteFile.getDriveId().asDriveFile();
         String fileToDownloadName = getDriveFileName(remoteFile);
+        // drive doesn't allow changing modification time, so we store it in last viewed time
+        long remoteModifiedTime = remoteFile.getLastViewedByMeDate().getTime();
 
         Log.d(TAG, "Downloading file from Drive: " + fileToDownloadName);
 
@@ -401,6 +405,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         reader.close();
         outputStream.close();
 
+        fileBeingDownloaded.setLastModified(remoteModifiedTime);
+
         Log.d(TAG, "Download complete.");
     }
 
@@ -409,6 +415,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             throws IOException{
         // TODO SYNC METADATA or conflict resolution won't work
         Log.d(TAG, "Uploading file to Drive: " + localFile.getName());
+        Date localModificationTime = new Date(localFile.lastModified());
 
         PendingResult<DriveApi.DriveContentsResult> request =
                 Drive.DriveApi.newDriveContents(apiClient);
@@ -430,6 +437,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
         MetadataChangeSet metadataChangeSet = new MetadataChangeSet.Builder()
                 .setTitle(localFile.getName())
+                // drive doesn't allow changing modification time, so we store it in lastviewed time
+                .setLastViewedByMeDate(localModificationTime)
                 .build();
 
         PendingResult <DriveFolder.DriveFileResult> creationRequest
@@ -492,7 +501,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // get drive name, appending extension if one exists
     private String getDriveFileName(Metadata file) {
         String result = file.getTitle();
-        if(!file.getFileExtension().equals(""))
+        if(file.getFileExtension() != null && !file.getFileExtension().equals(""))
             result += "." + file.getFileExtension();
         return result;
     }
