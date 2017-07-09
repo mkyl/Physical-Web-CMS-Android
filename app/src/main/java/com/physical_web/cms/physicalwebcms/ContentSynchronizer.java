@@ -464,6 +464,17 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             throw new IllegalStateException("Couldn't delete file");
     }
 
+    public void deleteDriveFileByName(String name) {
+        Query query = new Query.Builder()
+                .addFilter(Filters.eq(SearchableField.TITLE, name))
+                .build();
+
+        PendingResult<DriveApi.MetadataBufferResult> request = Drive.DriveApi.query(apiClient, query);
+        DriveApi.MetadataBufferResult result = request.await();
+        Metadata md = result.getMetadataBuffer().iterator().next();
+        deleteDriveFile(md.getDriveId().asDriveFile());
+    }
+
     // check if a drive directory immediately contains a file (non-recursive)
     private Metadata driveFolderContainsFile(File file, MetadataBuffer remoteFiles) {
         for(Metadata remoteFile : remoteFiles) {
