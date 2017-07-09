@@ -34,7 +34,6 @@ public class FileManager {
     }
 
     public void createDemoFile() {
-        /*
         try {
             File demoFile = new File(internalStorage, "demo");
             if(!demoFile.exists()) {
@@ -52,10 +51,17 @@ public class FileManager {
                 writer.flush();
                 writer.close();
             }
-        } catch (Exception e) {} */
+        } catch (Exception e) {}
     }
 
-    public File getFolderNames() {
+    public void deleteDemoFile() {
+        File demoFile = new File(internalStorage, "demo");
+        if(demoFile.exists()) {
+            demoFile.delete();
+        }
+    }
+
+    public File getRootFolder() {
         return internalStorage;
     }
 }

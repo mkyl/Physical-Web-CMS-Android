@@ -116,8 +116,5 @@ public class WelcomeFragment extends ContentFragment implements SyncStatusListen
 
         getActivity().findViewById(R.id.welcome_sync_progress)
                 .setVisibility(progressBarVisibility);
-    };
-
-    @Override
-    public void driveFolderIsEmpty(Boolean result){};
+    }
 }
