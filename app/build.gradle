@@ -40,5 +40,7 @@ dependencies {
     compile 'com.mikhaellopez:circularimageview:3.0.2'
     compile 'android.arch.persistence.room:runtime:1.0.0-alpha3'
     testCompile 'junit:junit:4.12'
+    androidTestCompile  "org.mockito:mockito-core:2.+"
+    androidTestCompile 'com.linkedin.dexmaker:dexmaker-mockito:2.2.0'
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0-alpha3'
 }

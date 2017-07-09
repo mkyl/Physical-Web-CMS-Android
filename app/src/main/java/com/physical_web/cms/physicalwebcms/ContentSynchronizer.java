@@ -64,7 +64,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private static final String TAG = ContentSynchronizer.class.getSimpleName();
     private static final int BUFFER_SIZE = 8 * 1024;
 
-    private Activity context;
+    private Context context;
 
     private BroadcastReceiver networkStateReceiver;
 
@@ -77,7 +77,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     private Boolean currentlySyncing;
 
-    public ContentSynchronizer(Activity ctx, File internalStorage) {
+    public ContentSynchronizer(Context ctx, File internalStorage) {
         context = ctx;
         localStorageFolder = internalStorage;
         currentlySyncing = false;
@@ -242,7 +242,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
         try {
             for (File file : localFiles) {
-                notifyAllSyncListeners(SYNC_IN_PROGRESS);
                 Metadata remoteCopy = null;
 
                 if (file.isFile()) {
@@ -272,8 +271,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             for (Metadata remoteFile : remoteFiles) {
                 if(alreadyExaminedFiles.contains(remoteFile))
                     continue;
-
-                notifyAllSyncListeners(SYNC_IN_PROGRESS);
 
                 if (!remoteFile.isFolder()) {
                     File localCopy = localFolderContainsDriveFile(remoteFile, localFolder);
@@ -524,13 +521,17 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private void notifyAllSyncListeners(final int status) {
         if(syncStatusListeners != null) {
             for (final SyncStatusListener listener : syncStatusListeners) {
-                // run on UI thread because lots of UI stuff is affected by status change
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        listener.syncStatusChanged(status);
-                    }
-                });
+                if(context instanceof Activity) {
+                    // run on UI thread because lots of UI stuff is affected by status change
+                    ((Activity) context).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            listener.syncStatusChanged(status);
+                        }
+                    });
+                } else {
+                    listener.syncStatusChanged(status);
+                }
             }
         }
     }
