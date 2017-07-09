@@ -55,7 +55,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     public static final int NO_SYNC_NETWORK_DOWN = 2;
     public static final int NO_SYNC_DRIVE_ERROR = 3;
 
-    public static final String TAG = ContentSynchronizer.class.getSimpleName();
+    private static final String TAG = ContentSynchronizer.class.getSimpleName();
+    private static final int BUFFER_SIZE = 8 * 1024;
 
     private Activity context;
 
@@ -119,6 +120,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // called when network status changes
     private void handleNetworkChange(NetworkInfo info) {
+        // if there is no network at all, info will be null
         if (info != null && info.isConnected()) {
             syncNeeded();
             resumeSynchronization();
@@ -197,12 +199,15 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         new Thread(new Runnable() {
             @Override
             public void run() {
+                // this line is required to fix a Google Services bug where remote data isn't
+                // visible when app is reinstalled, possibly due to bad cache
                 Drive.DriveApi.requestSync(apiClient).await();
                 syncFolders(localStorageFolder, appFolder);
             }
         }).start();
     }
 
+    // TODO debugging function remove when done
     // called when listing appfolder is successful
     private ResultCallback<DriveApi.MetadataBufferResult> childrenRetreievedCallback =
             new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -370,6 +375,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // download a file from Drive into a local folder
     private void downloadFileFromDriveFolder(Metadata remoteFile, File localFolderBeingSynced)
             throws IOException {
+        // TODO SYNC METADATA or conflict resolution won't work
         DriveFile fileToDownload = remoteFile.getDriveId().asDriveFile();
         String fileToDownloadName = getDriveFileName(remoteFile);
 
@@ -386,7 +392,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         InputStream reader = contents.getInputStream();
         FileOutputStream outputStream = new FileOutputStream(fileBeingDownloaded);
 
-        byte[] buffer = new byte[8 * 1024];
+        byte[] buffer = new byte[BUFFER_SIZE];
         int bytesRead;
         while ((bytesRead = reader.read(buffer)) != -1) {
             outputStream.write(buffer, 0, bytesRead);
@@ -401,6 +407,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // upload local file to Drive folder
     private void uploadFileToDriveFolder(File localFile, DriveFolder remoteFolder)
             throws IOException{
+        // TODO SYNC METADATA or conflict resolution won't work
         Log.d(TAG, "Uploading file to Drive: " + localFile.getName());
 
         PendingResult<DriveApi.DriveContentsResult> request =
@@ -412,7 +419,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         InputStream inputStream = new FileInputStream(localFile);
         OutputStream outputStream = driveContents.getOutputStream();
 
-        byte[] buffer = new byte[1024 * 1024];
+        byte[] buffer = new byte[BUFFER_SIZE];
         int len;
         while ((len = inputStream.read(buffer)) != -1) {
             outputStream.write(buffer, 0, len);
@@ -495,6 +502,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private void notifyAllSyncListeners(final int status) {
         if(syncStatusListeners != null) {
             for (final SyncStatusListener listener : syncStatusListeners) {
+                // run on UI thread because lots of UI stuff is affected by status change
                 context.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
