@@ -50,6 +50,10 @@ public class FileManager {
                 }
                 writer.flush();
                 writer.close();
+                demoFile.setLastModified(50);
+            } else {
+                deleteDemoFile();
+                createDemoFile();
             }
         } catch (Exception e) {}
     }

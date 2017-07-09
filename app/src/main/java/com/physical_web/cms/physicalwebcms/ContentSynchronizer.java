@@ -15,6 +15,7 @@ import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
@@ -23,6 +24,10 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.gms.drive.query.Filter;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -67,6 +72,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private Boolean syncRoot;
     private List<SyncStatusListener> syncStatusListeners;
     private File localStorageFolder;
+    private List<Metadata> alreadyExaminedFiles;
 
     private Boolean currentlySyncing;
 
@@ -74,6 +80,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         context = ctx;
         localStorageFolder = internalStorage;
         currentlySyncing = false;
+        alreadyExaminedFiles = new ArrayList<>();
 
         setupNetworkHandling();
         setupDriveSync(internalStorage);
@@ -202,7 +209,10 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 // this line is required to fix a Google Services bug where remote data isn't
                 // visible when app is reinstalled, possibly due to bad cache
                 Drive.DriveApi.requestSync(apiClient).await();
+                // stop watching to avoid triggering another sync due to sync file changes
+                folderObserver.stopWatching();
                 syncFolders(localStorageFolder, appFolder);
+                folderObserver.startWatching();
             }
         }).start();
     }
@@ -250,16 +260,18 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         try {
             for (File file : localFiles) {
                 notifyAllSyncListeners(SYNC_IN_PROGRESS);
+                Metadata remoteCopy = null;
+
                 if (file.isFile()) {
-                    Metadata remoteCopy = driveFolderContainsFile(file, remoteFiles);
+                    remoteCopy = driveFolderContainsFile(file, remoteFiles);
                     if (remoteCopy != null) {
-                        resolveConflict(file, remoteCopy);
+                        resolveConflict(file, remoteCopy, remoteFolder);
                     } else {
                         // file in local, but not in remote
                         uploadFileToDriveFolder(file, remoteFolder);
                     }
                 } else {
-                    Metadata remoteCopy =
+                    remoteCopy =
                             driveFolderContainsLocalFolder(file, remoteFiles);
                     if (remoteCopy != null) {
                         DriveFolder remoteFolder2 = remoteCopy.getDriveId()
@@ -269,14 +281,21 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                         uploadFolderToDriveFolder(file, remoteFolder);
                     }
                 }
+
+                if(remoteCopy != null)
+                    alreadyExaminedFiles.add(remoteCopy);
             }
 
             for (Metadata remoteFile : remoteFiles) {
+                if(alreadyExaminedFiles.contains(remoteFile))
+                    continue;
+
                 notifyAllSyncListeners(SYNC_IN_PROGRESS);
+
                 if (!remoteFile.isFolder()) {
                     File localCopy = localFolderContainsDriveFile(remoteFile, localFolder);
                     if (localCopy != null) {
-                        resolveConflict(localCopy, remoteFile);
+                        resolveConflict(localCopy, remoteFile, remoteFolder);
                     } else {
                         downloadFileFromDriveFolder(remoteFile, localFolder);
                     }
@@ -311,7 +330,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // resolve conflict when two versions of a file exist, both local and remote. One with most
     // recent modification date is prefered.
-    private void resolveConflict(File localCopy, Metadata remoteCopy) {
+    private void resolveConflict(File localCopy, Metadata remoteCopy, DriveFolder remoteDir)
+            throws  IOException {
         Log.d(TAG, "Starting conflict resolution");
         Date localModified = new Date(localCopy.lastModified());
         // drive doesn't allow changing modification time, so we store it in last viewed time
@@ -320,12 +340,19 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         if(localModified.after(remoteModified)) {
             // TODO implement
             // overwrite remote with local
+            Log.d(TAG, "Overwriting remote with local");
+            DriveFile fileToDelete = remoteCopy.getDriveId().asDriveFile();
+            deleteDriveFile(fileToDelete);
+            uploadFileToDriveFolder(localCopy, remoteDir);
         } else if (remoteModified.after(localModified)){
-            // TODO implement
+            Log.d(TAG, "Overwriting local with remote");
             // overwrite local with remote
+            File localDirectory = localCopy.getParentFile();
+            localCopy.delete();
+            downloadFileFromDriveFolder(remoteCopy, localDirectory);
         } else {
             // already synced do nothing
-            Log.d(TAG, "File already synced: " + localCopy.getName());
+            Log.d(TAG, "File matches remote " + localCopy.getName());
         }
     }
 
@@ -377,7 +404,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // download a file from Drive into a local folder
     private void downloadFileFromDriveFolder(Metadata remoteFile, File localFolderBeingSynced)
             throws IOException {
-        // TODO SYNC METADATA or conflict resolution won't work
         DriveFile fileToDownload = remoteFile.getDriveId().asDriveFile();
         String fileToDownloadName = getDriveFileName(remoteFile);
         // drive doesn't allow changing modification time, so we store it in last viewed time
@@ -413,7 +439,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // upload local file to Drive folder
     private void uploadFileToDriveFolder(File localFile, DriveFolder remoteFolder)
             throws IOException{
-        // TODO SYNC METADATA or conflict resolution won't work
         Log.d(TAG, "Uploading file to Drive: " + localFile.getName());
         Date localModificationTime = new Date(localFile.lastModified());
 
@@ -450,8 +475,13 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         } else {
             throw new IllegalStateException("Drive upload unsuccessful");
         }
+    }
 
-
+    private void deleteDriveFile(DriveFile file) {
+        PendingResult<Status> request = file.delete(apiClient);
+        Status result = request.await();
+        if (!result.isSuccess())
+            throw new IllegalStateException("Couldn't delete file");
     }
 
     // check if a drive directory immediately contains a file (non-recursive)
