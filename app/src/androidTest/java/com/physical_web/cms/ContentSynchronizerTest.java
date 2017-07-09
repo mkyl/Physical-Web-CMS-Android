@@ -9,6 +9,11 @@ import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.query.Filters;
+import com.google.android.gms.drive.query.Query;
+import com.google.android.gms.drive.query.SearchableField;
 import com.physical_web.cms.physicalwebcms.BaseActivity;
 import com.physical_web.cms.physicalwebcms.ContentSynchronizer;
 import com.physical_web.cms.physicalwebcms.SyncStatusListener;
@@ -134,8 +139,9 @@ public class ContentSynchronizerTest {
             assertTrue(downloadedFile.exists());
             assertEquals(randomFileSHA1, sha1(downloadedFile));
         } catch (Exception e) {
-            (new File(testingDirectory, randomFileName)).delete();
             fail("Failed due to exception: " + e.toString());
+        } finally {
+            (new File(testingDirectory, randomFileName)).delete();
         }
     }
 
@@ -192,6 +198,6 @@ public class ContentSynchronizerTest {
 
     @After
     public void deleteDriveTestingFiles() {
-        // TODO
+        contentSynchronizer.deleteDriveFileByName(randomFileName);
     }
 }
