@@ -44,8 +44,8 @@ public class BaseActivity extends AppCompatActivity implements
         setupManager = new SetupManager(this);
         fileManager = new FileManager(this);
 
-        // fileManager.createDemoFile();
-        fileManager.deleteDemoFile();
+        fileManager.createDemoFile();
+        // fileManager.deleteDemoFile();
 
         File folderToSync = fileManager.getRootFolder();
         contentSynchronizer = new ContentSynchronizer(this, folderToSync);
