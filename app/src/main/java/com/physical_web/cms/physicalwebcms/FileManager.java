@@ -21,48 +21,11 @@ public class FileManager {
         internalStorage = context.getFilesDir();
     }
 
-    public void initializeFolders() {
-        createFolderIfNotExists(BEACON_FOLDER);
-        createFolderIfNotExists(EXHIBIT_FOLDER);
-    }
-
     private void createFolderIfNotExists(String name) {
         File folder = new File(internalStorage + File.separator +
                 name + File.separator);
         if (!folder.exists())
             folder.mkdir();
-    }
-
-    public void createDemoFile() {
-        try {
-            File demoFile = new File(internalStorage, "demo");
-            if(!demoFile.exists()) {
-                Log.d("FileManager", "Creating dummy file");
-                demoFile.createNewFile();
-                FileWriter writer = new FileWriter(demoFile);
-                for (int length = 0; length <= 1e+7; length += 39) {
-                    writer.write("abcdefghijkl");
-                    writer.write("\n");
-                    writer.write("abcdefghijkl");
-                    writer.write("\n");
-                    writer.write("abcdefghijkl");
-                    writer.write("\n");
-                }
-                writer.flush();
-                writer.close();
-                demoFile.setLastModified(50);
-            } else {
-                deleteDemoFile();
-                createDemoFile();
-            }
-        } catch (Exception e) {}
-    }
-
-    public void deleteDemoFile() {
-        File demoFile = new File(internalStorage, "demo");
-        if(demoFile.exists()) {
-            demoFile.delete();
-        }
     }
 
     public File getRootFolder() {

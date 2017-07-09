@@ -14,6 +14,7 @@ import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.PendingResults;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
@@ -198,14 +199,14 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      */
     @Override
     public void onConnected(Bundle b) {
-        final DriveFolder appFolder = Drive.DriveApi.getAppFolder(apiClient);
-        appFolder.listChildren(apiClient).setResultCallback(childrenRetreievedCallback);
-
         Log.d(TAG, "Starting drive synchronization");
         syncRoot = true;
+
         new Thread(new Runnable() {
             @Override
             public void run() {
+                DriveFolder appFolder = Drive.DriveApi.getAppFolder(apiClient);
+
                 // this line is required to fix a Google Services bug where remote data isn't
                 // visible when app is reinstalled, possibly due to bad cache
                 Drive.DriveApi.requestSync(apiClient).await();
@@ -216,24 +217,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             }
         }).start();
     }
-
-    // TODO debugging function remove when done
-    // called when listing appfolder is successful
-    private ResultCallback<DriveApi.MetadataBufferResult> childrenRetreievedCallback =
-            new ResultCallback<DriveApi.MetadataBufferResult>() {
-                @Override
-                public void onResult(@NonNull DriveApi.MetadataBufferResult metadataBufferResult) {
-                    MetadataBuffer result = metadataBufferResult.getMetadataBuffer();
-
-                    int counter = 0;
-                    for(Metadata md : result) {
-                        counter++;
-                        Log.d(TAG, counter + " - found in drive folder: " + md.getTitle());
-                    }
-
-                    result.release();
-                }
-            };
 
     @Override
     public void onConnectionSuspended(int status) {
