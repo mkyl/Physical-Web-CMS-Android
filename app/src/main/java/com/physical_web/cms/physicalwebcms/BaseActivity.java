@@ -24,7 +24,7 @@ import layout.ContentFragment;
 import layout.WelcomeFragment;
 
 public class BaseActivity extends AppCompatActivity implements
-        ContentFragment.OnFragmentInteractionListener, SyncStatusListener {
+        ContentFragment.OnFragmentInteractionListener {
     public static final String TAG = BaseActivity.class.getSimpleName();
 
     private String[] menuTitles;
@@ -43,9 +43,9 @@ public class BaseActivity extends AppCompatActivity implements
 
         setupManager = new SetupManager(this);
         fileManager = new FileManager(this);
+        fileManager.createDemoFile();
         File folderToSync = fileManager.getFolderNames();
         contentSynchronizer = new ContentSynchronizer(this, folderToSync);
-        contentSynchronizer.registerSyncStatusListener(this);
 
         setupNavigationDrawer();
         setupActionBar();
@@ -55,16 +55,12 @@ public class BaseActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void driveFolderIsEmpty(Boolean result) {
-        fileManager.initializeFolders();
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
 
         setupManager.checkRequirements(); // ensure drive authorization setup
         contentSynchronizer.connectReceiver();
+        contentSynchronizer.kickStartSync();
     }
 
     @Override
@@ -178,8 +174,5 @@ public class BaseActivity extends AppCompatActivity implements
     @Override
     public void onFragmentInteraction(Uri uri) {
     }
-
-    @Override
-    public void syncStatusChanged(int status) {}
 
 }

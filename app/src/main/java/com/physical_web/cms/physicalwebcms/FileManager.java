@@ -3,8 +3,10 @@ package com.physical_web.cms.physicalwebcms;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,28 @@ public class FileManager {
                 name + File.separator);
         if (!folder.exists())
             folder.mkdir();
+    }
+
+    public void createDemoFile() {
+        /*
+        try {
+            File demoFile = new File(internalStorage, "demo");
+            if(!demoFile.exists()) {
+                Log.d("FileManager", "Creating dummy file");
+                demoFile.createNewFile();
+                FileWriter writer = new FileWriter(demoFile);
+                for (int length = 0; length <= 1e+7; length += 39) {
+                    writer.write("abcdefghijkl");
+                    writer.write("\n");
+                    writer.write("abcdefghijkl");
+                    writer.write("\n");
+                    writer.write("abcdefghijkl");
+                    writer.write("\n");
+                }
+                writer.flush();
+                writer.close();
+            }
+        } catch (Exception e) {} */
     }
 
     public File getFolderNames() {
