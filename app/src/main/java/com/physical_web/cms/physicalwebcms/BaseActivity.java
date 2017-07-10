@@ -21,6 +21,7 @@ import java.io.File;
 import layout.AboutFragment;
 import layout.BeaconFragment;
 import layout.ContentFragment;
+import layout.ExhibitFragment;
 import layout.WelcomeFragment;
 
 public class BaseActivity extends AppCompatActivity implements
@@ -153,7 +154,8 @@ public class BaseActivity extends AppCompatActivity implements
                     contentSynchronizer.registerSyncStatusListener((WelcomeFragment)switchFragment);
                     break;
                 case "Exhibits":
-                    throw new UnsupportedOperationException("Not implemented yet");
+                    switchFragment = new ExhibitFragment();
+                    break;
                 case "Beacons":
                     switchFragment = new BeaconFragment();
                     break;
@@ -181,5 +183,4 @@ public class BaseActivity extends AppCompatActivity implements
     @Override
     public void onFragmentInteraction(Uri uri) {
     }
-
 }
