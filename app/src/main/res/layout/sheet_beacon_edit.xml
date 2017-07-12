@@ -20,7 +20,7 @@
         android:layout_height="50dp"
         android:layout_above="@+id/edit_beacon_name_layout"
         android:layout_alignParentStart="true"
-        android:alpha="20"
+        android:alpha="0.8"
         app:srcCompat="@color/cardview_dark_background" />
 
     <TextView
