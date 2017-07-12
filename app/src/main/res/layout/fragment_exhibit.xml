@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".exhibits.ExhibitFragment">
+    tools:context="org.physical_web.cms.exhibits.ExhibitFragment">
 
     <android.support.v7.widget.CardView
         android:id="@+id/exhibit_active_card"

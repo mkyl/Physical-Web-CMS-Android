@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.physical_web.cms.physicalwebcms">
+    package="org.physical_web.cms">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -20,21 +20,21 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".BaseActivity">
+        <activity android:name="org.physical_web.cms.BaseActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".setup.DriveSetupActivity"
+            android:name="org.physical_web.cms.setup.DriveSetupActivity"
             android:label="Drive Setup" />
         <activity
-            android:name=".setup.WelcomeActivity"
+            android:name="org.physical_web.cms.setup.WelcomeActivity"
             android:label="@string/title_activity_welcome"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".beacons.EnrollmentActivity"
+            android:name="org.physical_web.cms.beacons.EnrollmentActivity"
             android:label="Beacon Enrollment" />
     </application>
 
