@@ -1,4 +1,4 @@
-package com.physical_web.cms.physicalwebcms;
+package com.physical_web.cms.physicalwebcms.setup;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -15,13 +15,16 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
+import com.physical_web.cms.physicalwebcms.R;
 
 /**
  * This class takes care of authourizing Google Drive for storage of the media that the user
- * will upload, as well as storage of information about the Physical Web beacons.
+ * will upload, as well as storage of information about the Physical Web com.physical_web.cms.physicalwebcms.beacons.
  */
 public class DriveSetupActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    private static final String TAG = DriveSetupActivity.class.getSimpleName();
+
     final int RESOLVE_CONNECTION_REQUEST_CODE = 1;
     final int GOOGLE_PLAY_SERVICES_ERROR = 2;
 
@@ -67,7 +70,7 @@ public class DriveSetupActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d(BaseActivity.TAG, "Drive connection successful");
+        Log.d(TAG, "Drive connection successful");
 
         unlockInterface();
 

@@ -1,9 +1,7 @@
-package layout;
+package com.physical_web.cms.physicalwebcms.exhibits;
 
-import android.content.Context;
-import android.net.Uri;
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +11,7 @@ import com.physical_web.cms.physicalwebcms.R;
 /**
  * Fragment for displaying information about exhibits
  */
-public class ExhibitFragment extends ContentFragment {
+public class ExhibitFragment extends Fragment {
     public ExhibitFragment() {
         // Required empty public constructor
     }

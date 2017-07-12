@@ -1,15 +1,8 @@
 package com.physical_web.cms.physicalwebcms;
 
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FileManager {
     private static final String BEACON_FOLDER = "beacons";

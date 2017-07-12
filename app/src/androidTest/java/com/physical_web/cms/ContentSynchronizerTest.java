@@ -9,25 +9,14 @@ import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveApi;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
-import com.physical_web.cms.physicalwebcms.BaseActivity;
-import com.physical_web.cms.physicalwebcms.ContentSynchronizer;
-import com.physical_web.cms.physicalwebcms.SyncStatusListener;
+import com.physical_web.cms.physicalwebcms.sync.ContentSynchronizer;
+import com.physical_web.cms.physicalwebcms.sync.SyncStatusListener;
 
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -45,19 +34,16 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import static com.physical_web.cms.physicalwebcms.ContentSynchronizer.SYNC_COMPLETE;
+import static com.physical_web.cms.physicalwebcms.sync.ContentSynchronizer.SYNC_COMPLETE;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest

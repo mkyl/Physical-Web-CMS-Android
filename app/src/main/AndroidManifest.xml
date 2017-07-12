@@ -27,14 +27,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DriveSetupActivity"
+            android:name=".setup.DriveSetupActivity"
             android:label="Drive Setup" />
         <activity
-            android:name=".WelcomeActivity"
+            android:name=".setup.WelcomeActivity"
             android:label="@string/title_activity_welcome"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".EnrollmentActivity"
+            android:name=".beacons.EnrollmentActivity"
             android:label="Beacon Enrollment" />
     </application>
 

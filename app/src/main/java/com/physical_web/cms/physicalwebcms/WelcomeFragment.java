@@ -1,32 +1,24 @@
-package layout;
+package com.physical_web.cms.physicalwebcms;
 
+import android.app.Fragment;
 import android.content.Context;
-import android.content.SyncStatusObserver;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.physical_web.cms.physicalwebcms.ContentSynchronizer;
-import com.physical_web.cms.physicalwebcms.R;
-import com.physical_web.cms.physicalwebcms.SyncStatusListener;
+import com.physical_web.cms.physicalwebcms.sync.ContentSynchronizer;
+import com.physical_web.cms.physicalwebcms.sync.SyncStatusListener;
 
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link WelcomeFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link WelcomeFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Home page fragment: tells user about the currently deployed exhibition, as well as the
+ * status of Google Drive synchronization.
  */
-public class WelcomeFragment extends ContentFragment implements SyncStatusListener {
-    private OnFragmentInteractionListener mListener;
-
+public class WelcomeFragment extends Fragment implements SyncStatusListener {
     public WelcomeFragment() {
         // Required empty public constructor
     }
@@ -47,30 +39,6 @@ public class WelcomeFragment extends ContentFragment implements SyncStatusListen
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_welcome, container, false);
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     @Override
@@ -94,7 +62,7 @@ public class WelcomeFragment extends ContentFragment implements SyncStatusListen
                 progressBarVisibility = View.INVISIBLE;
                 break;
             case ContentSynchronizer.NO_SYNC_NETWORK_DOWN:
-                widgetText = "Connect to internet to sync";
+                widgetText = "Connect to internet to com.physical_web.cms.physicalwebcms.sync";
                 widgetColorName = android.R.color.darker_gray;
                 progressBarVisibility = View.INVISIBLE;
                 break;
@@ -104,7 +72,7 @@ public class WelcomeFragment extends ContentFragment implements SyncStatusListen
                 progressBarVisibility = View.INVISIBLE;
                 break;
             default:
-                throw new IllegalArgumentException("Unknown sync status received");
+                throw new IllegalArgumentException("Unknown com.physical_web.cms.physicalwebcms.sync status received");
         }
 
         ((TextView) getActivity().findViewById(R.id.welcome_sync_text))
