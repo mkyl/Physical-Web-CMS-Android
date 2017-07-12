@@ -1,13 +1,10 @@
-package layout;
+package com.physical_web.cms.physicalwebcms.beacons;
 
-import android.content.Context;
+import android.app.Fragment;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TextInputEditText;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,26 +17,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.flipboard.bottomsheet.BottomSheetLayout;
-import com.physical_web.cms.physicalwebcms.Beacon;
-import com.physical_web.cms.physicalwebcms.BeaconDatabase;
-import com.physical_web.cms.physicalwebcms.EnrollmentActivity;
 import com.physical_web.cms.physicalwebcms.R;
 
 import java.util.List;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link BeaconFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link BeaconFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Lists beacons that have been enrolled through enrollment activity. Allows modifying the
+ * details on enrolled beacons, as well as their removal.
  */
-public class BeaconFragment extends ContentFragment {
+public class BeaconFragment extends Fragment {
     private final static String TAG = BeaconFragment.class.getSimpleName();
     private final static int COLUMN_COUNT = 2;
 
-    private OnFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private InstalledBeaconAdapter adapter;
@@ -58,7 +47,7 @@ public class BeaconFragment extends ContentFragment {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                db = BeaconDatabase.getDatabase(getContext());
+                db = BeaconDatabase.getDatabase(getActivity());
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -100,7 +89,7 @@ public class BeaconFragment extends ContentFragment {
         recyclerView = (RecyclerView) result.findViewById(R.id.installedBeaconsViewFragment);
         recyclerView.setHasFixedSize(true);
 
-        layoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
+        layoutManager = new GridLayoutManager(getActivity(), COLUMN_COUNT);
         recyclerView.setLayoutManager(layoutManager);
 
         adapter = new BeaconFragment.InstalledBeaconAdapter();
@@ -140,29 +129,6 @@ public class BeaconFragment extends ContentFragment {
     private void startBeaconEnrollment() {
         Intent enrollmentIntent = new Intent(getActivity(), EnrollmentActivity.class);
         startActivity(enrollmentIntent);
-    }
-
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     class InstalledBeaconAdapter extends RecyclerView.Adapter<InstalledBeaconAdapter.ViewHolder> {

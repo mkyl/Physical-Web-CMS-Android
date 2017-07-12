@@ -1,4 +1,4 @@
-package com.physical_web.cms.physicalwebcms;
+package com.physical_web.cms.physicalwebcms.beacons;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -17,10 +17,10 @@ public interface BeaconDao {
     @Update
     void updateBeacons(Beacon... beacons);
 
-    @Query("select * from beacons")
+    @Query("select * from com.physical_web.cms.physicalwebcms.beacons")
     List<Beacon> getAllBeacons();
 
-    @Query("select * from beacons where id = :id")
+    @Query("select * from com.physical_web.cms.physicalwebcms.beacons where id = :id")
     Beacon getBeaconById(long id);
 
     @Delete

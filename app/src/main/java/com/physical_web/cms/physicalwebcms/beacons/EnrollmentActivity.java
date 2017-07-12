@@ -1,4 +1,4 @@
-package com.physical_web.cms.physicalwebcms;
+package com.physical_web.cms.physicalwebcms.beacons;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,8 +28,10 @@ import com.flipboard.bottomsheet.BottomSheetLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.physical_web.cms.physicalwebcms.R;
+
 /**
- * This class allows the user to enroll new beacons into the beacon DB.
+ * This class allows the user to enroll new com.physical_web.cms.physicalwebcms.beacons into the beacon DB.
  */
 public class EnrollmentActivity extends AppCompatActivity {
     private final static String TAG = EnrollmentActivity.class.getSimpleName();
@@ -121,7 +122,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     /**
      * On Android 6.0+, shows dialog to ask for coarse location. This permission is required to
-     * scan for BLE beacons on these versions of Android.
+     * scan for BLE com.physical_web.cms.physicalwebcms.beacons on these versions of Android.
      */
     private void enableNetworkIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -289,7 +290,7 @@ public class EnrollmentActivity extends AppCompatActivity {
         findViewById(R.id.noDevicesYetText).setVisibility(View.VISIBLE);
         findViewById(R.id.scannedBeaconsTitle).setVisibility(View.VISIBLE);
         findViewById(R.id.scannedBeaconsList).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.noDevicesYetText)).setText("Seaching for beacons...");
+        ((TextView) findViewById(R.id.noDevicesYetText)).setText("Seaching for com.physical_web.cms.physicalwebcms.beacons...");
     }
 
     // warn the user that they have made an error by not allowing BT or location access

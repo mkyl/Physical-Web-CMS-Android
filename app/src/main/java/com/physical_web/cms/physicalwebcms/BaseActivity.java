@@ -1,10 +1,10 @@
 package com.physical_web.cms.physicalwebcms;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -18,15 +18,13 @@ import android.widget.ListView;
 
 import java.io.File;
 
-import layout.AboutFragment;
-import layout.BeaconFragment;
-import layout.ContentFragment;
-import layout.ExhibitFragment;
-import layout.WelcomeFragment;
+import com.physical_web.cms.physicalwebcms.setup.SetupManager;
+import com.physical_web.cms.physicalwebcms.sync.ContentSynchronizer;
+import com.physical_web.cms.physicalwebcms.beacons.BeaconFragment;
+import com.physical_web.cms.physicalwebcms.exhibits.ExhibitFragment;
 
-public class BaseActivity extends AppCompatActivity implements
-        ContentFragment.OnFragmentInteractionListener {
-    public static final String TAG = BaseActivity.class.getSimpleName();
+public class BaseActivity extends AppCompatActivity {
+    private static final String TAG = BaseActivity.class.getSimpleName();
 
     private String[] menuTitles;
     private DrawerLayout drawerLayout;
@@ -107,7 +105,7 @@ public class BaseActivity extends AppCompatActivity implements
     private void setupWelcomeFragment() {
         WelcomeFragment welcomeFragment = new WelcomeFragment();
         contentSynchronizer.registerSyncStatusListener(welcomeFragment);
-        getSupportFragmentManager().beginTransaction().
+        getFragmentManager().beginTransaction().
                 add(R.id.fragment_container, welcomeFragment).commit();
     }
 
@@ -146,7 +144,7 @@ public class BaseActivity extends AppCompatActivity implements
         private void switchFragment(String name) {
             getSupportActionBar().setTitle(name);
 
-            ContentFragment switchFragment;
+            Fragment switchFragment;
             Bundle args = new Bundle();
             switch(name) {
                 case "Home":
@@ -156,7 +154,7 @@ public class BaseActivity extends AppCompatActivity implements
                 case "Exhibits":
                     switchFragment = new ExhibitFragment();
                     break;
-                case "Beacons":
+                case "com/physical_web/cms/physicalwebcms/beacons":
                     switchFragment = new BeaconFragment();
                     break;
                 case "Analytics":
@@ -171,16 +169,12 @@ public class BaseActivity extends AppCompatActivity implements
             }
             switchFragment.setArguments(args);
 
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction.replace(R.id.fragment_container, switchFragment);
             transaction.addToBackStack(null);
             transaction.commit();
 
             drawerLayout.closeDrawer(Gravity.START);
         }
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
     }
 }

@@ -1,11 +1,9 @@
-package com.physical_web.cms.physicalwebcms;
+package com.physical_web.cms.physicalwebcms.beacons;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
-
-import java.io.File;
 
 @Database(entities = {Beacon.class}, version = 1)
 public abstract class BeaconDatabase extends RoomDatabase {

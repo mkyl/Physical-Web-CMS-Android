@@ -1,4 +1,4 @@
-package com.physical_web.cms.physicalwebcms;
+package com.physical_web.cms.physicalwebcms.sync;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -9,13 +9,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.FileObserver;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.PendingResults;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
@@ -25,30 +22,24 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filter;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import util.RecursiveFileObserver;
 
 /**
- * Handles syncing data about the beacons and exhibits with the user's
+ * Handles syncing data about the com.physical_web.cms.physicalwebcms.beacons and exhibits with the user's
  * Google Drive.
  *
  * Call {@link ContentSynchronizer#connectReceiver} in the parent Activity onResume() and
@@ -88,7 +79,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 
     /**
-     * Subscribe to notifications about changing sync status.
+     * Subscribe to notifications about changing com.physical_web.cms.physicalwebcms.sync status.
      * @param listener
      */
     public void registerSyncStatusListener(SyncStatusListener listener) {
@@ -98,7 +89,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         syncStatusListeners.add(listener);
     }
 
-    // watch network status to only sync when network is connected.
+    // watch network status to only com.physical_web.cms.physicalwebcms.sync when network is connected.
     private void setupNetworkHandling() {
         networkStateReceiver = new BroadcastReceiver() {
             @Override
@@ -138,7 +129,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
-    // setup drive API & file observer in preparation for sync
+    // setup drive API & file observer in preparation for com.physical_web.cms.physicalwebcms.sync
     private void setupDriveSync(File internalStorage) {
         apiClient = new GoogleApiClient.Builder(context)
                 .addApi(Drive.API)
@@ -152,7 +143,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 
     /**
-     * Only called by FileObserver to notify us of need to sync
+     * Only called by FileObserver to notify us of need to com.physical_web.cms.physicalwebcms.sync
      * @param event
      * @param file
      */
@@ -163,7 +154,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 
     /**
-     * Force sync status update by simulating network change
+     * Force com.physical_web.cms.physicalwebcms.sync status update by simulating network change
      */
     public void kickStartSync() {
         ConnectivityManager manager = (ConnectivityManager) context.
@@ -182,7 +173,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         folderObserver.stopWatching();
     }
 
-    // begin sync process
+    // begin com.physical_web.cms.physicalwebcms.sync process
     private void syncNeeded() {
         if(!currentlySyncing) {
             currentlySyncing = true;
@@ -210,7 +201,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 // this line is required to fix a Google Services bug where remote data isn't
                 // visible when app is reinstalled, possibly due to bad cache
                 Drive.DriveApi.requestSync(apiClient).await();
-                // stop watching to avoid triggering another sync due to sync file changes
+                // stop watching to avoid triggering another com.physical_web.cms.physicalwebcms.sync due to com.physical_web.cms.physicalwebcms.sync file changes
                 folderObserver.stopWatching();
                 syncFolders(localStorageFolder, appFolder);
                 folderObserver.startWatching();
@@ -295,7 +286,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
             if(isRootFolder) {
                 notifyAllSyncListeners(SYNC_COMPLETE);
-                Log.d(TAG, "Drive sync success");
+                Log.d(TAG, "Drive com.physical_web.cms.physicalwebcms.sync success");
             }
         } catch (Exception e) {
             notifyAllSyncListeners(NO_SYNC_DRIVE_ERROR);
@@ -527,7 +518,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         return result;
     }
 
-    // send notification about sync status to all listeners that have subscribed via
+    // send notification about com.physical_web.cms.physicalwebcms.sync status to all listeners that have subscribed via
     // registerSyncStatusListener
     private void notifyAllSyncListeners(final int status) {
         if(syncStatusListeners != null) {

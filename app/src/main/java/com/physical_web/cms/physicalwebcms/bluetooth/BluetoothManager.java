@@ -1,4 +1,4 @@
-package com.physical_web.cms.physicalwebcms;
+package com.physical_web.cms.physicalwebcms.bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -23,7 +23,7 @@ import java.util.UUID;
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
 
 /**
- * Handles discovering and configuring to Eddystone beacons over a Bluetooth Low Energy link.
+ * Handles discovering and configuring to Eddystone com.physical_web.cms.physicalwebcms.beacons over a Bluetooth Low Energy link.
  */
 public class BluetoothManager {
     public final static int WRITE_SUCCESS = 0;
@@ -83,7 +83,7 @@ public class BluetoothManager {
      * @param event Callback called when scan complete
      */
     public void listConfigurableEddystoneBeacons(final BeaconEventListener event) {
-        // in case there are old beacons stored in the device list
+        // in case there are old com.physical_web.cms.physicalwebcms.beacons stored in the device list
         scannedDevices.clear();
         UUID[] desiredServices = new UUID[] {EDDYSTONE_CONFIGURATION_SERVICE};
 
@@ -97,7 +97,7 @@ public class BluetoothManager {
         }, SCAN_PERIOD);
     }
 
-    // called when the scan for nearby beacons is complete
+    // called when the scan for nearby com.physical_web.cms.physicalwebcms.beacons is complete
     private final BluetoothAdapter.LeScanCallback listBeaconsCallback =
             new BluetoothAdapter.LeScanCallback() {
                 @Override
@@ -262,26 +262,3 @@ public class BluetoothManager {
     }
 }
 
-/**
- * This interface must be implemented to receive data from the BluetoothManager class.
- */
-interface BeaconEventListener {
-    /**
-     * Returns list of configurable Eddystone beacons after scan complete.
-     *
-     * @param beacons Beacons in configuration mode
-     */
-    void onScanComplete(List<BluetoothDevice> beacons);
-
-    /**
-     * Returns result of beacon URI update attempt.
-     *
-     * @param device beacon which operation was attempted on.
-     * @param status WRITE_SUCCESS if succesful
-     */
-    void uriWriteCallback(BluetoothDevice device, int status);
-}
-
-interface BeaconScanningListener {
-    void onBeaconDiscovered(BluetoothDevice beacon);
-}
