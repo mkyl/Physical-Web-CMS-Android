@@ -24,7 +24,7 @@ public class ExhibitFragment extends ContentFragment {
      *
      * @return A new instance of fragment ExhibitFragment.
      */
-    public static ExhibitFragment newInstance(String param1, String param2) {
+    public static ExhibitFragment newInstance() {
         ExhibitFragment fragment = new ExhibitFragment();
         return fragment;
     }
