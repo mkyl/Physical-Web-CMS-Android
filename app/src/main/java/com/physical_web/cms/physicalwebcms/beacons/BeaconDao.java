@@ -17,10 +17,10 @@ public interface BeaconDao {
     @Update
     void updateBeacons(Beacon... beacons);
 
-    @Query("select * from com.physical_web.cms.physicalwebcms.beacons")
+    @Query("select * from beacons")
     List<Beacon> getAllBeacons();
 
-    @Query("select * from com.physical_web.cms.physicalwebcms.beacons where id = :id")
+    @Query("select * from beacons where id = :id")
     Beacon getBeaconById(long id);
 
     @Delete
