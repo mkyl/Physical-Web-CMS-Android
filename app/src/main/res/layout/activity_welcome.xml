@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    tools:context="com.physical_web.cms.physicalwebcms.setup.WelcomeActivity">
+    tools:context="org.physical_web.cms.setup.WelcomeActivity">
 
     <include layout="@layout/content_welcome" />
 
