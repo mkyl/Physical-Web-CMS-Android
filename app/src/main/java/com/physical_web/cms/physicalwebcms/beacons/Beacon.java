@@ -7,7 +7,7 @@ import android.arch.persistence.room.PrimaryKey;
  * This class represents an Eddystone Beacon, with a physical address, internal ID
  * and user friendly name
  */
-@Entity(tableName = "com/physical_web/cms/physicalwebcms/beacons")
+@Entity(tableName = "beacons")
 public class Beacon {
     @PrimaryKey(autoGenerate = true)
     public long id;

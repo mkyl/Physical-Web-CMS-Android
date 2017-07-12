@@ -154,7 +154,7 @@ public class BaseActivity extends AppCompatActivity {
                 case "Exhibits":
                     switchFragment = new ExhibitFragment();
                     break;
-                case "com/physical_web/cms/physicalwebcms/beacons":
+                case "Beacons":
                     switchFragment = new BeaconFragment();
                     break;
                 case "Analytics":
