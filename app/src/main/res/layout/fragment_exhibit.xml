@@ -34,7 +34,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentStart="true"
                 android:layout_gravity="bottom"
-                android:alpha="15"
+                android:alpha="0.8"
                 app:srcCompat="@color/cardview_dark_background" />
 
             <TextView
