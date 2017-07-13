@@ -9,4 +9,18 @@ public abstract class ExhibitContent {
     public void setContentName(String contentName){
         this.contentName = contentName;
     };
+
+    public abstract String toHTML();
+}
+
+class TextContent extends ExhibitContent {
+}
+
+class SoundContent extends ExhibitContent {
+}
+
+class ImageContent extends ExhibitContent {
+}
+
+class VideoContent extends ExhibitContent {
 }
