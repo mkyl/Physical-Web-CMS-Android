@@ -88,6 +88,7 @@ public class BeaconFragment extends Fragment {
         sheetView.findViewById(R.id.edit_beacon_close).setOnClickListener(updateBeacon);
 
         recyclerView = (RecyclerView) result.findViewById(R.id.installedBeaconsViewFragment);
+        // TODO pretty sure this is bug, prevents scrolling
         recyclerView.setHasFixedSize(true);
 
         layoutManager = new GridLayoutManager(getActivity(), COLUMN_COUNT);

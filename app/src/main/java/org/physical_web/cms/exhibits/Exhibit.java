@@ -1,5 +1,6 @@
 package org.physical_web.cms.exhibits;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,11 +13,22 @@ public class Exhibit {
     private Boolean active;
     private List<ExhibitContent> exhibitContents;
 
-
     public Exhibit(String title) {
         this.title = title;
         this.active = false;
         this.exhibitContents = new LinkedList<>();
+    }
+
+    public static Exhibit fromFolder(File folder) {
+        String name = folder.getName();
+        Exhibit result = new Exhibit(name);
+        result.active = false;
+        result.loadExhibitContentsFromFolder(folder);
+        return result;
+    }
+
+    public String getTitle() {
+        return this.title;
     }
 
     public void addContent(ExhibitContent content) {
@@ -33,5 +45,19 @@ public class Exhibit {
     public void makeActive() {
         this.active = true;
         // TODO complete method
+    }
+
+    private List<ExhibitContent> loadExhibitContentsFromFolder(File exhibitFolder) {
+        if(exhibitFolder.isFile())
+            throw new IllegalArgumentException("Passed file, not folder");
+
+        List<ExhibitContent> result = new LinkedList<>();
+
+        for(File child : exhibitFolder.listFiles()) {
+            if (!child.isFile())
+                result.add(ExhibitContent.fromRawFile(child));
+        }
+
+        return result;
     }
 }

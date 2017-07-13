@@ -1,9 +1,15 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.flipboard.bottomsheet.BottomSheetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context="org.physical_web.cms.exhibits.ExhibitFragment"
+    android:id="@+id/exhibit_sheet"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="org.physical_web.cms.exhibits.ExhibitFragment">
+    android:layout_height="match_parent">
+
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <android.support.v7.widget.CardView
         android:id="@+id/exhibit_active_card"
@@ -57,6 +63,7 @@
                 android:layout_below="@+id/exhibit_active_title"
                 android:layout_alignParentStart="true" />
 
+            <!-- TODO find borderless style to be used in API 18 -->
             <Button
                 android:id="@+id/exhibit_active_edit"
                 style="@android:style/Widget.Material.Light.Button.Borderless"
@@ -99,4 +106,18 @@
         android:layout_centerHorizontal="true"
         android:padding="8dp" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/exhibit_add_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:tint="#FFF"
+        app:elevation="6dp"
+        app:fabSize="normal"
+        app:srcCompat="@android:drawable/ic_input_add" />
+
 </RelativeLayout>
+</com.flipboard.bottomsheet.BottomSheetLayout>
