@@ -1,6 +1,7 @@
 package org.physical_web.cms.exhibits;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -34,7 +35,6 @@ public class ExhibitFragment extends Fragment {
     private ExhibitAdapter exhibitAdapter;
 
     private BottomSheetLayout bottomSheet;
-    private Map<ExhibitAdapter.ViewHolder, Exhibit> viewHolderExhibitMap;
 
     public ExhibitFragment() {
         // required empty constructor
@@ -47,7 +47,6 @@ public class ExhibitFragment extends Fragment {
         View fragment = inflater.inflate(R.layout.fragment_exhibit, container, false);
 
         exhibitManager = new ExhibitManager(getActivity());
-        viewHolderExhibitMap = new HashMap<>();
 
         FloatingActionButton fab = (FloatingActionButton) fragment
                 .findViewById(R.id.exhibit_add_item);
@@ -111,6 +110,7 @@ public class ExhibitFragment extends Fragment {
                 .setAction("UNDO", new View.OnClickListener(){
                     @Override
                     public void onClick(View view) {
+                        Log.d(TAG, "Undeleting exhibit: " + exhibit.getTitle());
                         exhibitManager.insertExhibit(exhibit);
                         exhibitAdapter.notifyDataSetChanged();
                     }
@@ -131,7 +131,6 @@ public class ExhibitFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
             final Exhibit exhibitToDraw = exhibitManager.getExhibit(position);
-            viewHolderExhibitMap.put(viewHolder, exhibitToDraw);
 
             final PopupMenu.OnMenuItemClickListener menuListener =
                     new PopupMenu.OnMenuItemClickListener() {
@@ -158,6 +157,19 @@ public class ExhibitFragment extends Fragment {
                     popup.inflate(R.menu.exhibit_overflow);
                     popup.setOnMenuItemClickListener(menuListener);
                     popup.show();
+                }
+            });
+
+            ((View) viewHolder.exhibitTitle.getParent())
+                    .setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.d(TAG, "Chose menu item: " + exhibitToDraw.getTitle());
+                    Fragment exhibitEditor = new ExhibitEditor();
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    transaction.replace(R.id.fragment_container, exhibitEditor);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
                 }
             });
         }
