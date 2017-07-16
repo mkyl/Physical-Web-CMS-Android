@@ -28,6 +28,12 @@ public class ExhibitManager {
 
     public void insertExhibit(Exhibit exhibit) {
         exhibitFileManager.writeNewExhibit(exhibit);
+        this.refresh();
+    }
+
+    public void removeExhibit(Exhibit exhibit) {
+        exhibitFileManager.removeExhibit(exhibit);
+        this.refresh();
     }
 
     public int getExhibitCount() {
