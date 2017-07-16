@@ -5,38 +5,38 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.flipboard.bottomsheet.BottomSheetLayout;
 
 import org.physical_web.cms.R;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Fragment for displaying information about exhibits
  */
 public class ExhibitFragment extends Fragment {
+    private final static String TAG = ExhibitFragment.class.getSimpleName();
     private ExhibitManager exhibitManager;
     private ExhibitAdapter exhibitAdapter;
 
     private BottomSheetLayout bottomSheet;
+    private Map<ExhibitAdapter.ViewHolder, Exhibit> viewHolderExhibitMap;
 
     public ExhibitFragment() {
         // required empty constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment ExhibitFragment.
-     */
-    public static ExhibitFragment newInstance() {
-        ExhibitFragment fragment = new ExhibitFragment();
-        return fragment;
     }
 
     @Override
@@ -46,6 +46,7 @@ public class ExhibitFragment extends Fragment {
         View fragment = inflater.inflate(R.layout.fragment_exhibit, container, false);
 
         exhibitManager = new ExhibitManager(getActivity());
+        viewHolderExhibitMap = new HashMap<>();
 
         FloatingActionButton fab = (FloatingActionButton) fragment
                 .findViewById(R.id.exhibit_add_item);
@@ -96,7 +97,6 @@ public class ExhibitFragment extends Fragment {
 
             Exhibit newExhibit = new Exhibit(exhibitName);
             exhibitManager.insertExhibit(newExhibit);
-            exhibitManager.refresh();
 
             exhibitAdapter.notifyDataSetChanged();
             bottomSheet.dismissSheet();
@@ -115,8 +115,35 @@ public class ExhibitFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
-            Exhibit exhibitToDraw = exhibitManager.getExhibit(position);
+            final Exhibit exhibitToDraw = exhibitManager.getExhibit(position);
+            viewHolderExhibitMap.put(viewHolder, exhibitToDraw);
+
+            final PopupMenu.OnMenuItemClickListener menuListener =
+                    new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch (item.getItemId()) {
+                        case R.id.exhibit_overflow_delete:
+                            Log.d(TAG, "Deleting exhibit with name: " + exhibitToDraw.getTitle());
+                            exhibitManager.removeExhibit(exhibitToDraw);
+                            exhibitAdapter.notifyDataSetChanged();
+                            return true;
+                        default:
+                            return false;
+                    }
+                }
+            };
+
             viewHolder.exhibitTitle.setText(exhibitToDraw.getTitle());
+            viewHolder.overflowListener.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu popup = new PopupMenu(getActivity(), v);
+                    popup.inflate(R.menu.exhibit_overflow);
+                    popup.setOnMenuItemClickListener(menuListener);
+                    popup.show();
+                }
+            });
         }
 
         @Override
@@ -126,10 +153,12 @@ public class ExhibitFragment extends Fragment {
 
         class ViewHolder extends RecyclerView.ViewHolder{
             TextView exhibitTitle;
+            ImageButton overflowListener;
 
             ViewHolder(View view) {
                 super(view);
                 exhibitTitle = (TextView) view.findViewById(R.id.item_exhibit_list_title);
+                overflowListener = (ImageButton) view.findViewById(R.id.item_exhibit_list_overflow);
             }
         }
     }
