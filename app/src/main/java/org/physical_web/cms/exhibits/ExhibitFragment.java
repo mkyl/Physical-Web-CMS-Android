@@ -160,12 +160,15 @@ public class ExhibitFragment extends Fragment {
                 }
             });
 
-            ((View) viewHolder.exhibitTitle.getParent())
-                    .setOnClickListener(new View.OnClickListener() {
+            viewHolder.background.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Log.d(TAG, "Chose menu item: " + exhibitToDraw.getTitle());
                     Fragment exhibitEditor = new ExhibitEditor();
+                    Bundle args = new Bundle();
+                    args.putString("exhibit-name", exhibitToDraw.getTitle());
+                    exhibitEditor.setArguments(args);
+
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
                     transaction.replace(R.id.fragment_container, exhibitEditor);
                     transaction.addToBackStack(null);
@@ -182,11 +185,13 @@ public class ExhibitFragment extends Fragment {
         class ViewHolder extends RecyclerView.ViewHolder{
             TextView exhibitTitle;
             ImageButton overflowListener;
+            View background;
 
             ViewHolder(View view) {
                 super(view);
                 exhibitTitle = (TextView) view.findViewById(R.id.item_exhibit_list_title);
                 overflowListener = (ImageButton) view.findViewById(R.id.item_exhibit_list_overflow);
+                background = view;
             }
         }
     }
