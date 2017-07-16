@@ -3,6 +3,7 @@ package org.physical_web.cms.exhibits;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -103,6 +104,20 @@ public class ExhibitFragment extends Fragment {
         }
     };
 
+    private void showDeletionUndoBar(final Exhibit exhibit) {
+        Snackbar undoSnackbar = Snackbar.
+                make(getView(), "Deleted exhibit '" + exhibit.getTitle() + "'",
+                        Snackbar.LENGTH_LONG)
+                .setAction("UNDO", new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view) {
+                        exhibitManager.insertExhibit(exhibit);
+                        exhibitAdapter.notifyDataSetChanged();
+                    }
+                });
+        undoSnackbar.show();
+    }
+
     class ExhibitAdapter extends RecyclerView.Adapter<ExhibitAdapter.ViewHolder> {
         @Override
         public ExhibitAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewtype) {
@@ -125,6 +140,7 @@ public class ExhibitFragment extends Fragment {
                     switch (item.getItemId()) {
                         case R.id.exhibit_overflow_delete:
                             Log.d(TAG, "Deleting exhibit with name: " + exhibitToDraw.getTitle());
+                            showDeletionUndoBar(exhibitToDraw);
                             exhibitManager.removeExhibit(exhibitToDraw);
                             exhibitAdapter.notifyDataSetChanged();
                             return true;
