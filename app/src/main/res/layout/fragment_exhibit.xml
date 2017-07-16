@@ -51,7 +51,8 @@
                     android:layout_alignTop="@+id/exhibit_active_tint"
                     android:layout_marginTop="16dp"
                     android:text="Postwar Japanese Period"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse" />
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse"
+                    android:visibility="invisible" />
 
                 <TextView
                     android:id="@+id/exhibit_active_subtitle"
@@ -61,7 +62,8 @@
                     android:layout_below="@+id/exhibit_active_title"
                     android:layout_marginStart="12dp"
                     android:text="Currently active exhibition"
-                    android:textColor="@android:color/white" />
+                    android:textColor="@android:color/white"
+                    android:visibility="invisible" />
 
                 <!-- TODO find borderless style to be used in API 18 -->
                 <Button
@@ -72,7 +74,8 @@
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentStart="true"
                     android:text="Edit Exhibition"
-                    android:textColor="@android:color/white" />
+                    android:textColor="@android:color/white"
+                    android:visibility="invisible" />
 
                 <Button
                     android:id="@+id/exhibit_active_map"
@@ -82,7 +85,19 @@
                     android:layout_alignParentBottom="true"
                     android:layout_toEndOf="@+id/exhibit_active_edit"
                     android:text="View Map"
-                    android:textColor="@android:color/white" />
+                    android:textColor="@android:color/white"
+                    android:visibility="invisible" />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:text="No Active Exhibit"
+                    android:textAllCaps="false"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                    android:textColor="@android:color/darker_gray" />
             </RelativeLayout>
 
         </android.support.v7.widget.CardView>

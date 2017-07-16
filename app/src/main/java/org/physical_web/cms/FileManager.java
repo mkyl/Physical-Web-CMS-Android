@@ -5,6 +5,8 @@ import android.content.Context;
 import org.physical_web.cms.exhibits.Exhibit;
 
 import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,8 +59,22 @@ public class FileManager {
         File folderToRemove = new File(exhibitFolder, exhibitName);
 
         if(folderToRemove.exists())
-            folderToRemove.delete();
+            deleteDir(folderToRemove);
         else
             throw new IllegalArgumentException("Exhibit provided doesn't exist");
+    }
+
+    // recursively delete folders
+    private void deleteDir(File file) {
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                deleteDir(f);
+            }
+        }
+
+        Boolean deletionSuccess = file.delete();
+        if(!deletionSuccess)
+            throw new RuntimeException("Couldn't delete folder");
     }
 }
