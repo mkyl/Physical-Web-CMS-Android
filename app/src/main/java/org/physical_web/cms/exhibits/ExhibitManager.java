@@ -39,5 +39,4 @@ public class ExhibitManager {
     public int getExhibitCount() {
         return exhibits.size();
     }
-
 }

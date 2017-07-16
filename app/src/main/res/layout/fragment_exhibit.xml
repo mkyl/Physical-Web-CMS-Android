@@ -7,117 +7,117 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <android.support.v7.widget.CardView
-        android:id="@+id/exhibit_active_card"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="4dp"
-        app:cardElevation="2dp">
+        android:layout_height="match_parent">
 
-        <RelativeLayout
+        <android.support.v7.widget.CardView
+            android:id="@+id/exhibit_active_card"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="250dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="8dp"
+            app:cardCornerRadius="4dp"
+            app:cardElevation="2dp">
 
-            <ImageView
-                android:id="@+id/exhibit_active_background"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                app:srcCompat="@android:color/holo_orange_light" />
+                android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/exhibit_active_tint"
-                android:layout_width="match_parent"
-                android:layout_height="115dp"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentStart="true"
-                android:layout_gravity="bottom"
-                android:alpha="0.8"
-                app:srcCompat="@color/cardview_dark_background" />
+                <ImageView
+                    android:id="@+id/exhibit_active_background"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    app:srcCompat="@color/cardview_dark_background" />
 
-            <TextView
-                android:id="@+id/exhibit_active_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignStart="@+id/exhibit_active_subtitle"
-                android:layout_alignTop="@+id/exhibit_active_tint"
-                android:layout_marginTop="16dp"
-                android:text="Postwar Japanese Period"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse" />
+                <ImageView
+                    android:id="@+id/exhibit_active_tint"
+                    android:layout_width="match_parent"
+                    android:layout_height="115dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_gravity="bottom"
+                    android:alpha="0.8"
+                    app:srcCompat="@color/cardview_dark_background" />
 
-            <TextView
-                android:id="@+id/exhibit_active_subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="Currently active exhibition"
-                android:textColor="@android:color/white"
-                android:layout_below="@+id/exhibit_active_title"
-                android:layout_alignParentStart="true" />
+                <TextView
+                    android:id="@+id/exhibit_active_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/exhibit_active_subtitle"
+                    android:layout_alignTop="@+id/exhibit_active_tint"
+                    android:layout_marginTop="16dp"
+                    android:text="Postwar Japanese Period"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse" />
 
-            <!-- TODO find borderless style to be used in API 18 -->
-            <Button
-                android:id="@+id/exhibit_active_edit"
-                style="@android:style/Widget.Material.Light.Button.Borderless"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentStart="true"
-                android:text="Edit Exhibition"
-                android:textColor="@android:color/white" />
+                <TextView
+                    android:id="@+id/exhibit_active_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/exhibit_active_title"
+                    android:layout_marginStart="12dp"
+                    android:text="Currently active exhibition"
+                    android:textColor="@android:color/white" />
 
-            <Button
-                android:id="@+id/exhibit_active_map"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_toEndOf="@+id/exhibit_active_edit"
-                android:text="View Map"
-                android:textColor="@android:color/white" />
-        </RelativeLayout>
+                <!-- TODO find borderless style to be used in API 18 -->
+                <Button
+                    android:id="@+id/exhibit_active_edit"
+                    style="@android:style/Widget.Material.Light.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentStart="true"
+                    android:text="Edit Exhibition"
+                    android:textColor="@android:color/white" />
 
-    </android.support.v7.widget.CardView>
+                <Button
+                    android:id="@+id/exhibit_active_map"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toEndOf="@+id/exhibit_active_edit"
+                    android:text="View Map"
+                    android:textColor="@android:color/white" />
+            </RelativeLayout>
 
-    <TextView
-        android:id="@+id/exhibit_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/exhibit_active_card"
-        android:layout_margin="8dp"
-        android:paddingStart="8dp"
-        android:text="Stored Exhibitions"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+        </android.support.v7.widget.CardView>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/exhibit_stored_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/exhibit_subtitle"
-        android:layout_centerHorizontal="true"
-        android:padding="8dp" />
+        <TextView
+            android:id="@+id/exhibit_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/exhibit_active_card"
+            android:layout_margin="8dp"
+            android:paddingStart="8dp"
+            android:text="Stored Exhibitions"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/exhibit_add_item"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:clickable="true"
-        android:tint="#FFF"
-        app:elevation="6dp"
-        app:fabSize="normal"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/exhibit_stored_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/exhibit_subtitle"
+            android:layout_centerHorizontal="true"
+            android:padding="8dp" />
 
-</RelativeLayout>
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/exhibit_add_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="16dp"
+            android:clickable="true"
+            android:tint="#FFF"
+            app:elevation="6dp"
+            app:fabSize="normal"
+            app:srcCompat="@android:drawable/ic_input_add" />
+
+    </RelativeLayout>
 </com.flipboard.bottomsheet.BottomSheetLayout>
