@@ -1,13 +1,80 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.physical_web.cms.exhibits.ExhibitEditor">
+    tools:context="org.physical_web.cms.exhibits.ExhibitEditorFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:id="@+id/exhibit_editor_first_heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="8dp"
+        android:text="Exhibit Information"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/exhibit_editor_title_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/exhibit_editor_first_heading"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp">
+
+        <EditText
+            android:id="@+id/exhibit_editor_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Title" />
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/exhibit_editor_description_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/exhibit_editor_title_layout"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp">
+
+        <EditText
+            android:id="@+id/exhibit_editor_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description" />
+    </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:id="@+id/exhibit_editor_make_active"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/exhibit_editor_description_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="13dp"
+        android:layout_marginTop="13dp"
+        android:text="Make Active Exhibit" />
+
+    <TextView
+        android:id="@+id/exhibit_editor_second_heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/exhibit_editor_make_active"
+        android:layout_margin="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Display Content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/exhibit_editor_beacon_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/exhibit_editor_second_heading"
+        android:layout_marginTop="8dp" />
 
-</FrameLayout>
+</RelativeLayout>

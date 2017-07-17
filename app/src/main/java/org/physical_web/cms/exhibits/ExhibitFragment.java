@@ -11,11 +11,9 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -23,15 +21,13 @@ import com.flipboard.bottomsheet.BottomSheetLayout;
 
 import org.physical_web.cms.R;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Fragment for displaying information about exhibits
  */
 public class ExhibitFragment extends Fragment {
     private final static String TAG = ExhibitFragment.class.getSimpleName();
-    private ExhibitManager exhibitManager;
+
+    private ExhibitManager exhibitManager = ExhibitManager.getInstance();
     private ExhibitAdapter exhibitAdapter;
 
     private BottomSheetLayout bottomSheet;
@@ -45,8 +41,6 @@ public class ExhibitFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View fragment = inflater.inflate(R.layout.fragment_exhibit, container, false);
-
-        exhibitManager = new ExhibitManager(getActivity());
 
         FloatingActionButton fab = (FloatingActionButton) fragment
                 .findViewById(R.id.exhibit_add_item);
@@ -164,7 +158,7 @@ public class ExhibitFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Log.d(TAG, "Chose menu item: " + exhibitToDraw.getTitle());
-                    Fragment exhibitEditor = new ExhibitEditor();
+                    Fragment exhibitEditor = new ExhibitEditorFragment();
                     Bundle args = new Bundle();
                     args.putString("exhibit-name", exhibitToDraw.getTitle());
                     exhibitEditor.setArguments(args);
