@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class allows the user to enroll new com.physical_web.cms.physicalwebcms.beacons into the beacon DB.
+ * This class allows the user to enroll new beacons into the beacon DB.
  */
 public class EnrollmentActivity extends AppCompatActivity {
     private final static String TAG = EnrollmentActivity.class.getSimpleName();

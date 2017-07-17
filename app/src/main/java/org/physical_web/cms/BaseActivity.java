@@ -18,6 +18,7 @@ import android.widget.ListView;
 
 import org.physical_web.cms.beacons.BeaconFragment;
 import org.physical_web.cms.exhibits.ExhibitFragment;
+import org.physical_web.cms.exhibits.ExhibitManager;
 import org.physical_web.cms.setup.SetupManager;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
@@ -34,6 +35,7 @@ public class BaseActivity extends AppCompatActivity {
     private SetupManager setupManager;
     private ContentSynchronizer contentSynchronizer;
     private FileManager fileManager;
+    private ExhibitManager exhibitManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,9 @@ public class BaseActivity extends AppCompatActivity {
 
         setupManager = new SetupManager(this);
         fileManager = new FileManager(this);
+
+        exhibitManager = ExhibitManager.getInstance();
+        exhibitManager.setContext(this);
 
         File folderToSync = fileManager.getRootFolder();
         contentSynchronizer = new ContentSynchronizer(this, folderToSync);

@@ -5,8 +5,6 @@ import android.content.Context;
 import org.physical_web.cms.exhibits.Exhibit;
 
 import java.io.File;
-import java.io.IOError;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
