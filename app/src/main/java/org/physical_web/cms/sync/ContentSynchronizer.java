@@ -68,8 +68,25 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     private Boolean currentlySyncing;
 
-    public ContentSynchronizer(Context ctx, File internalStorage) {
-        context = ctx;
+    // lint warning by AS is incorrect, per Google Documentation:
+    // https://developer.android.com/training/volley/requestqueue.html#singleton
+    private static final ContentSynchronizer INSTANCE = new ContentSynchronizer();
+
+    public static ContentSynchronizer getInstance() {
+        return INSTANCE;
+    }
+
+    private ContentSynchronizer() {};
+
+    /**
+     * Must be called before any other methods are used in this class
+     * @param ctx context
+     * @param internalStorage folder to sync
+     */
+    public void init(Context ctx, File internalStorage) {
+        // getApplicationContext() is key, it keeps you from leaking the
+        // Activity or BroadcastReceiver if someone passes one in.
+        context = ctx.getApplicationContext();
         localStorageFolder = internalStorage;
         currentlySyncing = false;
         alreadyExaminedFiles = new ArrayList<>();
@@ -89,7 +106,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         syncStatusListeners.add(listener);
     }
 
-    // watch network status to only com.physical_web.cms.physicalwebcms.sync when network is connected.
+    // watch network status to only sync when network is connected.
     private void setupNetworkHandling() {
         networkStateReceiver = new BroadcastReceiver() {
             @Override
@@ -523,17 +540,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private void notifyAllSyncListeners(final int status) {
         if(syncStatusListeners != null) {
             for (final SyncStatusListener listener : syncStatusListeners) {
-                if(context instanceof Activity) {
-                    // run on UI thread because lots of UI stuff is affected by status change
-                    ((Activity) context).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.syncStatusChanged(status);
-                        }
-                    });
-                } else {
-                    listener.syncStatusChanged(status);
-                }
+                listener.syncStatusChanged(status);
             }
         }
     }

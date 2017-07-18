@@ -17,26 +17,28 @@ import org.physical_web.cms.sync.SyncStatusListener;
  * status of Google Drive synchronization.
  */
 public class WelcomeFragment extends Fragment implements SyncStatusListener {
+    ContentSynchronizer contentSynchronizer;
+
     public WelcomeFragment() {
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment WelcomeFragment.
-     */
-    public static WelcomeFragment newInstance(String param1, String param2) {
-        WelcomeFragment fragment = new WelcomeFragment();
-        return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_welcome, container, false);
+        View welcomeFragmentView = inflater.inflate(R.layout.fragment_welcome, container, false);
+        // register for changes in sync status
+        contentSynchronizer = ContentSynchronizer.getInstance();
+        contentSynchronizer.registerSyncStatusListener(this);
+
+        return welcomeFragmentView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        contentSynchronizer.kickStartSync();
     }
 
     @Override
@@ -44,9 +46,9 @@ public class WelcomeFragment extends Fragment implements SyncStatusListener {
         if(getActivity().findViewById(R.id.welcome_sync_text) == null)
             return;
 
-        int widgetColorName;
-        String widgetText;
-        int progressBarVisibility;
+        final int widgetColorName;
+        final String widgetText;
+        final int progressBarVisibility;
 
         switch (status) {
             case ContentSynchronizer.SYNC_IN_PROGRESS:
@@ -73,14 +75,20 @@ public class WelcomeFragment extends Fragment implements SyncStatusListener {
                 throw new IllegalArgumentException("Unknown sync status received");
         }
 
-        ((TextView) getActivity().findViewById(R.id.welcome_sync_text))
-                .setText(widgetText);
+        // changes to UI must be done on UI thread
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView) getActivity().findViewById(R.id.welcome_sync_text))
+                        .setText(widgetText);
 
-        int widgetColor = getResources().getColor(widgetColorName);
-        ((CardView) getActivity().findViewById(R.id.welcome_sync_card))
-                .setCardBackgroundColor(widgetColor);
+                int widgetColor = getResources().getColor(widgetColorName);
+                ((CardView) getActivity().findViewById(R.id.welcome_sync_card))
+                        .setCardBackgroundColor(widgetColor);
 
-        getActivity().findViewById(R.id.welcome_sync_progress)
-                .setVisibility(progressBarVisibility);
+                getActivity().findViewById(R.id.welcome_sync_progress)
+                        .setVisibility(progressBarVisibility);
+            }
+        });
     }
 }
