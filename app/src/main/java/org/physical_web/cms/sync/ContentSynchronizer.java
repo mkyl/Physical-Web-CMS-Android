@@ -178,8 +178,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      */
     @Override
     public void onFolderEvent(int event, File file) {
-        Log.d(TAG, "Detected event " + event + " on file: " + file.getName());
-
         Boolean interestingEvent = event == FileObserver.MODIFY;
         interestingEvent |= (event == FileObserver.CREATE);
         interestingEvent |= (event == FileObserver.DELETE);
@@ -549,8 +547,10 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // get drive name, appending extension if one exists
     private String getDriveFileName(Metadata file) {
         String result = file.getTitle();
+        // TODO this if statment might be causing double extension bug
         if(file.getFileExtension() != null && !file.getFileExtension().equals(""))
             result += "." + file.getFileExtension();
+
         return result;
     }
 

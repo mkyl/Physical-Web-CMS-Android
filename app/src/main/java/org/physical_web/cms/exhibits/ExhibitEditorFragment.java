@@ -40,6 +40,9 @@ public class ExhibitEditorFragment extends Fragment {
 
         ((EditText) editorView.findViewById(R.id.exhibit_editor_title))
                 .setText(workingExhibit.getTitle());
+        ((EditText) editorView.findViewById(R.id.exhibit_editor_description))
+                .setText(workingExhibit.getDescription());
+
 
         return editorView;
     }
