@@ -49,21 +49,14 @@ public class BaseActivity extends AppCompatActivity {
         exhibitManager.setContext(this);
 
         File folderToSync = fileManager.getRootFolder();
-        contentSynchronizer = new ContentSynchronizer(this, folderToSync);
+        contentSynchronizer = ContentSynchronizer.getInstance();
+        contentSynchronizer.init(this, folderToSync);
 
         setupNavigationDrawer();
         setupActionBar();
         // if statement to avoid overlapping fragments
         if (savedInstanceState == null)
             setupWelcomeFragment();
-
-        final Handler handler = new Handler();
-        final Runnable r = new Runnable() {
-            public void run() {
-                contentSynchronizer.kickStartSync();
-            }
-        };
-        handler.postDelayed(r, 5000);
     }
 
     @Override
@@ -109,7 +102,6 @@ public class BaseActivity extends AppCompatActivity {
 
     private void setupWelcomeFragment() {
         WelcomeFragment welcomeFragment = new WelcomeFragment();
-        contentSynchronizer.registerSyncStatusListener(welcomeFragment);
         getFragmentManager().beginTransaction().
                 add(R.id.fragment_container, welcomeFragment).commit();
     }
@@ -154,7 +146,6 @@ public class BaseActivity extends AppCompatActivity {
             switch(name) {
                 case "Home":
                     switchFragment = new WelcomeFragment();
-                    contentSynchronizer.registerSyncStatusListener((WelcomeFragment)switchFragment);
                     break;
                 case "Exhibits":
                     switchFragment = new ExhibitFragment();
