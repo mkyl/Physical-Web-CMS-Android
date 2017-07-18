@@ -115,7 +115,7 @@ public class Exhibit {
         List<ExhibitContent> beaconContents = new LinkedList<>();
         for(File child : beaconFolder.listFiles()) {
             if (!child.isFile())
-                beaconContents.add(ExhibitContent.fromRawFile(child));
+                beaconContents.add(ExhibitContent.fromFile(child));
         }
         return beaconContents;
     }
