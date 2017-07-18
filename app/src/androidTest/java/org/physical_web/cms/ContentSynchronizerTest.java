@@ -89,7 +89,8 @@ public class ContentSynchronizerTest {
             Log.d(TAG, "random file created");
 
             SyncStatusListener mockUploadListener = mock(SyncStatusListener.class);
-            contentSynchronizer = new ContentSynchronizer(context, context.getFilesDir());
+            contentSynchronizer = ContentSynchronizer.getInstance();
+            contentSynchronizer.init(context, context.getFilesDir());
             contentSynchronizer.registerSyncStatusListener(mockUploadListener);
 
             contentSynchronizer.kickStartSync();
