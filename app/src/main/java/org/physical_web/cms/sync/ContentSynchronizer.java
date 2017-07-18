@@ -66,6 +66,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private File localStorageFolder;
     private List<Metadata> alreadyExaminedFiles;
 
+    private Boolean initialized = false;
     private Boolean currentlySyncing;
 
     // lint warning by AS is incorrect, per Google Documentation:
@@ -84,6 +85,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      * @param internalStorage folder to sync
      */
     public void init(Context ctx, File internalStorage) {
+        initialized = true;
+
         // getApplicationContext() is key, it keeps you from leaking the
         // Activity or BroadcastReceiver if someone passes one in.
         context = ctx.getApplicationContext();
@@ -95,11 +98,18 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         setupDriveSync(internalStorage);
     }
 
+    private void checkInitialization() {
+        if (!initialized)
+            throw new IllegalStateException("init method must be performed before any other calls");
+    }
+
     /**
      * Subscribe to notifications about changing com.physical_web.cms.physicalwebcms.sync status.
      * @param listener
      */
     public void registerSyncStatusListener(SyncStatusListener listener) {
+        checkInitialization();
+
         if (syncStatusListeners == null)
             syncStatusListeners = new ArrayList<>();
 
@@ -123,6 +133,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      * Registers a receiver for network change activities
      */
     public void connectReceiver() {
+        checkInitialization();
         context.registerReceiver(networkStateReceiver,
                 new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
     }
@@ -131,6 +142,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      * Disconnects the receiver for network changes
      */
     public void disconnectReceiver() {
+        checkInitialization();
         context.unregisterReceiver(networkStateReceiver);
     }
 
@@ -166,7 +178,13 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      */
     @Override
     public void onFolderEvent(int event, File file) {
-        if(event == FileObserver.MODIFY)
+        Log.d(TAG, "Detected event " + event + " on file: " + file.getName());
+
+        Boolean interestingEvent = event == FileObserver.MODIFY;
+        interestingEvent |= (event == FileObserver.CREATE);
+        interestingEvent |= (event == FileObserver.DELETE);
+
+        if(interestingEvent)
             syncNeeded();
     }
 
@@ -174,6 +192,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      * Force com.physical_web.cms.physicalwebcms.sync status update by simulating network change
      */
     public void kickStartSync() {
+        checkInitialization();
         ConnectivityManager manager = (ConnectivityManager) context.
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo ni = manager.getActiveNetworkInfo();
