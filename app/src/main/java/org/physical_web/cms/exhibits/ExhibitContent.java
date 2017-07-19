@@ -19,25 +19,27 @@ public abstract class ExhibitContent {
         String mimeType = MimeTypeMap.getFileExtensionFromUrl(contentFile.toURI().toString());
 
         if (mimeType.startsWith(MIME_TEXT_PREFIX))
-            return new TextContent();
+            return new TextContent(contentFile);
         else if (mimeType.startsWith(MIME_AUDIO_PREFIX))
-            return new SoundContent();
+            return new SoundContent(contentFile);
         else if (mimeType.startsWith(MIME_IMAGE_PREFIX))
-            return new ImageContent();
+            return new ImageContent(contentFile);
         else if (mimeType.startsWith(MIME_VIDEO_PREFIX))
-            return new VideoContent();
+            return new VideoContent(contentFile);
         else
             throw new IllegalArgumentException("Exhibit content has unrecognized file type");
     }
 
     public void setContentName(String contentName){
         this.contentName = contentName;
-    };
+    }
 
     public abstract String toHTML();
 }
 
 class TextContent extends ExhibitContent {
+    public TextContent(File contentFile) {}
+
     @Override
     public String toHTML() {
         return null;
@@ -45,6 +47,8 @@ class TextContent extends ExhibitContent {
 }
 
 class SoundContent extends ExhibitContent {
+    public SoundContent(File contentFile) {}
+
     @Override
     public String toHTML() {
         return null;
@@ -52,6 +56,8 @@ class SoundContent extends ExhibitContent {
 }
 
 class ImageContent extends ExhibitContent {
+    public ImageContent(File contentFile) {}
+
     @Override
     public String toHTML() {
         return null;
@@ -59,6 +65,8 @@ class ImageContent extends ExhibitContent {
 }
 
 class VideoContent extends ExhibitContent {
+    public VideoContent(File contentFile) {}
+
     @Override
     public String toHTML() {
         return null;
