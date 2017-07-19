@@ -86,6 +86,7 @@ public class ExhibitFragment extends Fragment {
     private View.OnClickListener addExhibit = new View.OnClickListener() {
         @Override
         public void onClick(View exhibitSheet) {
+            bottomSheet.findViewById(R.id.sheet_new_exhibit_name).setEnabled(false);
             String exhibitName = ((TextInputEditText) bottomSheet
                     .findViewById(R.id.sheet_new_exhibit_name)).getText().toString();
 

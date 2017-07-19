@@ -3,16 +3,20 @@ package org.physical_web.cms.exhibits;
 import android.content.Context;
 
 import org.physical_web.cms.FileManager;
+import org.physical_web.cms.sync.ContentSynchronizer;
 
 import java.util.List;
 
 public class ExhibitManager {
     private static final ExhibitManager INSTANCE = new ExhibitManager();
+    private ContentSynchronizer contentSynchronizer;
 
     private List<Exhibit> exhibits;
     private FileManager exhibitFileManager = null;
 
-    private ExhibitManager() {}
+    private ExhibitManager() {
+        contentSynchronizer = ContentSynchronizer.getInstance();
+    }
 
     public static ExhibitManager getInstance() {
         return INSTANCE;
@@ -22,8 +26,6 @@ public class ExhibitManager {
         if (exhibitFileManager == null) {
                 exhibitFileManager = new FileManager(context);
                 refresh();
-        } else {
-            throw new UnsupportedOperationException("setContext must be called exactly once");
         }
     }
 
@@ -51,7 +53,13 @@ public class ExhibitManager {
         this.refresh();
     }
 
-    public void removeExhibit(Exhibit exhibit) {
+    public void removeExhibit(final Exhibit exhibit) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                contentSynchronizer.removeExhibit(exhibit.getTitle());
+            }
+        }).start();
         exhibitFileManager.removeExhibit(exhibit);
         this.refresh();
     }

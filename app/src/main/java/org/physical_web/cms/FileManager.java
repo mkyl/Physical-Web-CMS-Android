@@ -10,7 +10,7 @@ import java.util.List;
 
 public class FileManager {
     private static final String BEACON_FOLDER_NAME = "beacons";
-    private static final String EXHIBIT_FOLDER_NAME = "exhibits";
+    public static final String EXHIBIT_FOLDER_NAME = "exhibits";
 
     private File internalStorage;
     private File exhibitFolder;
