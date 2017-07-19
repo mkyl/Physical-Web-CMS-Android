@@ -27,7 +27,6 @@ public class Exhibit {
     private static final String METADATA_FILE_NAME = "metadata.json";
 
     private String title;
-    private String description;
     private Boolean active;
     private Map<Beacon, List<ExhibitContent>> contentsPerBeacon;
     private JSONObject metadata;
