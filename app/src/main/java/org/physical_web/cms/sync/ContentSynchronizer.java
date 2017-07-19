@@ -26,6 +26,8 @@ import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
+import org.physical_web.cms.FileManager;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -104,7 +106,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 
     /**
-     * Subscribe to notifications about changing com.physical_web.cms.physicalwebcms.sync status.
+     * Subscribe to notifications about changing sync status.
      * @param listener
      */
     public void registerSyncStatusListener(SyncStatusListener listener) {
@@ -158,7 +160,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
-    // setup drive API & file observer in preparation for com.physical_web.cms.physicalwebcms.sync
+    // setup drive API & file observer in preparation for sync
     private void setupDriveSync(File internalStorage) {
         apiClient = new GoogleApiClient.Builder(context)
                 .addApi(Drive.API)
@@ -172,7 +174,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     }
 
     /**
-     * Only called by FileObserver to notify us of need to com.physical_web.cms.physicalwebcms.sync
+     * Only called by FileObserver to notify us of need to sync
      * @param event
      * @param file
      */
@@ -182,12 +184,13 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         interestingEvent |= (event == FileObserver.CREATE);
         interestingEvent |= (event == FileObserver.DELETE);
 
+        Log.d(TAG, "Detected change in file: " + file.getPath());
         if(interestingEvent)
             syncNeeded();
     }
 
     /**
-     * Force com.physical_web.cms.physicalwebcms.sync status update by simulating network change
+     * Force sync status update by simulating network change
      */
     public void kickStartSync() {
         checkInitialization();
@@ -207,7 +210,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         folderObserver.stopWatching();
     }
 
-    // begin com.physical_web.cms.physicalwebcms.sync process
+    // begin sync process
     private void syncNeeded() {
         if(!currentlySyncing) {
             currentlySyncing = true;
@@ -235,7 +238,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 // this line is required to fix a Google Services bug where remote data isn't
                 // visible when app is reinstalled, possibly due to bad cache
                 Drive.DriveApi.requestSync(apiClient).await();
-                // stop watching to avoid triggering another com.physical_web.cms.physicalwebcms.sync due to com.physical_web.cms.physicalwebcms.sync file changes
+                // stop watching to avoid triggering another sync due to sync file changes
                 folderObserver.stopWatching();
                 syncFolders(localStorageFolder, appFolder);
                 folderObserver.startWatching();
@@ -320,7 +323,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
             if(isRootFolder) {
                 notifyAllSyncListeners(SYNC_COMPLETE);
-                Log.d(TAG, "Drive com.physical_web.cms.physicalwebcms.sync success");
+                Log.d(TAG, "Drive sync success");
             }
         } catch (Exception e) {
             notifyAllSyncListeners(NO_SYNC_DRIVE_ERROR);
@@ -357,7 +360,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             downloadFileFromDriveFolder(remoteCopy, localDirectory);
         } else {
             // already synced do nothing
-            Log.d(TAG, "File matches remote " + localCopy.getName());
+            Log.d(TAG, "File matches remote " + localCopy.getPath());
         }
     }
 
@@ -389,7 +392,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private void uploadFolderToDriveFolder(File folder, DriveFolder remoteFolderBeingSynced)
             throws IOException {
         String folderName = folder.getName();
-        Log.d(TAG, "Uploading folder with name: " + folderName);
+        Log.d(TAG, "Uploading folder: " + folder.getPath());
 
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(folderName).build();
 
@@ -444,7 +447,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // upload local file to Drive folder
     private void uploadFileToDriveFolder(File localFile, DriveFolder remoteFolder)
             throws IOException{
-        Log.d(TAG, "Uploading file to Drive: " + localFile.getName());
+        Log.d(TAG, "Uploading file to Drive: " + localFile.getPath());
         Date localModificationTime = new Date(localFile.lastModified());
 
         PendingResult<DriveApi.DriveContentsResult> request =
@@ -500,6 +503,36 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         deleteDriveFile(md.getDriveId().asDriveFile());
     }
 
+    public void removeExhibit(String name) {
+        DriveFolder appFolder = Drive.DriveApi.getAppFolder(apiClient);
+        DriveFolder exhibitFolder = null;
+        MetadataBuffer result = appFolder.listChildren(apiClient)
+                .await().getMetadataBuffer();
+        for(Metadata md : result) {
+            if(md.getTitle().equals(FileManager.EXHIBIT_FOLDER_NAME)) {
+                exhibitFolder = md.getDriveId().asDriveFolder();
+            }
+        }
+        if (exhibitFolder == null)
+            throw new IllegalStateException("No exhibits folder found on Drive");
+        result.release();
+
+        DriveFolder targetFolder = null;
+        result = exhibitFolder.listChildren(apiClient)
+                .await().getMetadataBuffer();
+        for(Metadata md : result) {
+            if(md.getTitle().equals(name)) {
+                targetFolder = md.getDriveId().asDriveFolder();
+            }
+        }
+        result.release();
+
+        if (targetFolder == null)
+            throw new IllegalArgumentException("No such exhibit");
+        else
+            targetFolder.delete(apiClient).await();
+    }
+
     // check if a drive directory immediately contains a file (non-recursive)
     private Metadata driveFolderContainsFile(File file, MetadataBuffer remoteFiles) {
         for(Metadata remoteFile : remoteFiles) {
@@ -547,14 +580,10 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // get drive name, appending extension if one exists
     private String getDriveFileName(Metadata file) {
         String result = file.getTitle();
-        // TODO this if statment might be causing double extension bug
-        if(file.getFileExtension() != null && !file.getFileExtension().equals(""))
-            result += "." + file.getFileExtension();
-
         return result;
     }
 
-    // send notification about com.physical_web.cms.physicalwebcms.sync status to all listeners that have subscribed via
+    // send notification about sync status to all listeners that have subscribed via
     // registerSyncStatusListener
     private void notifyAllSyncListeners(final int status) {
         if(syncStatusListeners != null) {
