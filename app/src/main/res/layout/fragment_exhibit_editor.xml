@@ -10,7 +10,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="8dp"
+        android:layout_margin="16dp"
+        android:gravity="center_vertical"
         android:text="Exhibit Information"
         android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
@@ -20,13 +21,14 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/exhibit_editor_first_heading"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp">
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp">
 
         <EditText
             android:id="@+id/exhibit_editor_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:hint="Title" />
     </android.support.design.widget.TextInputLayout>
 
@@ -36,25 +38,26 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/exhibit_editor_title_layout"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp">
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp">
 
         <EditText
             android:id="@+id/exhibit_editor_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:enabled="false"
             android:hint="Description" />
     </android.support.design.widget.TextInputLayout>
 
     <Button
         android:id="@+id/exhibit_editor_make_active"
-        style="@style/Widget.AppCompat.Button.Colored"
+        style="@style/Widget.AppCompat.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/exhibit_editor_description_layout"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="13dp"
-        android:layout_marginTop="13dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="16dp"
         android:text="Make Active Exhibit" />
 
     <TextView
@@ -63,7 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/exhibit_editor_make_active"
-        android:layout_margin="8dp"
+        android:layout_margin="16dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:text="Display Content"
@@ -76,5 +79,25 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/exhibit_editor_second_heading"
         android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/exhibit_editor_edit_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:text="Edit" />
+
+    <Button
+        android:id="@+id/exhibit_editor_save"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/exhibit_editor_title_layout"
+        android:layout_alignTop="@+id/exhibit_editor_edit_info"
+        android:text="Save"
+        android:visibility="invisible" />
 
 </RelativeLayout>

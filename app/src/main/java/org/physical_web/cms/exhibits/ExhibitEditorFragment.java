@@ -6,6 +6,7 @@ import android.support.design.widget.TextInputEditText;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 
 import org.physical_web.cms.R;
@@ -43,15 +44,54 @@ public class ExhibitEditorFragment extends Fragment {
         ((EditText) editorView.findViewById(R.id.exhibit_editor_description))
                 .setText(workingExhibit.getDescription());
 
+        ((Button) editorView.findViewById(R.id.exhibit_editor_edit_info))
+                .setOnClickListener(onEditButtonPress);
+        ((Button) editorView.findViewById(R.id.exhibit_editor_save))
+                .setOnClickListener(onSaveButtonPress);
 
         return editorView;
     }
+
+    private View.OnClickListener onEditButtonPress = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            View fragmentView = getView();
+            if(fragmentView == null)
+                throw new RuntimeException("Looks like we aren't in the fragment");
+
+            v.setVisibility(View.INVISIBLE);
+            fragmentView.findViewById(R.id.exhibit_editor_save).setVisibility(View.VISIBLE);
+            fragmentView.findViewById(R.id.exhibit_editor_description_layout).setEnabled(true);
+        }
+    };
+
+    private View.OnClickListener onSaveButtonPress = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            View fragmentView = getView();
+            if(fragmentView == null)
+                throw new RuntimeException("Looks like we aren't in the fragment");
+
+            v.setVisibility(View.INVISIBLE);
+            fragmentView.findViewById(R.id.exhibit_editor_edit_info).setVisibility(View.VISIBLE);
+            fragmentView.findViewById(R.id.exhibit_editor_description_layout).setEnabled(false);
+
+            String description = ((EditText) fragmentView
+                    .findViewById(R.id.exhibit_editor_description))
+                    .getText().toString();
+            exhibitEditor.setDescription(description);
+        }
+    };
 
     class ExhibitEditor {
         private Exhibit workingExhibit;
 
         public ExhibitEditor(Exhibit exhibit) {
             this.workingExhibit = exhibit;
+        }
+
+        public void setDescription(String newDescription) {
+            this.workingExhibit.setDescription(newDescription);
         }
     }
 }
