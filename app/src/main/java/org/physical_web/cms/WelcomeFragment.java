@@ -1,11 +1,13 @@
 package org.physical_web.cms;
 
 import android.app.Fragment;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.physical_web.cms.sync.ContentSynchronizer;
@@ -43,33 +45,44 @@ public class WelcomeFragment extends Fragment implements SyncStatusListener {
 
     @Override
     public void syncStatusChanged(int status) {
-        if(getActivity().findViewById(R.id.welcome_sync_text) == null)
+        if(getActivity() == null ||
+                getActivity().findViewById(R.id.welcome_sync_text) == null)
             return;
 
         final int widgetColorName;
         final String widgetText;
         final int progressBarVisibility;
+        final int statusIcon;
+        final int statusIconVisibility;
 
         switch (status) {
             case ContentSynchronizer.SYNC_IN_PROGRESS:
                 widgetText = "Sync in progress";
                 widgetColorName = android.R.color.holo_orange_light;
                 progressBarVisibility = View.VISIBLE;
+                statusIcon = -1;
+                statusIconVisibility = View.INVISIBLE;
                 break;
             case ContentSynchronizer.SYNC_COMPLETE:
                 widgetText = "Sync complete";
                 widgetColorName = android.R.color.holo_green_dark;
                 progressBarVisibility = View.INVISIBLE;
+                statusIcon = R.mipmap.cloud_done;
+                statusIconVisibility = View.VISIBLE;
                 break;
             case ContentSynchronizer.NO_SYNC_NETWORK_DOWN:
-                widgetText = "Connect to internet to sync";
+                widgetText = "No network connection";
                 widgetColorName = android.R.color.darker_gray;
                 progressBarVisibility = View.INVISIBLE;
+                statusIcon = R.mipmap.cloud_offline;
+                statusIconVisibility = View.VISIBLE;
                 break;
             case ContentSynchronizer.NO_SYNC_DRIVE_ERROR:
                 widgetText = "Sync failed";
                 widgetColorName = android.R.color.holo_red_dark;
                 progressBarVisibility = View.INVISIBLE;
+                statusIcon = R.mipmap.cloud_error;
+                statusIconVisibility = View.VISIBLE;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown sync status received");
@@ -88,6 +101,16 @@ public class WelcomeFragment extends Fragment implements SyncStatusListener {
 
                 getActivity().findViewById(R.id.welcome_sync_progress)
                         .setVisibility(progressBarVisibility);
+
+                getActivity().findViewById(R.id.welcome_sync_status)
+                        .setVisibility(statusIconVisibility);
+
+                if (statusIcon != -1) {
+                    ((ImageView) getActivity().findViewById(R.id.welcome_sync_status))
+                            .setImageResource(statusIcon);
+                    ((ImageView) getActivity().findViewById(R.id.welcome_sync_status))
+                            .setBackgroundColor(widgetColor);
+                }
             }
         });
     }
