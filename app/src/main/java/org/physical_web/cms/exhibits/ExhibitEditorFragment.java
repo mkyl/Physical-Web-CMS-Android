@@ -3,6 +3,7 @@ package org.physical_web.cms.exhibits;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import org.physical_web.cms.R;
  */
 public class ExhibitEditorFragment extends Fragment {
     private final static String TAG = ExhibitEditorFragment.class.getSimpleName();
+    private final static String FRAGMENT_TITLE = "Exhibit Editor";
     private ExhibitManager exhibitManager = ExhibitManager.getInstance();
     private ExhibitEditor exhibitEditor;
 
@@ -50,6 +52,12 @@ public class ExhibitEditorFragment extends Fragment {
                 .setOnClickListener(onSaveButtonPress);
 
         return editorView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
     private View.OnClickListener onEditButtonPress = new View.OnClickListener() {

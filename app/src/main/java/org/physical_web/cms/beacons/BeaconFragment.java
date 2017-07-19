@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -28,6 +29,7 @@ import java.util.List;
  */
 public class BeaconFragment extends Fragment {
     private final static String TAG = BeaconFragment.class.getSimpleName();
+    private final static String FRAGMENT_TITLE = "Beacons";
     private final static int COLUMN_COUNT = 2;
 
     private RecyclerView recyclerView;
@@ -60,6 +62,8 @@ public class BeaconFragment extends Fragment {
             }
         });
         thread.start();
+
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
     @Override

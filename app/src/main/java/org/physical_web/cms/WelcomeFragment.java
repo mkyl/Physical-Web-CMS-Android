@@ -3,6 +3,7 @@ package org.physical_web.cms;
 import android.app.Fragment;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import org.physical_web.cms.sync.SyncStatusListener;
  * status of Google Drive synchronization.
  */
 public class WelcomeFragment extends Fragment implements SyncStatusListener {
+    private final static String FRAGMENT_TITLE = "Home";
     ContentSynchronizer contentSynchronizer;
 
     public WelcomeFragment() {
@@ -41,6 +43,7 @@ public class WelcomeFragment extends Fragment implements SyncStatusListener {
     public void onResume() {
         super.onResume();
         contentSynchronizer.kickStartSync();
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
     @Override
