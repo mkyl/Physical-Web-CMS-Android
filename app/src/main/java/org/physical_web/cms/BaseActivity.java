@@ -139,10 +139,7 @@ public class BaseActivity extends AppCompatActivity {
         }
 
         private void switchFragment(String name) {
-            getSupportActionBar().setTitle(name);
-
             Fragment switchFragment;
-            Bundle args = new Bundle();
             switch(name) {
                 case "Home":
                     switchFragment = new WelcomeFragment();
@@ -163,7 +160,6 @@ public class BaseActivity extends AppCompatActivity {
                 default:
                     throw new RuntimeException("Unimplemented menu item");
             }
-            switchFragment.setArguments(args);
 
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction.replace(R.id.fragment_container, switchFragment);

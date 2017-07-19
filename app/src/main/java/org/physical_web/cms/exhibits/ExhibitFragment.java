@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +27,7 @@ import org.physical_web.cms.R;
  */
 public class ExhibitFragment extends Fragment {
     private final static String TAG = ExhibitFragment.class.getSimpleName();
+    private final static String FRAGMENT_TITLE = "Exhibits";
 
     private ExhibitManager exhibitManager = ExhibitManager.getInstance();
     private ExhibitAdapter exhibitAdapter;
@@ -60,6 +62,12 @@ public class ExhibitFragment extends Fragment {
         exhibitList.setAdapter(exhibitAdapter);
 
         return fragment;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
     private void showNewExhibitSheet() {
