@@ -26,6 +26,7 @@ import android.widget.TextView;
 import com.flipboard.bottomsheet.BottomSheetLayout;
 
 import org.physical_web.cms.R;
+import org.physical_web.cms.exhibits.ExhibitManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,7 @@ public class EnrollmentActivity extends AppCompatActivity {
     private static final long SCAN_PERIOD = 10000;
 
     private List<BluetoothDevice> bluetoothDevices;
+    private ExhibitManager exhibitManager;
     private Handler scanHandler = new Handler();
     private BeaconAdapter beaconListAdapter;
     private Snackbar snackbar;
@@ -54,6 +56,7 @@ public class EnrollmentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_enrollment);
 
         displayBTErrorSnackBar();
+        exhibitManager = ExhibitManager.getInstance();
 
         bluetoothDevices = new ArrayList<>();
         beaconListAdapter = new BeaconAdapter();
@@ -206,6 +209,7 @@ public class EnrollmentActivity extends AppCompatActivity {
                 BeaconDatabase db = BeaconDatabase.getDatabase(EnrollmentActivity.this);
                 db.beaconDao().insertBeacons(newBeacon);
                 db.close();
+                exhibitManager.configureNewBeacon(newBeacon);
             }
         }).start();
 
