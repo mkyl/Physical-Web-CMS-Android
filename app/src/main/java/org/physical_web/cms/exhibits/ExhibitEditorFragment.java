@@ -4,11 +4,14 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import org.physical_web.cms.R;
 
@@ -18,8 +21,11 @@ import org.physical_web.cms.R;
 public class ExhibitEditorFragment extends Fragment {
     private final static String TAG = ExhibitEditorFragment.class.getSimpleName();
     private final static String FRAGMENT_TITLE = "Exhibit Editor";
+
     private ExhibitManager exhibitManager = ExhibitManager.getInstance();
     private ExhibitEditor exhibitEditor;
+
+    private BeaconAdapter beaconAdapter;
 
     public ExhibitEditorFragment() {
         // Required empty public constructor
@@ -50,6 +56,15 @@ public class ExhibitEditorFragment extends Fragment {
                 .setOnClickListener(onEditButtonPress);
         ((Button) editorView.findViewById(R.id.exhibit_editor_save))
                 .setOnClickListener(onSaveButtonPress);
+
+        RecyclerView beaconList = (RecyclerView) editorView
+                .findViewById(R.id.exhibit_editor_beacon_list);
+
+        RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        beaconList.setLayoutManager(linearLayoutManager);
+
+        beaconAdapter = new BeaconAdapter();
+        beaconList.setAdapter(beaconAdapter);
 
         return editorView;
     }
@@ -100,6 +115,38 @@ public class ExhibitEditorFragment extends Fragment {
 
         public void setDescription(String newDescription) {
             this.workingExhibit.setDescription(newDescription);
+        }
+    }
+
+    class BeaconAdapter extends RecyclerView.Adapter<BeaconAdapter.ViewHolder> {
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewtype) {
+            View listItem = LayoutInflater
+                    .from(parent.getContext())
+                    .inflate(R.layout.item_exhibit_editor_beacon, parent, false);
+
+            return new ViewHolder(listItem);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder viewHolder, int position) {
+            String beaconName = ExhibitEditorFragment.this.exhibitEditor.workingExhibit
+                    .getBeaconNames()[position];
+            viewHolder.beaconTitle.setText(beaconName);
+        }
+
+        @Override
+        public int getItemCount() {
+            return ExhibitEditorFragment.this.exhibitEditor.workingExhibit.getBeaconNames().length;
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            TextView beaconTitle;
+
+            ViewHolder(View view) {
+                super(view);
+                beaconTitle = (TextView) view.findViewById(R.id.item_exhibit_editor_beacon_title);
+            }
         }
     }
 }
