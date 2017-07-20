@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.flipboard.bottomsheet.BottomSheetLayout;
 
 import org.physical_web.cms.R;
+import org.physical_web.cms.exhibits.ExhibitManager;
 
 import java.util.List;
 
@@ -39,9 +40,10 @@ public class BeaconFragment extends Fragment {
 
     private BeaconDatabase db;
     private Beacon selectedBeacon;
+    private ExhibitManager exhibitManager;
 
     public BeaconFragment() {
-        // Required empty public constructor
+        exhibitManager = ExhibitManager.getInstance();
     }
 
     @Override
@@ -204,6 +206,7 @@ public class BeaconFragment extends Fragment {
                     @Override
                     public void run() {
                         db.beaconDao().deleteBeacons(beaconToDelete);
+                        exhibitManager.configureRemovedBeacon(beaconToDelete);
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -226,6 +229,8 @@ public class BeaconFragment extends Fragment {
                                     @Override
                                     public void run() {
                                         db.beaconDao().insertBeacons(deletedBeacon);
+                                        // TODO BUG: beacon content will be deleted
+                                        exhibitManager.configureNewBeacon(deletedBeacon);
                                         getActivity().runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {

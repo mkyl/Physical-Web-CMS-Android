@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static util.MiscFile.deleteDir;
+
 public class FileManager {
     private static final String BEACON_FOLDER_NAME = "beacons";
     public static final String EXHIBIT_FOLDER_NAME = "exhibits";
@@ -60,19 +62,5 @@ public class FileManager {
             deleteDir(folderToRemove);
         else
             throw new IllegalArgumentException("Exhibit provided doesn't exist");
-    }
-
-    // recursively delete folders
-    private void deleteDir(File file) {
-        File[] contents = file.listFiles();
-        if (contents != null) {
-            for (File f : contents) {
-                deleteDir(f);
-            }
-        }
-
-        Boolean deletionSuccess = file.delete();
-        if(!deletionSuccess)
-            throw new RuntimeException("Couldn't delete folder");
     }
 }

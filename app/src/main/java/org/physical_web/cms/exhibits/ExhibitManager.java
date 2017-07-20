@@ -3,6 +3,7 @@ package org.physical_web.cms.exhibits;
 import android.content.Context;
 
 import org.physical_web.cms.FileManager;
+import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
 import java.util.List;
@@ -62,6 +63,18 @@ public class ExhibitManager {
         }).start();
         exhibitFileManager.removeExhibit(exhibit);
         this.refresh();
+    }
+
+    public void configureNewBeacon(Beacon beacon) {
+        for(Exhibit exhibit : exhibits) {
+            exhibit.configureForAdditionalBeacon(beacon);
+        }
+    }
+
+    public void configureRemovedBeacon(Beacon beacon) {
+        for(Exhibit exhibit : exhibits) {
+            exhibit.configureForRemovedBeacon(beacon);
+        }
     }
 
     public int getExhibitCount() {
