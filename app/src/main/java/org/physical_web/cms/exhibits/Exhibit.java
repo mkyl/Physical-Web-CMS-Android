@@ -7,11 +7,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.physical_web.cms.beacons.Beacon;
+import org.physical_web.cms.beacons.BeaconDatabase;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -45,10 +45,11 @@ public class Exhibit {
         String name = folder.getName();
         Exhibit result = new Exhibit(name);
 
+        result.exhibitFolder = folder;
         result.active = false;
         result.contentsPerBeacon = result.loadExhibitContentsFromFolder(folder);
         result.metadata = result.loadMetadataFromFolder(folder);
-        result.exhibitFolder = folder;
+        result.loadBeaconsIntoMetadata();
 
         return result;
     }
@@ -169,7 +170,8 @@ public class Exhibit {
             beaconContent.put(contents);
 
             metadata.getJSONArray("beacons").put(beaconContent);
-        } catch (JSONException e) {
+            writeMetaDataToFile(new File(exhibitFolder, METADATA_FILE_NAME));
+        } catch (Exception e) {
             Log.e(TAG, "Error editing JSON: " + e);
         }
 
@@ -212,10 +214,55 @@ public class Exhibit {
             } else {
                 throw new IllegalArgumentException("No such beacon found to delete");
             }
-        } catch (JSONException e) {
+
+            writeMetaDataToFile(new File(exhibitFolder, METADATA_FILE_NAME));
+        } catch (Exception e) {
             Log.e(TAG, "Removing beacon from metadata failed: " + e);
         }
         deleteDir(beaconContentFolder);
+    }
+
+    public void loadBeaconsIntoMetadata() {
+        try {
+            JSONArray beaconArray = metadata.getJSONArray("beacons");
+            if(beaconArray.length() == 0) {
+                for(File file : exhibitFolder.listFiles()) {
+                    if(!file.isFile()) {
+                        JSONObject name = new JSONObject();
+                        name.put("beacon-name", file.getName());
+                        JSONArray contents = new JSONArray();
+
+                        JSONArray beaconContent = new JSONArray();
+                        beaconContent.put(name);
+                        beaconContent.put(contents);
+                        beaconArray.put(beaconContent);
+                    }
+                }
+                writeMetaDataToFile(new File(exhibitFolder, METADATA_FILE_NAME));
+            }
+        } catch (Exception e) {
+            Log.d(TAG, e.toString());
+        }
+    }
+
+    public String[] getBeaconNames() {
+        try {
+            JSONArray beaconArray = metadata.getJSONArray("beacons");
+            String[] result = new String[beaconArray.length()];
+            for(int i = 0; i < beaconArray.length(); i++) {
+                Object object = beaconArray.get(i);
+                if(object instanceof JSONArray) {
+                    JSONArray beaconContents = (JSONArray) object;
+                    result[i] = beaconContents.getJSONObject(0).getString("beacon-name");
+                } else {
+                    throw new IllegalStateException();
+                }
+            }
+            return result;
+        } catch (JSONException e) {
+            Log.e(TAG, e.toString());
+            return null;
+        }
     }
 
     private String readFile(File file) throws IOException {

@@ -2,6 +2,8 @@ package org.physical_web.cms;
 
 import android.content.Context;
 
+import org.physical_web.cms.beacons.Beacon;
+import org.physical_web.cms.beacons.BeaconDatabase;
 import org.physical_web.cms.exhibits.Exhibit;
 
 import java.io.File;
@@ -16,8 +18,10 @@ public class FileManager {
 
     private File internalStorage;
     private File exhibitFolder;
+    private Context context;
 
     public FileManager(Context context) {
+        this.context = context;
         internalStorage = context.getFilesDir();
 
         createFolderIfNotExists(EXHIBIT_FOLDER_NAME);
@@ -52,6 +56,25 @@ public class FileManager {
         String exhibitName = exhibit.getTitle();
         File newFolder = new File(exhibitFolder, exhibitName);
         newFolder.mkdir();
+        createContentFolders(newFolder, exhibit);
+    }
+
+    public void createContentFolders(final File folder, final Exhibit exhibit) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<Beacon> beacons = BeaconDatabase.getDatabase(context).beaconDao().getAllBeacons();
+                for(Beacon beacon : beacons) {
+                    File beaconFolder = new File(folder, beacon.friendlyName);
+                    if (!beaconFolder.exists()) {
+                        beaconFolder.mkdir();
+                        exhibit.loadBeaconsIntoMetadata();
+                    }
+                    else
+                        throw new IllegalStateException("Beacon folder already exists");
+                }
+            }
+        }).start();
     }
 
     public void removeExhibit(Exhibit exhibit) {
