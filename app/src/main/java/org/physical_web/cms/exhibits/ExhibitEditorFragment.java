@@ -24,6 +24,7 @@ public class ExhibitEditorFragment extends Fragment {
     private final static String FRAGMENT_TITLE = "Exhibit Editor";
 
     private ExhibitManager exhibitManager = ExhibitManager.getInstance();
+    private Exhibit workingExhibit;
     private ExhibitEditor exhibitEditor;
 
     private BeaconAdapter beaconAdapter;
@@ -44,7 +45,7 @@ public class ExhibitEditorFragment extends Fragment {
             throw new IllegalArgumentException("No exhibit provided to edit");
 
         String exhibitName = bundle.getString("exhibit-name");
-        Exhibit workingExhibit = exhibitManager.getByName(exhibitName);
+        workingExhibit = exhibitManager.getByName(exhibitName);
 
         exhibitEditor = new ExhibitEditor(workingExhibit);
 
@@ -131,7 +132,7 @@ public class ExhibitEditorFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
-            String beaconName = ExhibitEditorFragment.this.exhibitEditor.workingExhibit
+            final String beaconName = ExhibitEditorFragment.this.exhibitEditor.workingExhibit
                     .getBeaconNames()[position];
             viewHolder.beaconTitle.setText(beaconName);
             viewHolder.background.setOnClickListener(new View.OnClickListener() {
@@ -139,10 +140,11 @@ public class ExhibitEditorFragment extends Fragment {
                 public void onClick(View v) {
                     Fragment contentEditor = new ExhibitContentFragment();
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                    // last argument is the fragment TAG, used by base activity to identify this
-                    // fragment. Don't remove it@
-                    transaction.replace(R.id.fragment_container, contentEditor,
-                            ExhibitContentFragment.TAG);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("exhibit-name", workingExhibit.getTitle());
+                    bundle.putString("beacon-name", beaconName);
+                    contentEditor.setArguments(bundle);
+                    transaction.replace(R.id.fragment_container, contentEditor);
                     transaction.addToBackStack(null);
                     transaction.commit();
                 }

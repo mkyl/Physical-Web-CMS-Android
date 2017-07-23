@@ -1,5 +1,7 @@
 package org.physical_web.cms.exhibits;
 
+import android.content.Context;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
@@ -12,12 +14,14 @@ import org.physical_web.cms.beacons.BeaconDatabase;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.UUID;
 
 import static util.MiscFile.deleteDir;
 
@@ -75,6 +79,19 @@ public class Exhibit {
             Log.e(TAG, e.toString());
         }
     }
+
+    /*
+    public void addContent(ExhibitContent content) {
+        this.exhibitContents.add(content);
+    }
+
+    public void removeContent(ExhibitContent content) {
+        if (this.exhibitContents.contains(content))
+            this.exhibitContents.remove(content);
+        else
+            throw new IllegalArgumentException("Content not found in exhibit");
+    }
+    */
 
     public void makeActive() {
         this.active = true;
@@ -274,5 +291,28 @@ public class Exhibit {
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(file));
         outputStreamWriter.write(string);
         outputStreamWriter.close();
+    }
+
+    public void insertContent(Uri uri, String beacon, Context ctx) {
+        try {
+            InputStream inputStream = ctx.getContentResolver().openInputStream(uri);
+            // TODO find reliable way to get filename from URI
+            String localCopyName = UUID.randomUUID().toString().replaceAll("-", "");
+            File chosenBeacon = new File(exhibitFolder, beacon);
+            File localCopy = new File(chosenBeacon, localCopyName);
+
+            FileOutputStream outputStream = new FileOutputStream(localCopy);
+
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+
+            outputStream.close();
+            inputStream.close();
+        } catch (Exception e) {
+            Log.d(TAG, "Error copying file with URI " + uri + ": " + e);
+        }
     }
 }
