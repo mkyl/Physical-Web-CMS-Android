@@ -1,6 +1,7 @@
 package org.physical_web.cms.exhibits;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -133,6 +134,19 @@ public class ExhibitEditorFragment extends Fragment {
             String beaconName = ExhibitEditorFragment.this.exhibitEditor.workingExhibit
                     .getBeaconNames()[position];
             viewHolder.beaconTitle.setText(beaconName);
+            viewHolder.background.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Fragment contentEditor = new ExhibitContentFragment();
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    // last argument is the fragment TAG, used by base activity to identify this
+                    // fragment. Don't remove it@
+                    transaction.replace(R.id.fragment_container, contentEditor,
+                            ExhibitContentFragment.TAG);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                }
+            });
         }
 
         @Override
@@ -142,10 +156,12 @@ public class ExhibitEditorFragment extends Fragment {
 
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView beaconTitle;
+            View background;
 
             ViewHolder(View view) {
                 super(view);
                 beaconTitle = (TextView) view.findViewById(R.id.item_exhibit_editor_beacon_title);
+                background = view;
             }
         }
     }

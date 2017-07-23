@@ -76,19 +76,6 @@ public class Exhibit {
         }
     }
 
-    /*
-    public void addContent(ExhibitContent content) {
-        this.exhibitContents.add(content);
-    }
-
-    public void removeContent(ExhibitContent content) {
-        if (this.exhibitContents.contains(content))
-            this.exhibitContents.remove(content);
-        else
-            throw new IllegalArgumentException("Content not found in exhibit");
-    }
-    */
-
     public void makeActive() {
         this.active = true;
         // TODO complete method
