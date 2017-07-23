@@ -9,7 +9,7 @@ import java.util.List;
  */
 public interface BeaconEventListener {
     /**
-     * Returns list of configurable Eddystone com.physical_web.cms.physicalwebcms.beacons after scan complete.
+     * Returns list of configurable Eddystone beacons after scan complete.
      *
      * @param beacons Beacons in configuration mode
      */
