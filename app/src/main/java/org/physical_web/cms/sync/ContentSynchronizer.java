@@ -180,13 +180,14 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      */
     @Override
     public void onFolderEvent(int event, File file) {
-        Boolean interestingEvent = event == FileObserver.MODIFY;
-        interestingEvent |= (event == FileObserver.CREATE);
-        interestingEvent |= (event == FileObserver.DELETE);
+        int interestingEvents = FileObserver.ALL_EVENTS;
+        interestingEvents &= (FileObserver.MODIFY | FileObserver.CREATE | FileObserver.DELETE);
 
-        Log.d(TAG, "Detected change in file: " + file.getPath());
-        if(interestingEvent)
+
+        if((event & interestingEvents) != 0) {
+            Log.d(TAG, "Detected change in file: " + file.getPath());
             syncNeeded();
+        }
     }
 
     /**
