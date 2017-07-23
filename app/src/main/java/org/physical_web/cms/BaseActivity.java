@@ -1,14 +1,16 @@
 package org.physical_web.cms;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +19,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.physical_web.cms.beacons.BeaconFragment;
+import org.physical_web.cms.exhibits.ContentPickerListener;
+import org.physical_web.cms.exhibits.ExhibitContentFragment;
 import org.physical_web.cms.exhibits.ExhibitFragment;
 import org.physical_web.cms.exhibits.ExhibitManager;
 import org.physical_web.cms.setup.SetupManager;
@@ -167,6 +171,25 @@ public class BaseActivity extends AppCompatActivity {
             transaction.commit();
 
             drawerLayout.closeDrawer(Gravity.START);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        if (resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
+                case ContentPickerListener.FILE_PICKER_ROUTING_CODE:
+                    Fragment result = getFragmentManager()
+                            .findFragmentByTag(ExhibitContentFragment.TAG);
+                    if (result != null)
+                        ((ContentPickerListener) result).onContentReturned(resultData.getData());
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unrecognized routing code received");
+            }
+        } else {
+            Log.e(TAG, "Activity request with request code " + requestCode
+                    + " failed with error code " + resultCode);
         }
     }
 }
