@@ -1,19 +1,14 @@
 package org.physical_web.cms;
 
 import android.content.Context;
-import android.net.Uri;
-import android.util.Log;
 
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.beacons.BeaconDatabase;
 import org.physical_web.cms.exhibits.Exhibit;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static util.MiscFile.deleteDir;
 

@@ -1,11 +1,11 @@
 package util;
 
+import android.os.FileObserver;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-
-import android.os.FileObserver;
 
 /**
  * A FileObserver that observes all the files/folders within given directory
