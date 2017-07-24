@@ -47,6 +47,9 @@ public abstract class ExhibitContent {
         return result;
     }
 
+    public String getContentName() {
+        return this.contentName;
+    }
     public void setContentName(String contentName){
         this.contentName = contentName;
     }

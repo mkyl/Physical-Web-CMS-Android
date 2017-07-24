@@ -3,10 +3,13 @@ package org.physical_web.cms.exhibits;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +29,9 @@ public class ExhibitContentFragment extends Fragment {
 
     private Exhibit workingExhibit;
     private Beacon workingBeacon;
+    private ExhibitContent[] exhibitContents;
+
+    private ContentAdapter contentAdapter;
 
     public ExhibitContentFragment() {
         // required empty constructor
@@ -44,6 +50,8 @@ public class ExhibitContentFragment extends Fragment {
         String beaconName = passedArguments.getString("beacon-name");
         workingBeacon = new Beacon("", beaconName);
 
+        exhibitContents = workingExhibit.getContentForBeacon(workingBeacon.friendlyName);
+
         // Inflate the layout for this fragment
         View result = inflater.inflate(R.layout.fragment_exhibit_content, container, false);
 
@@ -56,9 +64,14 @@ public class ExhibitContentFragment extends Fragment {
             }
         });
 
-        ((TextView) result.findViewById(R.id.temp))
-                .setText(String
-                        .valueOf(workingExhibit.getContentForBeacon(workingBeacon.friendlyName)));
+        RecyclerView contentList = (RecyclerView) result
+                .findViewById(R.id.fragment_exhibit_content_list);
+
+        RecyclerView.LayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        contentList.setLayoutManager(linearLayoutManager);
+
+        contentAdapter = new ContentAdapter();
+        contentList.setAdapter(contentAdapter);
 
         return result;
     }
@@ -94,5 +107,53 @@ public class ExhibitContentFragment extends Fragment {
     private void handleURI(Uri uri) {
         Log.d(TAG, "received URI: " + uri);
         workingExhibit.insertContent(uri, workingBeacon.friendlyName, getActivity());
+        refreshContentList();
+    }
+
+    private void refreshContentList() {
+        exhibitContents = workingExhibit.getContentForBeacon(workingBeacon.friendlyName);
+        contentAdapter.notifyDataSetChanged();
+    }
+
+    class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ViewHolder> {
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewtype) {
+            View listItem = LayoutInflater
+                    .from(parent.getContext())
+                    .inflate(R.layout.item_exhibit_editor_beacon, parent, false);
+
+            return new ViewHolder(listItem);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder viewHolder, int position) {
+            String contentName = ExhibitContentFragment
+                    .this.exhibitContents[position].getContentName();
+            viewHolder.beaconTitle.setText(contentName);
+            /*
+            viewHolder.background.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // to do
+                }
+            });
+            */
+        }
+
+        @Override
+        public int getItemCount() {
+            return ExhibitContentFragment.this.exhibitContents.length;
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            TextView beaconTitle;
+            View background;
+
+            ViewHolder(View view) {
+                super(view);
+                beaconTitle = (TextView) view.findViewById(R.id.item_exhibit_editor_beacon_title);
+                background = view;
+            }
+        }
     }
 }
