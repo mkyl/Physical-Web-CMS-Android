@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.physical_web.cms.R;
 import org.physical_web.cms.beacons.Beacon;
@@ -95,6 +94,5 @@ public class ExhibitContentFragment extends Fragment {
     private void handleURI(Uri uri) {
         Log.d(TAG, "received URI: " + uri);
         workingExhibit.insertContent(uri, workingBeacon.friendlyName, getActivity());
-        Toast.makeText(getActivity(), "Content saved", Toast.LENGTH_SHORT).show();
     }
 }

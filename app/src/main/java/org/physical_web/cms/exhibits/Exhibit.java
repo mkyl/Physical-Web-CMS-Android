@@ -11,7 +11,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.physical_web.cms.beacons.Beacon;
-import org.physical_web.cms.beacons.BeaconDatabase;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.UUID;
 
 import static util.MiscFile.deleteDir;
 

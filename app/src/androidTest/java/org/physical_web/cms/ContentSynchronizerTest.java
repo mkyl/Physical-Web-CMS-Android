@@ -9,14 +9,13 @@ import android.support.test.filters.LargeTest;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
-import org.physical_web.cms.sync.ContentSynchronizer;
-import org.physical_web.cms.sync.SyncStatusListener;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.physical_web.cms.sync.ContentSynchronizer;
+import org.physical_web.cms.sync.SyncStatusListener;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -34,16 +33,15 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import static org.physical_web.cms.sync.ContentSynchronizer.SYNC_COMPLETE;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
+import static org.physical_web.cms.sync.ContentSynchronizer.SYNC_COMPLETE;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -95,7 +93,7 @@ public class ContentSynchronizerTest {
 
             contentSynchronizer.kickStartSync();
 
-            ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass( Integer.class );
+            ArgumentCaptor<Integer> captor = ArgumentCaptor.forClass(Integer.class);
             verify(mockUploadListener, timeout(20000).atLeast(2)).syncStatusChanged(captor.capture());
             List<Integer> status = captor.getAllValues();
 
@@ -112,12 +110,12 @@ public class ContentSynchronizerTest {
             contentSynchronizer.registerSyncStatusListener(mockDownloadListener);
             contentSynchronizer.kickStartSync();
 
-            ArgumentCaptor<Integer> downloadCaptor = ArgumentCaptor.forClass( Integer.class );
+            ArgumentCaptor<Integer> downloadCaptor = ArgumentCaptor.forClass(Integer.class);
             verify(mockDownloadListener, timeout(20000).atLeast(2))
                     .syncStatusChanged(downloadCaptor.capture());
             List<Integer> status2 = downloadCaptor.getAllValues();
 
-            if(status2.contains(SYNC_COMPLETE))
+            if (status2.contains(SYNC_COMPLETE))
                 Log.d(TAG, "Download complete. Checking integrity of fetched copy");
             else
                 fail("Download got wrong status code: " + status);
@@ -137,7 +135,7 @@ public class ContentSynchronizerTest {
         randomFile.createNewFile();
         FileWriter writer = new FileWriter(randomFile);
 
-        for(int i = 0; i < 12000; i++) {
+        for (int i = 0; i < 12000; i++) {
             byte[] array = new byte[500]; // length is bounded by 7
             new Random().nextBytes(array);
             String generatedString = new String(array, Charset.forName("UTF-8"));
@@ -154,24 +152,20 @@ public class ContentSynchronizerTest {
      * Read the file and calculate the SHA-1 checksum
      * source: http://www.javacreed.com/how-to-generate-sha1-hash-value-of-file/
      *
-     * @param file
-     *            the file to read
+     * @param file the file to read
      * @return the hex representation of the SHA-1 using uppercase chars
-     * @throws FileNotFoundException
-     *             if the file does not exist, is a directory rather than a
-     *             regular file, or for some other reason cannot be opened for
-     *             reading
-     * @throws IOException
-     *             if an I/O error occurs
-     * @throws NoSuchAlgorithmException
-     *             should never happen
+     * @throws FileNotFoundException    if the file does not exist, is a directory rather than a
+     *                                  regular file, or for some other reason cannot be opened for
+     *                                  reading
+     * @throws IOException              if an I/O error occurs
+     * @throws NoSuchAlgorithmException should never happen
      */
     public static String sha1(final File file) throws NoSuchAlgorithmException, IOException {
         final MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
 
         InputStream is = new BufferedInputStream(new FileInputStream(file));
         final byte[] buffer = new byte[1024];
-        for (int read = 0; (read = is.read(buffer)) != -1;) {
+        for (int read = 0; (read = is.read(buffer)) != -1; ) {
             messageDigest.update(buffer, 0, read);
         }
 
