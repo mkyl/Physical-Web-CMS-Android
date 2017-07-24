@@ -1,14 +1,20 @@
 package org.physical_web.cms.exhibits;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLConnection;
+import java.util.Scanner;
 
 /**
  * Abstract class representing the types of content that can be stored in an exhibit
@@ -81,7 +87,37 @@ public abstract class ExhibitContent {
 }
 
 class TextContent extends ExhibitContent {
-    public TextContent(File contentFile) {}
+    String text;
+
+    public TextContent(File contentFile) {
+        try {
+            text = readFile(contentFile);
+        } catch (Exception e) {
+            throw new RuntimeException("couldn't read text");
+        }
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    private String readFile(File file) throws IOException {
+        StringBuilder fileContents = new StringBuilder((int)file.length());
+        Scanner scanner = new Scanner(file);
+        String lineSeparator = System.getProperty("line.separator");
+
+        try {
+            while(scanner.hasNextLine()) {
+                fileContents.append(scanner.nextLine());
+                // avoid extra line separator at end of file
+                if(scanner.hasNextLine())
+                    fileContents.append(lineSeparator);
+            }
+            return fileContents.toString();
+        } finally {
+            scanner.close();
+        }
+    }
 
     @Override
     public String toHTML() {
@@ -90,7 +126,15 @@ class TextContent extends ExhibitContent {
 }
 
 class SoundContent extends ExhibitContent {
-    public SoundContent(File contentFile) {}
+    Uri soundURI;
+
+    public SoundContent(File contentFile) {
+        soundURI = Uri.fromFile(contentFile);
+    }
+
+    public Uri getURI() {
+        return soundURI;
+    }
 
     @Override
     public String toHTML() {
@@ -99,7 +143,15 @@ class SoundContent extends ExhibitContent {
 }
 
 class ImageContent extends ExhibitContent {
-    public ImageContent(File contentFile) {}
+    private Bitmap bitmap;
+
+    public ImageContent(File contentFile) {
+        bitmap = BitmapFactory.decodeFile(contentFile.getAbsolutePath());
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
 
     @Override
     public String toHTML() {
@@ -108,7 +160,15 @@ class ImageContent extends ExhibitContent {
 }
 
 class VideoContent extends ExhibitContent {
-    public VideoContent(File contentFile) {}
+    String videoPath;
+
+    public VideoContent(File contentFile) {
+        videoPath = contentFile.getAbsolutePath();
+    }
+
+    public String getVideoPath() {
+        return videoPath;
+    }
 
     @Override
     public String toHTML() {

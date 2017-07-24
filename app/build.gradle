@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "org.physical_web.cms"
-        minSdkVersion 18
+        minSdkVersion 19
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -40,6 +40,7 @@ dependencies {
     compile 'com.flipboard:bottomsheet-core:1.5.3'
     compile 'com.mikhaellopez:circularimageview:3.0.2'
     compile 'android.arch.persistence.room:runtime:1.0.0-alpha3'
+    compile 'net.the4thdimension:audio-wife:1.0.3'
     testCompile 'junit:junit:4.12'
     androidTestCompile 'org.mockito:mockito-core:2.8.47'
     androidTestCompile 'com.linkedin.dexmaker:dexmaker-mockito:2.2.0'

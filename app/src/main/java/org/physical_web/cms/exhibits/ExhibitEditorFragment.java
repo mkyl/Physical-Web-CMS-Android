@@ -21,7 +21,7 @@ import org.physical_web.cms.R;
  */
 public class ExhibitEditorFragment extends Fragment {
     private final static String TAG = ExhibitEditorFragment.class.getSimpleName();
-    private final static String FRAGMENT_TITLE = "Exhibit Editor";
+    private final static String FRAGMENT_TITLE = "Edit Exhibit";
 
     private ExhibitManager exhibitManager = ExhibitManager.getInstance();
     private Exhibit workingExhibit;
