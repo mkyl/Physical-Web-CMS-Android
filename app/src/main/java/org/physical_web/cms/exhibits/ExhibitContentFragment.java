@@ -3,21 +3,28 @@ package org.physical_web.cms.exhibits;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import org.physical_web.cms.R;
 import org.physical_web.cms.beacons.Beacon;
+import org.w3c.dom.Text;
+
+import nl.changer.audiowife.AudioWife;
 
 
 /**
@@ -25,6 +32,8 @@ import org.physical_web.cms.beacons.Beacon;
  */
 public class ExhibitContentFragment extends Fragment {
     public final static String TAG = ExhibitContentFragment.class.getSimpleName();
+    private final static String FRAGMENT_TITLE = "Edit Beacon Content";
+
     private final static int FILE_PICKER_ROUTING_CODE = 1032;
 
     private Exhibit workingExhibit;
@@ -76,6 +85,12 @@ public class ExhibitContentFragment extends Fragment {
         return result;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+    }
+
     private void addContent() {
         Intent filePickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 
@@ -120,24 +135,43 @@ public class ExhibitContentFragment extends Fragment {
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewtype) {
             View listItem = LayoutInflater
                     .from(parent.getContext())
-                    .inflate(R.layout.item_exhibit_editor_beacon, parent, false);
+                    .inflate(R.layout.item_exhibit_content, parent, false);
 
             return new ViewHolder(listItem);
         }
 
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
-            String contentName = ExhibitContentFragment
-                    .this.exhibitContents[position].getContentName();
-            viewHolder.beaconTitle.setText(contentName);
-            /*
-            viewHolder.background.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // to do
-                }
-            });
-            */
+            ExhibitContent content = ExhibitContentFragment.this.exhibitContents[position];
+            String contentName = content.getContentName();
+            viewHolder.contentTitle.setText(contentName);
+
+            // in case view is recycled
+            viewHolder.videoView.setVisibility(View.INVISIBLE);
+            viewHolder.imageView.setVisibility(View.INVISIBLE);
+            viewHolder.soundView.setVisibility(View.INVISIBLE);
+            viewHolder.textView.setVisibility(View.INVISIBLE);
+
+            if(content instanceof ImageContent) {
+                viewHolder.imageView.setImageBitmap(((ImageContent) content).getBitmap());
+                viewHolder.imageView.setVisibility(View.VISIBLE);
+            } else if (content instanceof VideoContent) {
+                viewHolder.videoView.setVideoPath(((VideoContent) content).getVideoPath());
+                // TODO figure out how to make this scroll along video
+                viewHolder.videoView.seekTo(10);
+                MediaController mediaController = new MediaController(getActivity());
+                mediaController.setAnchorView(viewHolder.videoView);
+                viewHolder.videoView.setMediaController(mediaController);
+                viewHolder.videoView.setVisibility(View.VISIBLE);
+            } else if (content instanceof  SoundContent) {
+                Uri soundUri = ((SoundContent) content).getURI();
+                AudioWife.getInstance().init(getActivity(), soundUri)
+                        .useDefaultUi(viewHolder.soundView, getActivity().getLayoutInflater());
+                viewHolder.soundView.setVisibility(View.VISIBLE);
+            } else if (content instanceof TextContent) {
+                viewHolder.textView.setText(((TextContent) content).getText());
+                viewHolder.textView.setVisibility(View.VISIBLE);
+            }
         }
 
         @Override
@@ -146,12 +180,20 @@ public class ExhibitContentFragment extends Fragment {
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            TextView beaconTitle;
+            TextView contentTitle;
+            ImageView imageView;
+            VideoView videoView;
+            LinearLayout soundView;
+            TextView textView;
             View background;
 
             ViewHolder(View view) {
                 super(view);
-                beaconTitle = (TextView) view.findViewById(R.id.item_exhibit_editor_beacon_title);
+                contentTitle = (TextView) view.findViewById(R.id.item_exhibit_content_title);
+                imageView = (ImageView) view.findViewById(R.id.item_exhibit_content_image);
+                videoView = (VideoView) view.findViewById(R.id.item_exhibit_content_video);
+                soundView = (LinearLayout) view.findViewById(R.id.item_exhibit_content_audio);
+                textView = (TextView) view.findViewById(R.id.item_exhibit_content_text);
                 background = view;
             }
         }
