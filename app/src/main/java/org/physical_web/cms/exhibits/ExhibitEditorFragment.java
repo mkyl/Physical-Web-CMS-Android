@@ -17,7 +17,8 @@ import android.widget.TextView;
 import org.physical_web.cms.R;
 
 /**
- * A simple {@link Fragment} subclass.
+ * Handles editing the exhibit metadata as well as listing the beacons involved in
+ * exhibit
  */
 public class ExhibitEditorFragment extends Fragment {
     private final static String TAG = ExhibitEditorFragment.class.getSimpleName();

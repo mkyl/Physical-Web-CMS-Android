@@ -166,7 +166,6 @@ public class ExhibitFragment extends Fragment {
             viewHolder.background.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG, "Chose menu item: " + exhibitToDraw.getTitle());
                     Fragment exhibitEditor = new ExhibitEditorFragment();
                     Bundle args = new Bundle();
                     args.putString("exhibit-name", exhibitToDraw.getTitle());

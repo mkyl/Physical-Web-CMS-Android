@@ -1,8 +1,10 @@
 package org.physical_web.cms.exhibits;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.OpenableColumns;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -12,6 +14,7 @@ import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.beacons.BeaconDatabase;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,24 +77,11 @@ public class Exhibit {
     public void setDescription(String newDescription) {
         try {
             this.metadata.put("description", newDescription);
-            writeMetaDataToFile(new File(exhibitFolder, METADATA_FILE_NAME));
+            new File(exhibitFolder, METADATA_FILE_NAME);
         } catch (Exception e) {
             Log.e(TAG, e.toString());
         }
     }
-
-    /*
-    public void addContent(ExhibitContent content) {
-        this.exhibitContents.add(content);
-    }
-
-    public void removeContent(ExhibitContent content) {
-        if (this.exhibitContents.contains(content))
-            this.exhibitContents.remove(content);
-        else
-            throw new IllegalArgumentException("Content not found in exhibit");
-    }
-    */
 
     public void makeActive() {
         this.active = true;
@@ -144,8 +134,9 @@ public class Exhibit {
         return result;
     }
 
-    private void writeMetaDataToFile(File metadataFile) throws IOException {
-        writeToFile(metadataFile, this.metadata.toString());
+    private void saveMetadata() throws IOException {
+        File target = new File(exhibitFolder, METADATA_FILE_NAME);
+        writeToFile(target, this.metadata.toString());
     }
 
     private void createMetaDataFile(File metadataFile) throws IOException, JSONException {
@@ -165,16 +156,13 @@ public class Exhibit {
             throw new IllegalArgumentException("Beacon content folder already setup");
 
         try {
-            JSONObject name = new JSONObject();
-            name.put("beacon-name", beaconName);
+            JSONObject beacon = new JSONObject();
+            beacon.put("beacon-name", beaconName);
             JSONArray contents = new JSONArray();
+            beacon.put("beacon-contents", contents);
 
-            JSONArray beaconContent = new JSONArray();
-            beaconContent.put(name);
-            beaconContent.put(contents);
-
-            metadata.getJSONArray("beacons").put(beaconContent);
-            writeMetaDataToFile(new File(exhibitFolder, METADATA_FILE_NAME));
+            metadata.getJSONArray("beacons").put(beacon);
+            saveMetadata();
         } catch (Exception e) {
             Log.e(TAG, "Error editing JSON: " + e);
         }
@@ -194,16 +182,11 @@ public class Exhibit {
             Boolean foundBeacon = false;
 
             for(int i = 0; i < beacons.length(); i++) {
-                JSONArray currentBeacon;
-                Object object = beacons.get(i);
-                if(object instanceof JSONArray)
-                    currentBeacon = (JSONArray) object;
-                else
-                    throw new IllegalStateException("Corrupted metadata file");
+                JSONObject currentBeacon = beacons.getJSONObject(i);
 
                 // name is stored in first field
-                JSONObject currentBeaconName = currentBeacon.getJSONObject(0);
-                if(currentBeaconName.getString("beacon-name").equals(removedBeacon.friendlyName)) {
+                String currentBeaconName = currentBeacon.getString("beacon-name");
+                if(currentBeaconName.equals(removedBeacon.friendlyName)) {
                     foundBeacon = true;
                     targetIndex = i;
                 }
@@ -219,7 +202,7 @@ public class Exhibit {
                 throw new IllegalArgumentException("No such beacon found to delete");
             }
 
-            writeMetaDataToFile(new File(exhibitFolder, METADATA_FILE_NAME));
+            saveMetadata();
         } catch (Exception e) {
             Log.e(TAG, "Removing beacon from metadata failed: " + e);
         }
@@ -232,17 +215,15 @@ public class Exhibit {
             if(beaconArray.length() == 0) {
                 for(File file : exhibitFolder.listFiles()) {
                     if(!file.isFile()) {
-                        JSONObject name = new JSONObject();
-                        name.put("beacon-name", file.getName());
-                        JSONArray contents = new JSONArray();
+                        JSONObject beacon = new JSONObject();
+                        beacon.put("beacon-name", file.getName());
 
-                        JSONArray beaconContent = new JSONArray();
-                        beaconContent.put(name);
-                        beaconContent.put(contents);
-                        beaconArray.put(beaconContent);
+                        JSONArray contents = new JSONArray();
+                        beacon.put("beacon-contents", contents);
+                        beaconArray.put(beacon);
                     }
                 }
-                writeMetaDataToFile(new File(exhibitFolder, METADATA_FILE_NAME));
+                saveMetadata();
             }
         } catch (Exception e) {
             Log.d(TAG, e.toString());
@@ -254,17 +235,48 @@ public class Exhibit {
             JSONArray beaconArray = metadata.getJSONArray("beacons");
             String[] result = new String[beaconArray.length()];
             for(int i = 0; i < beaconArray.length(); i++) {
-                Object object = beaconArray.get(i);
-                if(object instanceof JSONArray) {
-                    JSONArray beaconContents = (JSONArray) object;
-                    result[i] = beaconContents.getJSONObject(0).getString("beacon-name");
-                } else {
-                    throw new IllegalStateException();
-                }
+                JSONObject beacon = beaconArray.getJSONObject(i);
+                result[i] = beacon.getString("beacon-name");
             }
             return result;
         } catch (JSONException e) {
             Log.e(TAG, e.toString());
+            return null;
+        }
+    }
+
+    public ExhibitContent[] getContentForBeacon(String beacon) {
+        try {
+            JSONArray beacons = metadata.getJSONArray("beacons");
+            int targetIndex = -1;
+            for (int i = 0; i < beacons.length(); i++) {
+                // index of beacon-name is 0
+                if (beacons.getJSONObject(i).getString("beacon-name").equals(beacon)) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+            if (targetIndex == -1)
+                throw new IllegalArgumentException("No such beacon found in metadata");
+
+            JSONArray contents = beacons.getJSONObject(targetIndex).getJSONArray("beacon-contents");
+            ExhibitContent[] result = new ExhibitContent[contents.length()];
+
+            File beaconFolder = new File(exhibitFolder, beacon);
+            for(int i = 0; i < contents.length(); i++) {
+                String contentFilename = (String) contents.get(i);
+                File targetFile = new File(beaconFolder, contentFilename);
+
+                if (!targetFile.exists())
+                    throw new IllegalStateException("Metadata references non-existent file: "
+                            + contentFilename);
+
+                result[i] = ExhibitContent.fromFile(targetFile);
+            }
+
+            return result;
+        } catch (JSONException e) {
+            Log.e(TAG, "failed to read metadata: " + e);
             return null;
         }
     }
@@ -294,12 +306,31 @@ public class Exhibit {
     }
 
     public void insertContent(Uri uri, String beacon, Context ctx) {
+        String displayName;
+        InputStream inputStream;
+
         try {
-            InputStream inputStream = ctx.getContentResolver().openInputStream(uri);
-            // TODO find reliable way to get filename from URI
-            String localCopyName = UUID.randomUUID().toString().replaceAll("-", "");
+            Cursor cursor = ctx.getContentResolver().query(uri, null, null, null, null, null);
+            cursor.moveToFirst();
+            displayName = cursor.getString(
+                    cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+            cursor.close();
+
+            inputStream = ctx.getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "failed to find file: " + e);
+            return;
+        }
+
+        writeToExhibitFolder(displayName, inputStream, beacon, ctx);
+        appendContentToMetadata(displayName, beacon);
+    }
+
+    private void writeToExhibitFolder(String filename, InputStream inputStream,
+                                      String beacon, Context ctx) {
+        try {
             File chosenBeacon = new File(exhibitFolder, beacon);
-            File localCopy = new File(chosenBeacon, localCopyName);
+            File localCopy = new File(chosenBeacon, filename);
 
             FileOutputStream outputStream = new FileOutputStream(localCopy);
 
@@ -312,7 +343,29 @@ public class Exhibit {
             outputStream.close();
             inputStream.close();
         } catch (Exception e) {
-            Log.d(TAG, "Error copying file with URI " + uri + ": " + e);
+            Log.d(TAG, "Error copying file with name " + filename + ": " + e);
+        }
+    }
+
+    private void appendContentToMetadata(String filename, String beacon) {
+        try {
+            JSONArray beacons = metadata.getJSONArray("beacons");
+            int targetIndex = -1;
+            for(int i = 0; i < beacons.length(); i++) {
+                // index of beacon-name is 0
+                if (beacons.getJSONObject(i).getString("beacon-name").equals(beacon)) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+            if (targetIndex == -1)
+                throw new IllegalArgumentException("No such beacon found in metadata");
+
+            JSONArray contents = beacons.getJSONObject(targetIndex).getJSONArray("beacon-contents");
+            contents.put(filename);
+            saveMetadata();
+        } catch (Exception e) {
+            Log.e(TAG, "modifying metadata failed for content with filename: " + filename);
         }
     }
 }

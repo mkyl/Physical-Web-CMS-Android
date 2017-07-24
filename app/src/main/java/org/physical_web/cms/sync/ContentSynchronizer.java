@@ -41,7 +41,7 @@ import java.util.List;
 import util.RecursiveFileObserver;
 
 /**
- * Handles syncing data about the com.physical_web.cms.physicalwebcms.beacons and exhibits with the user's
+ * Handles syncing data about the beacons and exhibits with the user's
  * Google Drive.
  *
  * Call {@link ContentSynchronizer#connectReceiver} in the parent Activity onResume() and
