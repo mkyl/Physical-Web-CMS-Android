@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.physical_web.cms.R;
@@ -56,6 +57,10 @@ public class ExhibitContentFragment extends Fragment {
             }
         });
 
+        ((TextView) result.findViewById(R.id.temp))
+                .setText(String
+                        .valueOf(workingExhibit.getContentForBeacon(workingBeacon.friendlyName)));
+
         return result;
     }
 
@@ -93,4 +98,3 @@ public class ExhibitContentFragment extends Fragment {
         Toast.makeText(getActivity(), "Content saved", Toast.LENGTH_SHORT).show();
     }
 }
-
