@@ -38,32 +38,21 @@ public class BeaconFragment extends Fragment {
     private InstalledBeaconAdapter adapter;
     private View sheetView;
 
-    private BeaconDatabase db;
+    private BeaconManager beaconManager;
     private Beacon selectedBeacon;
     private ExhibitManager exhibitManager;
 
     public BeaconFragment() {
         exhibitManager = ExhibitManager.getInstance();
+        beaconManager = BeaconManager.getInstance();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                db = BeaconDatabase.getDatabase(getActivity());
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.refresh();
-                        getActivity().findViewById(R.id.progressBar2).
-                                setVisibility(View.INVISIBLE);
-                    }
-                });
-            }
-        });
-        thread.start();
+
+        getActivity().findViewById(R.id.progressBar2).
+                setVisibility(View.INVISIBLE);
 
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
@@ -71,7 +60,6 @@ public class BeaconFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        db.close();
     }
 
     @Override
@@ -113,24 +101,14 @@ public class BeaconFragment extends Fragment {
             selectedBeacon.friendlyName = ((EditText) sheetView.
                     findViewById(R.id.edit_beacon_name)).getText().toString();
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    db.beaconDao().updateBeacons(selectedBeacon);
-                    selectedBeacon = null;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            sheetView.findViewById(R.id.edit_beacon_progress)
-                                    .setVisibility(View.INVISIBLE);
-                            BottomSheetLayout bottomSheet = (BottomSheetLayout) getActivity().
-                                    findViewById(R.id.beacon_bottomsheet);
-                            bottomSheet.dismissSheet();
-                            adapter.refresh();
-                        }
-                    });
-                }
-            }).start();
+            beaconManager.updateBeacons(selectedBeacon);
+            selectedBeacon = null;
+            sheetView.findViewById(R.id.edit_beacon_progress)
+                    .setVisibility(View.INVISIBLE);
+            BottomSheetLayout bottomSheet = (BottomSheetLayout) getActivity().
+                    findViewById(R.id.beacon_bottomsheet);
+            bottomSheet.dismissSheet();
+            adapter.notifyDataSetChanged();
         }
     };
 
@@ -140,8 +118,6 @@ public class BeaconFragment extends Fragment {
     }
 
     class InstalledBeaconAdapter extends RecyclerView.Adapter<InstalledBeaconAdapter.ViewHolder> {
-        private List<Beacon> beacons;
-
         class ViewHolder extends RecyclerView.ViewHolder {
             public TextView title;
             public ImageView backgroundImage;
@@ -152,21 +128,6 @@ public class BeaconFragment extends Fragment {
                 super(card);
                 this.title = (TextView) card.findViewById(R.id.info_text);
             }
-        }
-
-        public void refresh() {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    beacons = db.beaconDao().getAllBeacons();
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            InstalledBeaconAdapter.this.notifyDataSetChanged();
-                        }
-                    });
-                }
-            }).start();
         }
 
         @Override
@@ -184,38 +145,26 @@ public class BeaconFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             // TODO set images
-            holder.title.setText(beacons.get(position).friendlyName);
+            holder.title.setText(beaconManager.getBeaconByIndex(position).friendlyName);
         }
 
         @Override
         public int getItemCount() {
-            if (beacons == null)
-                return 0;
-            else
-                return beacons.size();
+            return beaconManager.getAllBeacons().size();
         }
 
         private View.OnClickListener removeBeacons = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int beaconIndex = cardIndex(v);
-                final Beacon beaconToDelete = beacons.get(beaconIndex);
+                final Beacon beaconToDelete = beaconManager.getBeaconByIndex(beaconIndex);
 
                 Log.d(TAG, "Deleting beacon with name: " + beaconToDelete.friendlyName);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        db.beaconDao().deleteBeacons(beaconToDelete);
-                        exhibitManager.configureRemovedBeacon(beaconToDelete);
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                InstalledBeaconAdapter.this.refresh();
-                                showUndoSnackbar(beaconToDelete);
-                            }
-                        });
-                    }
-                }).start();
+
+                beaconManager.deleteBeacons(beaconToDelete);
+                exhibitManager.configureRemovedBeacon(beaconToDelete);
+                InstalledBeaconAdapter.this.notifyDataSetChanged();
+                showUndoSnackbar(beaconToDelete);
             }
 
             private void showUndoSnackbar(final Beacon deletedBeacon) {
@@ -225,20 +174,10 @@ public class BeaconFragment extends Fragment {
                         setAction("UNDO", new View.OnClickListener(){
                             @Override
                             public void onClick(View view) {
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        db.beaconDao().insertBeacons(deletedBeacon);
-                                        // TODO BUG: beacon content will be deleted
-                                        exhibitManager.configureNewBeacon(deletedBeacon);
-                                        getActivity().runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                InstalledBeaconAdapter.this.refresh();
-                                            }
-                                        });
-                                    }
-                                }).start();
+                                beaconManager.insertBeacons(deletedBeacon);
+                                // TODO BUG: beacon content will be deleted
+                                exhibitManager.configureNewBeacon(deletedBeacon);
+                                InstalledBeaconAdapter.this.notifyDataSetChanged();
                             }
                         });
                 undoSnackbar.show();
@@ -249,7 +188,7 @@ public class BeaconFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 int beaconIndex = cardIndex(v);
-                selectedBeacon = beacons.get(beaconIndex);
+                selectedBeacon = beaconManager.getBeaconByIndex(beaconIndex);
 
                 BottomSheetLayout bottomSheet = (BottomSheetLayout) getActivity().
                         findViewById(R.id.beacon_bottomsheet);

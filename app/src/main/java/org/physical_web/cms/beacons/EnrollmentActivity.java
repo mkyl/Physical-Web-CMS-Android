@@ -42,8 +42,9 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     private static final long SCAN_PERIOD = 10000;
 
-    private List<BluetoothDevice> bluetoothDevices;
+    private BeaconManager beaconManager;
     private ExhibitManager exhibitManager;
+    private List<BluetoothDevice> bluetoothDevices;
     private Handler scanHandler = new Handler();
     private BeaconAdapter beaconListAdapter;
     private Snackbar snackbar;
@@ -57,6 +58,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
         displayBTErrorSnackBar();
         exhibitManager = ExhibitManager.getInstance();
+        beaconManager = BeaconManager.getInstance();
 
         bluetoothDevices = new ArrayList<>();
         beaconListAdapter = new BeaconAdapter();
@@ -199,19 +201,13 @@ public class EnrollmentActivity extends AppCompatActivity {
      * @param v
      */
     public void onAddBeacon(View v) {
+        findViewById(R.id.editBeaconNameText).setEnabled(false);
         final String name = ((TextView) findViewById(R.id.editBeaconNameText)).getText().toString();
         final String address = ((TextView) findViewById(R.id.textBeaconAddress)).getText().toString();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Beacon newBeacon = new Beacon(address, name);
-                BeaconDatabase db = BeaconDatabase.getDatabase(EnrollmentActivity.this);
-                db.beaconDao().insertBeacons(newBeacon);
-                db.close();
-                exhibitManager.configureNewBeacon(newBeacon);
-            }
-        }).start();
+        Beacon newBeacon = new Beacon(address, name);
+        beaconManager.insertBeacons(newBeacon);
+        exhibitManager.configureNewBeacon(newBeacon);
 
         ((BottomSheetLayout) findViewById(R.id.bottomsheet)).dismissSheet();
 
