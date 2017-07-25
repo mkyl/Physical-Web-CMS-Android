@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -67,6 +68,10 @@ public class ExhibitEditorFragment extends Fragment {
 
         beaconAdapter = new BeaconAdapter();
         beaconList.setAdapter(beaconAdapter);
+
+        DividerItemDecoration dividerItemDecoration =
+                new DividerItemDecoration(beaconList.getContext(), DividerItemDecoration.VERTICAL);
+        beaconList.addItemDecoration(dividerItemDecoration);
 
         return editorView;
     }
