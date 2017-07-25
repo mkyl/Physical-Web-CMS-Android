@@ -1,19 +1,24 @@
 package org.physical_web.cms.exhibits;
 
 import android.content.Context;
+import android.util.Log;
 
-import org.physical_web.cms.FileManager;
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExhibitManager {
     private static final ExhibitManager INSTANCE = new ExhibitManager();
-    private ContentSynchronizer contentSynchronizer;
 
+    private static final String TAG = ExhibitManager.class.getSimpleName();
+    public static final String EXHIBIT_FOLDER_NAME = "exhibits";
+
+    private ContentSynchronizer contentSynchronizer;
     private List<Exhibit> exhibits;
-    private FileManager exhibitFileManager = null;
+    private File exhibitsFolder = null;
 
     private ExhibitManager() {
         contentSynchronizer = ContentSynchronizer.getInstance();
@@ -24,10 +29,27 @@ public class ExhibitManager {
     }
 
     public synchronized void setContext(Context context) {
-        if (exhibitFileManager == null) {
-                exhibitFileManager = new FileManager(context);
-                refresh();
+        if (exhibitsFolder == null) {
+            exhibitsFolder = new File(context.getFilesDir(), EXHIBIT_FOLDER_NAME);
+
+            if(!exhibitsFolder.exists())
+                exhibitsFolder.mkdir();
+
+            exhibits = loadExhibitsFromDisk();
         }
+    }
+
+    private List<Exhibit> loadExhibitsFromDisk() {
+        List<Exhibit> result = new ArrayList<>();
+
+        for(File child : exhibitsFolder.listFiles()) {
+            if (!child.isFile()) {
+                Exhibit foundExhibit = Exhibit.loadFromFolder(child);
+                result.add(foundExhibit);
+            }
+        }
+
+        return result;
     }
 
     public Exhibit getExhibit(int position) {
@@ -37,21 +59,17 @@ public class ExhibitManager {
             return exhibits.get(position);
     }
 
-    public Exhibit getByName(String name) {
+    public Exhibit getById(long id) {
         for(Exhibit searchSubject : exhibits) {
-            if (searchSubject.getTitle().equals(name))
+            if (searchSubject.getId() == id)
                 return searchSubject;
         }
         throw new IllegalArgumentException("No such exhibit exists");
     }
 
-    public void refresh() {
-        exhibits = exhibitFileManager.loadExhibitsFromDisk();
-    }
-
-    public void insertExhibit(Exhibit exhibit) {
-        exhibitFileManager.writeNewExhibit(exhibit);
-        this.refresh();
+    public void createNewExhibit(String exhibitName) {
+        Exhibit createdExhibit = Exhibit.initializeIntoFolder(exhibitName, exhibitsFolder);
+        exhibits.add(createdExhibit);
     }
 
     public void removeExhibit(final Exhibit exhibit) {
@@ -61,8 +79,11 @@ public class ExhibitManager {
                 contentSynchronizer.removeExhibit(exhibit.getTitle());
             }
         }).start();
-        exhibitFileManager.removeExhibit(exhibit);
-        this.refresh();
+        exhibits.remove(exhibit);
+        Boolean deleteSuccess = exhibit.getExhibitFolder().delete();
+        if(!deleteSuccess)
+            Log.e(TAG, "Failed to delete exhibit at: "
+                    + exhibit.getExhibitFolder().getAbsolutePath());
     }
 
     public void configureNewBeacon(Beacon beacon) {

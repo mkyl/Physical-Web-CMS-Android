@@ -34,7 +34,6 @@ public class BaseActivity extends AppCompatActivity {
 
     private SetupManager setupManager;
     private BeaconManager beaconManager;
-    private FileManager fileManager;
     private ContentSynchronizer contentSynchronizer;
 
     private ExhibitManager exhibitManager;
@@ -45,7 +44,6 @@ public class BaseActivity extends AppCompatActivity {
         setContentView(R.layout.activity_base);
 
         setupManager = new SetupManager(this);
-        fileManager = new FileManager(this);
 
         beaconManager = BeaconManager.getInstance();
         beaconManager.setContext(this);
@@ -53,7 +51,7 @@ public class BaseActivity extends AppCompatActivity {
         exhibitManager = ExhibitManager.getInstance();
         exhibitManager.setContext(this);
 
-        File folderToSync = fileManager.getRootFolder();
+        File folderToSync = getFilesDir();
         contentSynchronizer = ContentSynchronizer.getInstance();
         contentSynchronizer.init(this, folderToSync);
 

@@ -68,9 +68,6 @@
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp" />
 
-        <View style="@style/Divider"
-            android:layout_below="@+id/drawer_top_list"/>
-
     </RelativeLayout>
 
 </android.support.v4.widget.DrawerLayout>

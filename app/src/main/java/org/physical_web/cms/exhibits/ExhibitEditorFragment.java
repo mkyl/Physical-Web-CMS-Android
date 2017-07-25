@@ -10,11 +10,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import org.physical_web.cms.R;
+import org.physical_web.cms.beacons.BeaconManager;
 
 /**
  * Handles editing the exhibit metadata as well as listing the beacons involved in
@@ -25,6 +25,7 @@ public class ExhibitEditorFragment extends Fragment {
     private final static String FRAGMENT_TITLE = "Edit Exhibit";
 
     private ExhibitManager exhibitManager = ExhibitManager.getInstance();
+    private BeaconManager beaconManager = BeaconManager.getInstance();
     private Exhibit workingExhibit;
     private ExhibitEditor exhibitEditor;
 
@@ -45,8 +46,8 @@ public class ExhibitEditorFragment extends Fragment {
         if (bundle == null)
             throw new IllegalArgumentException("No exhibit provided to edit");
 
-        String exhibitName = bundle.getString("exhibit-name");
-        workingExhibit = exhibitManager.getByName(exhibitName);
+        Long exhibitId = bundle.getLong("exhibit-id");
+        workingExhibit = exhibitManager.getById(exhibitId);
 
         exhibitEditor = new ExhibitEditor(workingExhibit);
 
@@ -55,10 +56,9 @@ public class ExhibitEditorFragment extends Fragment {
         ((EditText) editorView.findViewById(R.id.exhibit_editor_description))
                 .setText(workingExhibit.getDescription());
 
-        ((Button) editorView.findViewById(R.id.exhibit_editor_edit_info))
+        editorView.findViewById(R.id.exhibit_editor_edit_info)
                 .setOnClickListener(onEditButtonPress);
-        ((Button) editorView.findViewById(R.id.exhibit_editor_save))
-                .setOnClickListener(onSaveButtonPress);
+        editorView.findViewById(R.id.exhibit_editor_save).setOnClickListener(onSaveButtonPress);
 
         RecyclerView beaconList = (RecyclerView) editorView
                 .findViewById(R.id.exhibit_editor_beacon_list);
@@ -137,8 +137,9 @@ public class ExhibitEditorFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
-            final String beaconName = ExhibitEditorFragment.this.exhibitEditor.workingExhibit
-                    .getBeaconNames()[position];
+            String beaconName = beaconManager.getBeaconByIndex(position).friendlyName;
+            final long beaconId = beaconManager.getBeaconByIndex(position).id;
+
             viewHolder.beaconTitle.setText(beaconName);
             viewHolder.background.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -146,8 +147,8 @@ public class ExhibitEditorFragment extends Fragment {
                     Fragment contentEditor = new ExhibitContentFragment();
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
                     Bundle bundle = new Bundle();
-                    bundle.putString("exhibit-name", workingExhibit.getTitle());
-                    bundle.putString("beacon-name", beaconName);
+                    bundle.putLong("exhibit-id", workingExhibit.getId());
+                    bundle.putLong("beacon-id", beaconId);
                     contentEditor.setArguments(bundle);
                     transaction.replace(R.id.fragment_container, contentEditor);
                     transaction.addToBackStack(null);
@@ -158,7 +159,7 @@ public class ExhibitEditorFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return ExhibitEditorFragment.this.exhibitEditor.workingExhibit.getBeaconNames().length;
+            return beaconManager.getAllBeacons().size();
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
