@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.physical_web.cms.beacons.BeaconFragment;
+import org.physical_web.cms.beacons.BeaconManager;
 import org.physical_web.cms.exhibits.ExhibitFragment;
 import org.physical_web.cms.exhibits.ExhibitManager;
 import org.physical_web.cms.setup.SetupManager;
@@ -32,8 +33,10 @@ public class BaseActivity extends AppCompatActivity {
     private ActionBarDrawerToggle drawerToggle;
 
     private SetupManager setupManager;
-    private ContentSynchronizer contentSynchronizer;
+    private BeaconManager beaconManager;
     private FileManager fileManager;
+    private ContentSynchronizer contentSynchronizer;
+
     private ExhibitManager exhibitManager;
 
     @Override
@@ -43,6 +46,9 @@ public class BaseActivity extends AppCompatActivity {
 
         setupManager = new SetupManager(this);
         fileManager = new FileManager(this);
+
+        beaconManager = BeaconManager.getInstance();
+        beaconManager.setContext(this);
 
         exhibitManager = ExhibitManager.getInstance();
         exhibitManager.setContext(this);
@@ -70,6 +76,12 @@ public class BaseActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         contentSynchronizer.disconnectReceiver();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        beaconManager.closeAndSave();
     }
 
     private void setupNavigationDrawer() {
