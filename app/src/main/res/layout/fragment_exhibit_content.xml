@@ -5,6 +5,16 @@
     android:layout_height="match_parent"
     tools:context="org.physical_web.cms.exhibits.ExhibitContentFragment">
 
+    <TextView
+        android:id="@+id/fragment_exhibit_content_warning"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:text="No Content Added Yet"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="@android:color/darker_gray" />
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fragment_exhibit_content_add"
         android:layout_width="wrap_content"

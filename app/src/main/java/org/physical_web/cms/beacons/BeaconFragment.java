@@ -22,8 +22,6 @@ import com.flipboard.bottomsheet.BottomSheetLayout;
 import org.physical_web.cms.R;
 import org.physical_web.cms.exhibits.ExhibitManager;
 
-import java.util.List;
-
 /**
  * Lists beacons that have been enrolled through enrollment activity. Allows modifying the
  * details on enrolled beacons, as well as their removal.
@@ -50,10 +48,7 @@ public class BeaconFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        getActivity().findViewById(R.id.progressBar2).
-                setVisibility(View.INVISIBLE);
-
+        adapter.notifyDataSetChanged();
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
@@ -150,7 +145,15 @@ public class BeaconFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return beaconManager.getAllBeacons().size();
+            int itemCount = beaconManager.getAllBeacons().size();
+
+            // TODO more idiomatic way of doing this
+            if (itemCount == 0)
+                getView().findViewById(R.id.fragment_beacon_warning).setVisibility(View.VISIBLE);
+            else
+                getView().findViewById(R.id.fragment_beacon_warning).setVisibility(View.GONE);
+
+            return itemCount;
         }
 
         private View.OnClickListener removeBeacons = new View.OnClickListener() {

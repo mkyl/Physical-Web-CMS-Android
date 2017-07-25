@@ -22,7 +22,7 @@ import android.widget.VideoView;
 
 import org.physical_web.cms.R;
 import org.physical_web.cms.beacons.Beacon;
-import org.w3c.dom.Text;
+import org.physical_web.cms.beacons.BeaconManager;
 
 import nl.changer.audiowife.AudioWife;
 
@@ -32,13 +32,12 @@ import nl.changer.audiowife.AudioWife;
  */
 public class ExhibitContentFragment extends Fragment {
     public final static String TAG = ExhibitContentFragment.class.getSimpleName();
-    private final static String FRAGMENT_TITLE = "Edit Beacon Content";
+    private final static String FRAGMENT_TITLE = "Editing ";
 
     private final static int FILE_PICKER_ROUTING_CODE = 1032;
 
     private Exhibit workingExhibit;
     private Beacon workingBeacon;
-    private ExhibitContent[] exhibitContents;
 
     private ContentAdapter contentAdapter;
 
@@ -53,17 +52,16 @@ public class ExhibitContentFragment extends Fragment {
         if(passedArguments == null)
             throw new IllegalArgumentException("beacon name to work on must be provided");
 
-        String exhibitName = passedArguments.getString("exhibit-name");
-        workingExhibit = ExhibitManager.getInstance().getByName(exhibitName);
+        Long exhibitId = passedArguments.getLong("exhibit-id");
+        workingExhibit = ExhibitManager.getInstance().getById(exhibitId);
 
-        String beaconName = passedArguments.getString("beacon-name");
-        workingBeacon = new Beacon("", beaconName);
-
-        exhibitContents = workingExhibit.getContentForBeacon(workingBeacon.friendlyName);
+        Long beaconId = passedArguments.getLong("beacon-id");
+        workingBeacon = BeaconManager.getInstance().getBeaconById(beaconId);
 
         // Inflate the layout for this fragment
         View result = inflater.inflate(R.layout.fragment_exhibit_content, container, false);
 
+        // set up the floating action button
         FloatingActionButton addContentButton =
                 (FloatingActionButton) result.findViewById(R.id.fragment_exhibit_content_add);
         addContentButton.setOnClickListener(new View.OnClickListener() {
@@ -73,6 +71,7 @@ public class ExhibitContentFragment extends Fragment {
             }
         });
 
+        // setup the list of content
         RecyclerView contentList = (RecyclerView) result
                 .findViewById(R.id.fragment_exhibit_content_list);
 
@@ -88,7 +87,8 @@ public class ExhibitContentFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE
+                + workingBeacon.friendlyName);
     }
 
     private void addContent() {
@@ -108,6 +108,7 @@ public class ExhibitContentFragment extends Fragment {
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case FILE_PICKER_ROUTING_CODE:
+                    // we just got a new content file
                     handleURI(resultData.getData());
                     break;
                 default:
@@ -119,14 +120,10 @@ public class ExhibitContentFragment extends Fragment {
         }
     }
 
+    // given a URI to a file, add it to the content for the working beacon
     private void handleURI(Uri uri) {
         Log.d(TAG, "received URI: " + uri);
-        workingExhibit.insertContent(uri, workingBeacon.friendlyName, getActivity());
-        refreshContentList();
-    }
-
-    private void refreshContentList() {
-        exhibitContents = workingExhibit.getContentForBeacon(workingBeacon.friendlyName);
+        workingExhibit.insertContent(uri, workingBeacon, getActivity());
         contentAdapter.notifyDataSetChanged();
     }
 
@@ -142,7 +139,8 @@ public class ExhibitContentFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
-            ExhibitContent content = ExhibitContentFragment.this.exhibitContents[position];
+            ExhibitContent content = workingExhibit.getContentForBeacon(workingBeacon)
+                    .get(position);
             String contentName = content.getContentName();
             viewHolder.contentTitle.setText(contentName);
 
@@ -176,7 +174,17 @@ public class ExhibitContentFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return ExhibitContentFragment.this.exhibitContents.length;
+            int itemCount = workingExhibit.getContentForBeacon(workingBeacon).size();
+
+            // TODO find more idiomatic way to do this
+            if (itemCount == 0)
+                getView().findViewById(R.id.fragment_exhibit_content_warning)
+                        .setVisibility(View.VISIBLE);
+            else
+                getView().findViewById(R.id.fragment_exhibit_content_warning)
+                        .setVisibility(View.GONE);
+
+            return itemCount;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {

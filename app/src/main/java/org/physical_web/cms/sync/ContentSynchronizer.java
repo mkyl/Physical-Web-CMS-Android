@@ -25,7 +25,7 @@ import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
 
-import org.physical_web.cms.FileManager;
+import org.physical_web.cms.exhibits.ExhibitManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -509,7 +509,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         MetadataBuffer result = appFolder.listChildren(apiClient)
                 .await().getMetadataBuffer();
         for(Metadata md : result) {
-            if(md.getTitle().equals(FileManager.EXHIBIT_FOLDER_NAME)) {
+            if(md.getTitle().equals(ExhibitManager.EXHIBIT_FOLDER_NAME)) {
                 exhibitFolder = md.getDriveId().asDriveFolder();
             }
         }

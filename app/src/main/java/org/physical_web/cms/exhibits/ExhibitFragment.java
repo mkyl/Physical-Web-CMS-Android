@@ -98,23 +98,23 @@ public class ExhibitFragment extends Fragment {
             String exhibitName = ((TextInputEditText) bottomSheet
                     .findViewById(R.id.sheet_new_exhibit_name)).getText().toString();
 
-            Exhibit newExhibit = new Exhibit(exhibitName);
-            exhibitManager.insertExhibit(newExhibit);
+            exhibitManager.createNewExhibit(exhibitName);
 
             exhibitAdapter.notifyDataSetChanged();
             bottomSheet.dismissSheet();
         }
     };
 
-    private void showDeletionUndoBar(final Exhibit exhibit) {
+    private void showDeletionUndoBar(final String exhibitName) {
         Snackbar undoSnackbar = Snackbar.
-                make(getView(), "Deleted exhibit '" + exhibit.getTitle() + "'",
+                make(getView(), "Deleted exhibit '" + exhibitName + "'",
                         Snackbar.LENGTH_LONG)
                 .setAction("UNDO", new View.OnClickListener(){
                     @Override
                     public void onClick(View view) {
-                        Log.d(TAG, "Undeleting exhibit: " + exhibit.getTitle());
-                        exhibitManager.insertExhibit(exhibit);
+                        Log.d(TAG, "Undeleting exhibit: " + exhibitName);
+                        // TODO FIND BETTER WAY THAT DOESN'T DELETE CONTENT
+                        exhibitManager.createNewExhibit(exhibitName);
                         exhibitAdapter.notifyDataSetChanged();
                     }
                 });
@@ -142,7 +142,7 @@ public class ExhibitFragment extends Fragment {
                     switch (item.getItemId()) {
                         case R.id.exhibit_overflow_delete:
                             Log.d(TAG, "Deleting exhibit with name: " + exhibitToDraw.getTitle());
-                            showDeletionUndoBar(exhibitToDraw);
+                            showDeletionUndoBar(exhibitToDraw.getTitle());
                             exhibitManager.removeExhibit(exhibitToDraw);
                             exhibitAdapter.notifyDataSetChanged();
                             return true;
@@ -168,7 +168,7 @@ public class ExhibitFragment extends Fragment {
                 public void onClick(View v) {
                     Fragment exhibitEditor = new ExhibitEditorFragment();
                     Bundle args = new Bundle();
-                    args.putString("exhibit-name", exhibitToDraw.getTitle());
+                    args.putLong("exhibit-id", exhibitToDraw.getId());
                     exhibitEditor.setArguments(args);
 
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -181,7 +181,15 @@ public class ExhibitFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return exhibitManager.getExhibitCount();
+            int itemCount = exhibitManager.getExhibitCount();
+
+            // TODO find more idiomatic way to do this
+            if (itemCount == 0)
+                getView().findViewById(R.id.fragment_exhibit_warning).setVisibility(View.VISIBLE);
+            else
+                getView().findViewById(R.id.fragment_exhibit_warning).setVisibility(View.GONE);
+
+            return itemCount;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder{
