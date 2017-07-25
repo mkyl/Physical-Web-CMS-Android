@@ -147,10 +147,10 @@ public class ExhibitContentFragment extends Fragment {
             viewHolder.contentTitle.setText(contentName);
 
             // in case view is recycled
-            viewHolder.videoView.setVisibility(View.INVISIBLE);
-            viewHolder.imageView.setVisibility(View.INVISIBLE);
-            viewHolder.soundView.setVisibility(View.INVISIBLE);
-            viewHolder.textView.setVisibility(View.INVISIBLE);
+            viewHolder.videoView.setVisibility(View.GONE);
+            viewHolder.imageView.setVisibility(View.GONE);
+            viewHolder.soundView.setVisibility(View.GONE);
+            viewHolder.textView.setVisibility(View.GONE);
 
             if(content instanceof ImageContent) {
                 viewHolder.imageView.setImageBitmap(((ImageContent) content).getBitmap());
