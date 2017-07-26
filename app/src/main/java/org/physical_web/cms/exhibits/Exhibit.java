@@ -60,7 +60,7 @@ public class Exhibit {
 
         loadedExhibit.contentFolderForBeacon = findFoldersForBeacons(exhibitFolder);
         loadedExhibit.contentsForBeacon =
-                loadBeaconContentMap(loadedExhibit.contentFolderForBeacon);
+                loadedExhibit.loadBeaconContentMap(loadedExhibit.contentFolderForBeacon);
 
         return loadedExhibit;
     }
@@ -204,8 +204,22 @@ public class Exhibit {
         }
     }
 
+    public void persistContentChanges(Beacon beacon) {
+        List<ExhibitContent> changedContents = contentsForBeacon.get(beacon);
+        JSONObject beaconMetadata = getBeaconMetadata(beacon);
+        try {
+            JSONArray changedContentList = new JSONArray();
+            for(ExhibitContent exhibitContent : changedContents) {
+                changedContentList.put(exhibitContent.getContentName());
+            }
+            beaconMetadata.put("contents", changedContentList);
+        } catch (JSONException e) {
+            Log.e(TAG, "Error persisting content changes: " + e);
+        }
+    }
+
     // fills this.result with contents from the beacon folders
-    private static Map<Beacon, List<ExhibitContent>> loadBeaconContentMap
+    private Map<Beacon, List<ExhibitContent>> loadBeaconContentMap
         (Map<Beacon, File> beaconFileMap) {
         Map<Beacon, List<ExhibitContent>> beaconContentMap = new HashMap<>();
 
@@ -219,7 +233,7 @@ public class Exhibit {
                 Log.e(TAG, "No folder for beacon: " + beacon.friendlyName);
             } else {
                 List<ExhibitContent> beaconContents =
-                        loadBeaconContentsFromFolder(beaconContentFolder);
+                        loadBeaconContents(beacon);
                 beaconContentMap.put(beacon, beaconContents);
             }
         }
@@ -227,15 +241,27 @@ public class Exhibit {
         return beaconContentMap;
     }
 
-    private static List<ExhibitContent> loadBeaconContentsFromFolder(File beaconFolder) {
-        if(beaconFolder.isFile())
-            throw new IllegalArgumentException("Passed file, not folder");
-
+    private List<ExhibitContent> loadBeaconContents(Beacon beacon) {
         List<ExhibitContent> beaconContents = new LinkedList<>();
-        for(File child : beaconFolder.listFiles()) {
-            if (child.isFile())
-                beaconContents.add(ExhibitContent.fromFile(child));
+        File beaconFolder = contentFolderForBeacon.get(beacon);
+
+        try {
+            JSONArray registeredContents = getBeaconMetadata(beacon).getJSONArray("contents");
+
+            for (int i = 0; i < registeredContents.length(); i++) {
+                String fileName = registeredContents.getString(i);
+                File contentFile = new File(beaconFolder, fileName);
+
+                if (!contentFile.exists())
+                    throw new IllegalStateException("file referenced in JSON but doesn't exist: "
+                            + fileName);
+
+                beaconContents.add(ExhibitContent.fromFile(contentFile));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "Trouble loading beacon contents from JSON file: " + e);
         }
+
         return beaconContents;
     }
 
@@ -416,6 +442,23 @@ public class Exhibit {
             saveMetadata();
         } catch (Exception e) {
             Log.e(TAG, "modifying metadata failed for content with filename: " + filename);
+        }
+    }
+
+    private JSONObject getBeaconMetadata(Beacon beacon) {
+        try  {
+            JSONArray beacons = metadata.getJSONArray("beacons");
+            for(int i = 0; i < beacons.length(); i++) {
+                JSONObject currentBeacon = beacons.getJSONObject(i);
+                if(currentBeacon.getLong("id") == beacon.id) {
+                    return currentBeacon;
+                }
+            }
+
+            throw new IllegalArgumentException("No such beacon found");
+        } catch (JSONException e) {
+            Log.e(TAG, "error getting beacon metadata for beacon " + beacon.friendlyName);
+            return null;
         }
     }
 }
