@@ -1,7 +1,6 @@
 package org.physical_web.cms.exhibits;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.sync.ContentSynchronizer;
@@ -10,6 +9,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages the {@link Exhibit}s stored by the app. Get a copy with a call to {@link #getInstance()}.
+ * The first time this class is called, {@link #setContext(Context)} *must* be also called.
+ */
 public class ExhibitManager {
     private static final ExhibitManager INSTANCE = new ExhibitManager();
 
@@ -28,21 +31,28 @@ public class ExhibitManager {
         return INSTANCE;
     }
 
+    /**
+     * MUST BE CALLED AT LEAST ONCE before any other methods are called. Sets context this class
+     * will operate in.
+     *
+     * @param context Context to work in
+     */
     public synchronized void setContext(Context context) {
         if (exhibitsFolder == null) {
             exhibitsFolder = new File(context.getFilesDir(), EXHIBIT_FOLDER_NAME);
 
-            if(!exhibitsFolder.exists())
+            if (!exhibitsFolder.exists())
                 exhibitsFolder.mkdir();
 
             exhibits = loadExhibitsFromDisk();
         }
     }
 
+    // returns list of exhibits, as they are loaded storage on disk
     private List<Exhibit> loadExhibitsFromDisk() {
         List<Exhibit> result = new ArrayList<>();
 
-        for(File child : exhibitsFolder.listFiles()) {
+        for (File child : exhibitsFolder.listFiles()) {
             if (!child.isFile()) {
                 Exhibit foundExhibit = Exhibit.loadFromFolder(child);
                 result.add(foundExhibit);
@@ -52,26 +62,48 @@ public class ExhibitManager {
         return result;
     }
 
+    /**
+     * Get an {@link Exhibit} by providing its index.
+     *
+     * @param position index of exhibit, range of 0..{@link #getExhibitCount()}-1
+     * @return exhibit referred to
+     */
     public Exhibit getExhibit(int position) {
-        if(position > getExhibitCount())
+        if (position > getExhibitCount() || position < 0)
             throw new ArrayIndexOutOfBoundsException();
         else
             return exhibits.get(position);
     }
 
+    /**
+     * get an {@link Exhibit} by referring to its unique id
+     *
+     * @param id unique id of the exhibit
+     * @return exhibit with provided id
+     */
     public Exhibit getById(long id) {
-        for(Exhibit searchSubject : exhibits) {
+        for (Exhibit searchSubject : exhibits) {
             if (searchSubject.getId() == id)
                 return searchSubject;
         }
         throw new IllegalArgumentException("No such exhibit exists");
     }
 
+    /**
+     * Create a new {@link Exhibit} with the given name, writing it to disk.
+     *
+     * @param exhibitName name of exhibit
+     */
     public void createNewExhibit(String exhibitName) {
         Exhibit createdExhibit = Exhibit.initializeIntoFolder(exhibitName, exhibitsFolder);
         exhibits.add(createdExhibit);
     }
 
+    /**
+     * Remove an {@link Exhibit} permanently, deleting it completely.
+     *
+     * @param exhibit to be deleted
+     */
     public void removeExhibit(Exhibit exhibit) {
         final File folderToDelete = exhibit.getExhibitFolder();
         new Thread(new Runnable() {
@@ -85,18 +117,34 @@ public class ExhibitManager {
         util.MiscFile.deleteDir(exhibit.getExhibitFolder());
     }
 
+
+    /**
+     * inform all exhibits that a new beacon has been added
+     *
+     * @param beacon new beacon that exhibits must now support
+     */
     public void configureNewBeacon(Beacon beacon) {
-        for(Exhibit exhibit : exhibits) {
+        for (Exhibit exhibit : exhibits) {
             exhibit.configureForAdditionalBeacon(beacon);
         }
     }
 
+    /**
+     * inform all exhibits that a beacon has been removed
+     *
+     * @param beacon removed beacon that exhibits may no longer support
+     */
     public void configureRemovedBeacon(Beacon beacon) {
-        for(Exhibit exhibit : exhibits) {
+        for (Exhibit exhibit : exhibits) {
             exhibit.configureForRemovedBeacon(beacon);
         }
     }
 
+    /**
+     * returns the number of exhibits loaded by this class
+     *
+     * @return number of exhibits
+     */
     public int getExhibitCount() {
         return exhibits.size();
     }

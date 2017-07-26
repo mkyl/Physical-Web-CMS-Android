@@ -51,8 +51,8 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(final int requestCode, final int resultCode,
-                                    final Intent data) {
-        switch(requestCode) {
+                                 final Intent data) {
+        switch (requestCode) {
             case (SETUP_DRIVE):
                 if (resultCode == RESULT_OK) {
                     // this will cause SetupManager.isFirstRun() to return false hereafter

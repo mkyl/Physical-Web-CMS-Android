@@ -20,7 +20,7 @@ public class SetupManager {
     }
 
     public void checkRequirements() {
-        if(isFirstRun()) {
+        if (isFirstRun()) {
             Intent welcomeIntent = new Intent(this.context, WelcomeActivity.class);
             context.startActivity(welcomeIntent);
         } else {
@@ -37,7 +37,7 @@ public class SetupManager {
 
     // check if we are connected to a network with internet access.
     public static Boolean networkIsConnected(Context context) {
-        ConnectivityManager cm = (ConnectivityManager)context
+        ConnectivityManager cm = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
