@@ -4,8 +4,6 @@ package org.physical_web.cms.exhibits;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,7 +12,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -48,7 +45,6 @@ public class ExhibitContentFragment extends Fragment {
     private int IMAGE_CARD_MAX_HEIGHT;
 
 
-
     private Exhibit workingExhibit;
     private Beacon workingBeacon;
 
@@ -63,7 +59,7 @@ public class ExhibitContentFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Bundle passedArguments = getArguments();
-        if(passedArguments == null)
+        if (passedArguments == null)
             throw new IllegalArgumentException("beacon name to work on must be provided");
 
         Long exhibitId = passedArguments.getLong("exhibit-id");
@@ -110,7 +106,7 @@ public class ExhibitContentFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE
                 + workingBeacon.friendlyName);
     }
 
@@ -175,7 +171,7 @@ public class ExhibitContentFragment extends Fragment {
             viewHolder.soundView.setVisibility(View.GONE);
             viewHolder.textView.setVisibility(View.GONE);
 
-            if(content instanceof ImageContent) {
+            if (content instanceof ImageContent) {
                 viewHolder.imageView.setImageBitmap(((ImageContent) content)
                         .getSampledBitmap(IMAGE_CARD_MAX_HEIGHT, IMAGE_CARD_MAX_WIDTH));
                 viewHolder.imageView.setVisibility(View.VISIBLE);
@@ -187,7 +183,7 @@ public class ExhibitContentFragment extends Fragment {
                 mediaController.setAnchorView(viewHolder.videoView);
                 viewHolder.videoView.setMediaController(mediaController);
                 viewHolder.videoView.setVisibility(View.VISIBLE);
-            } else if (content instanceof  SoundContent) {
+            } else if (content instanceof SoundContent) {
                 Uri soundUri = ((SoundContent) content).getURI();
                 AudioWife.getInstance().init(getActivity(), soundUri)
                         .useDefaultUi(viewHolder.soundView, getActivity().getLayoutInflater());
@@ -197,7 +193,7 @@ public class ExhibitContentFragment extends Fragment {
                 viewHolder.textView.setVisibility(View.VISIBLE);
             }
 
-            viewHolder.dragHandle.setOnTouchListener(new View.OnTouchListener(){
+            viewHolder.dragHandle.setOnTouchListener(new View.OnTouchListener() {
                 public boolean onTouch(View v, MotionEvent event) {
                     dragHelper.startDrag(viewHolder);
                     return false;
@@ -293,6 +289,7 @@ class DragHelperCallback extends ItemTouchHelper.Callback {
                 target.getAdapterPosition());
         return true;
     }
+
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder,
                          int direction) {

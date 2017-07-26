@@ -30,7 +30,9 @@ import static util.MiscFile.deleteDir;
 
 /**
  * Represents an exhibition, or a set of content assigned to a number of beacons. These sets can
- * be composed, deployed and swapped from the app.
+ * be composed, deployed and swapped from the app. Create new exhibits with
+ * {@link #initializeIntoFolder(String, File)} and thereafter load them with
+ * {@link #loadFromFolder(File)}
  */
 public class Exhibit {
     private static final String TAG = Exhibit.class.getSimpleName();
@@ -43,41 +45,55 @@ public class Exhibit {
     private File exhibitFolder;
 
     /**
-     * Return an exhibit, given a folder that contains a metadata file and beacon folders
-     * @param exhibitFolder
-     * @return
+     * Load an exhibit and return it from an already created folder
+     *
+     * @param exhibitFolder folder that contains exhibit
+     * @return loaded exhibit
      */
     public static Exhibit loadFromFolder(File exhibitFolder) {
-        if(exhibitFolder.isFile())
+        if (exhibitFolder.isFile())
             throw new IllegalArgumentException("Passed file, not folder");
 
         Exhibit loadedExhibit = new Exhibit();
 
         loadedExhibit.exhibitFolder = exhibitFolder;
+        // exhibit folder name matches the unique ID of the exhibit
         loadedExhibit.id = Long.valueOf(exhibitFolder.getName());
 
+        // load the metadata file
         File metadataFile = new File(exhibitFolder, METADATA_FILE_NAME);
         loadedExhibit.metadata = loadMetadataFile(metadataFile);
 
+        // map of beacons to the folders their contents are stored
         loadedExhibit.contentFolderForBeacon = findFoldersForBeacons(exhibitFolder);
+        // load exhibit contents per beacon into map
         loadedExhibit.contentsForBeacon =
                 loadedExhibit.loadBeaconContentMap(loadedExhibit.contentFolderForBeacon);
 
         return loadedExhibit;
     }
 
+    /**
+     * Create a new exhibit, writing it to disk.
+     *
+     * @param exhibitName  name of the new exhibit
+     * @param parentFolder location where the folder for the exhibit will be created
+     * @return the new exhibit
+     */
     public static Exhibit initializeIntoFolder(String exhibitName, File parentFolder) {
-        if(!parentFolder.exists() || parentFolder.isFile())
+        if (!parentFolder.exists() || parentFolder.isFile())
             throw new IllegalArgumentException("Invalid parent folder");
 
         Exhibit exhibit = new Exhibit();
+        // id is randomly generated to avoid collisions
         exhibit.id = new Random().nextLong();
 
+        // folder name is same as id
         String exhibitFolderName = String.valueOf(exhibit.id);
         File exhibitFolder = new File(parentFolder, exhibitFolderName);
 
         Boolean createFolderSuccess = exhibitFolder.mkdir();
-        if(!createFolderSuccess)
+        if (!createFolderSuccess)
             throw new InternalError("Couldn't create exhibit folder");
 
         createBeaconContentFolders(exhibitFolder);
@@ -86,24 +102,27 @@ public class Exhibit {
         return Exhibit.loadFromFolder(exhibitFolder);
     }
 
+    // create folders to store contents for each beacon in
     private static void createBeaconContentFolders(File exhibitFolder) {
-        if(!exhibitFolder.exists() || exhibitFolder.isFile())
+        if (!exhibitFolder.exists() || exhibitFolder.isFile())
             throw new IllegalArgumentException("Invalid exhibit folder");
 
         BeaconManager beaconManager = BeaconManager.getInstance();
         List<Beacon> beacons = beaconManager.getAllBeacons();
 
-        for(Beacon beacon : beacons) {
+        for (Beacon beacon : beacons) {
+            // content is stored inside folder with name that matches beacon id
             String beaconContentFolderName = String.valueOf(beacon.id);
             File beaconContentFolder = new File(exhibitFolder, beaconContentFolderName);
             Boolean createContentFolderSuccess = beaconContentFolder.mkdir();
-            if(!createContentFolderSuccess)
+            if (!createContentFolderSuccess)
                 throw new InternalError("Couldn't create folder");
         }
     }
 
+    // initialize a JSON file that stores the basic metadata of this exhibit
     private static void createExhibitMetadataFile(String exhibitName, File exhibitFolder) {
-        if(!exhibitFolder.exists() || exhibitFolder.isFile())
+        if (!exhibitFolder.exists() || exhibitFolder.isFile())
             throw new IllegalArgumentException("Invalid exhibit folder");
 
         File metadataFile = new File(exhibitFolder, METADATA_FILE_NAME);
@@ -112,14 +131,17 @@ public class Exhibit {
 
         try {
             JSONObject newMetadata = new JSONObject();
+            // basic exhibit details stored here
             newMetadata.put("name", exhibitName);
             newMetadata.put("active", false);
             newMetadata.put("description", "");
 
+            // an array of beacons and their contents, chiefly useful to maintain order of contents
+            // within a beacon.
             BeaconManager beaconManager = BeaconManager.getInstance();
             List<Beacon> beaconList = beaconManager.getAllBeacons();
             JSONArray beacons = new JSONArray();
-            for(Beacon beacon : beaconList) {
+            for (Beacon beacon : beaconList) {
                 JSONObject beaconJSONMetadata = new JSONObject();
                 beaconJSONMetadata.put("id", beacon.id);
                 beaconJSONMetadata.put("contents", new JSONArray());
@@ -135,17 +157,19 @@ public class Exhibit {
         }
     }
 
-    private Exhibit() {}
+    private Exhibit() {
+    }
 
+    // returns a map from beacons to the files where their contents should be stored
     private static Map<Beacon, File> findFoldersForBeacons(File exhibitFolder) {
         Map<Beacon, File> beaconFileMap = new HashMap<>();
 
-        if(!exhibitFolder.exists() || exhibitFolder.isFile())
+        if (!exhibitFolder.exists() || exhibitFolder.isFile())
             throw new IllegalArgumentException("Invalid exhibit folder");
 
         BeaconManager beaconManager = BeaconManager.getInstance();
 
-        for(File folder : exhibitFolder.listFiles()) {
+        for (File folder : exhibitFolder.listFiles()) {
             if (!folder.isFile()) {
                 // beacon folder names are the id's of the corresponding beacon
                 Beacon correspondingBeacon = beaconManager
@@ -172,10 +196,16 @@ public class Exhibit {
         }
     }
 
+    /**
+     * Return a folder that contains all the data of this exhibit
+     */
     public File getExhibitFolder() {
         return exhibitFolder;
     }
 
+    /**
+     * Get a unique identifier for this exhibit
+     */
     public long getId() {
         return id;
     }
@@ -194,7 +224,8 @@ public class Exhibit {
 
     /**
      * Sets the description of the exhibit, storing it persistently
-     * @param newDescription
+     *
+     * @param newDescription the new description
      */
     public void setDescription(String newDescription) {
         try {
@@ -205,12 +236,17 @@ public class Exhibit {
         }
     }
 
+    /**
+     * Write any modification in content order to disk
+     *
+     * @param beacon Beacon whose contents have been reordered
+     */
     public void persistContentChanges(Beacon beacon) {
         List<ExhibitContent> changedContents = contentsForBeacon.get(beacon);
         JSONObject beaconMetadata = getBeaconMetadata(beacon);
         try {
             JSONArray changedContentList = new JSONArray();
-            for(ExhibitContent exhibitContent : changedContents) {
+            for (ExhibitContent exhibitContent : changedContents) {
                 changedContentList.put(exhibitContent.getContentName());
             }
             beaconMetadata.put("contents", changedContentList);
@@ -222,15 +258,15 @@ public class Exhibit {
         }
     }
 
-    // fills this.result with contents from the beacon folders
+    // returns a map between the provided beacons and a list of their contents
     private Map<Beacon, List<ExhibitContent>> loadBeaconContentMap
-        (Map<Beacon, File> beaconFileMap) {
+    (Map<Beacon, File> beaconFileMap) {
         Map<Beacon, List<ExhibitContent>> beaconContentMap = new HashMap<>();
 
         BeaconManager beaconManager = BeaconManager.getInstance();
         List<Beacon> beacons = beaconManager.getAllBeacons();
 
-        for(Beacon beacon : beacons) {
+        for (Beacon beacon : beacons) {
             File beaconContentFolder = beaconFileMap.get(beacon);
 
             if (beaconContentFolder == null) {
@@ -245,6 +281,8 @@ public class Exhibit {
         return beaconContentMap;
     }
 
+    // given a beacon, return a list of exhibit contents by loading the files found
+    // in the metadata associated with that beacon.
     private List<ExhibitContent> loadBeaconContents(Beacon beacon) {
         List<ExhibitContent> beaconContents = new LinkedList<>();
         File beaconFolder = contentFolderForBeacon.get(beacon);
@@ -269,6 +307,7 @@ public class Exhibit {
         return beaconContents;
     }
 
+    // load the exhibit metadata from a JSON file on disk
     private static JSONObject loadMetadataFile(File metadataFile) {
         if (!metadataFile.exists() || !metadataFile.isFile())
             throw new IllegalArgumentException("metadata file isn't valid");
@@ -287,11 +326,18 @@ public class Exhibit {
         return readMetadata;
     }
 
+    // write the metadata as a JSON file to disk
     private void saveMetadata() throws IOException {
         File target = new File(exhibitFolder, METADATA_FILE_NAME);
         writeToFile(target, this.metadata.toString());
     }
 
+    /**
+     * Inform the exhibit that there is a new beacon that must be supported. Must be called to
+     * be able to store content for the new beacon.
+     *
+     * @param newBeacon beacon to add to exhibit
+     */
     public void configureForAdditionalBeacon(Beacon newBeacon) {
         long beaconId = newBeacon.id;
 
@@ -315,6 +361,12 @@ public class Exhibit {
         beaconContentFolder.mkdir();
     }
 
+    /**
+     * Inform this exhibit that the passed beacon should be removed for the list of beacons
+     * supported. This will also remove any content associated with that beacon.
+     *
+     * @param removedBeacon Beacon to remove
+     */
     public void configureForRemovedBeacon(Beacon removedBeacon) {
         File beaconContentFolder = contentFolderForBeacon.get(removedBeacon);
         if (beaconContentFolder == null)
@@ -324,16 +376,16 @@ public class Exhibit {
             JSONArray beacons = metadata.getJSONArray("beacons");
             int targetIndex = -1;
 
-            for(int i = 0; i < beacons.length(); i++) {
+            for (int i = 0; i < beacons.length(); i++) {
                 JSONObject currentBeacon = beacons.getJSONObject(i);
 
                 // name is stored in first field
-                if(currentBeacon.getLong("id") == removedBeacon.id) {
+                if (currentBeacon.getLong("id") == removedBeacon.id) {
                     targetIndex = i;
                 }
             }
 
-            if(targetIndex != -1) {
+            if (targetIndex != -1) {
                 beacons.remove(targetIndex);
                 saveMetadata();
             } else {
@@ -347,24 +399,26 @@ public class Exhibit {
     }
 
     /**
-     * Returns an array of ExhibitContents given the name of a beacon
-     * @param beacon
-     * @return
+     * Returns an list of ExhibitContents given the name of a beacon
+     *
+     * @param beacon to find exhibits associated with
+     * @return Exhibit contents for that beacon
      */
     public List<ExhibitContent> getContentForBeacon(Beacon beacon) {
         return contentsForBeacon.get(beacon);
     }
 
+    // read file into string
     private static String readFile(File file) throws IOException {
-        StringBuilder fileContents = new StringBuilder((int)file.length());
+        StringBuilder fileContents = new StringBuilder((int) file.length());
         Scanner scanner = new Scanner(file);
         String lineSeparator = System.getProperty("line.separator");
 
         try {
-            while(scanner.hasNextLine()) {
+            while (scanner.hasNextLine()) {
                 fileContents.append(scanner.nextLine());
                 // avoid extra line separator at end of file
-                if(scanner.hasNextLine())
+                if (scanner.hasNextLine())
                     fileContents.append(lineSeparator);
             }
             return fileContents.toString();
@@ -373,12 +427,21 @@ public class Exhibit {
         }
     }
 
+    // just save a string to a file
     private static void writeToFile(File file, String string) throws IOException {
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(file));
         outputStreamWriter.write(string);
         outputStreamWriter.close();
     }
 
+    /**
+     * Provided a URI and a beacon, persistently inserts the content at the URI into the list of
+     * content associated with the beacon.
+     *
+     * @param uri    points to multimedia that will be added to exhibit contents
+     * @param beacon that content will be associated with
+     * @param ctx    activity context
+     */
     public void insertContent(Uri uri, Beacon beacon, Context ctx) {
         String displayName;
         InputStream inputStream;
@@ -401,6 +464,7 @@ public class Exhibit {
         contentsForBeacon.get(beacon).add(ExhibitContent.fromFile(localCopy));
     }
 
+    // copy from input stream to beacon folder
     private File writeToExhibitFolder(String filename, InputStream inputStream,
                                       Beacon beacon, Context ctx) {
         File beaconContentFolder = contentFolderForBeacon.get(beacon);
@@ -427,21 +491,11 @@ public class Exhibit {
         }
     }
 
+    // add content at end of metadata for provided beacon
     private void appendContentToMetadata(String filename, Beacon beacon) {
         try {
-            JSONArray beacons = metadata.getJSONArray("beacons");
-            int targetIndex = -1;
-            for(int i = 0; i < beacons.length(); i++) {
-                // index of beacon-name is 0
-                if (beacons.getJSONObject(i).getLong("id") == beacon.id) {
-                    targetIndex = i;
-                    break;
-                }
-            }
-            if (targetIndex == -1)
-                throw new IllegalArgumentException("No such beacon found in metadata");
-
-            JSONArray contents = beacons.getJSONObject(targetIndex).getJSONArray("contents");
+            JSONObject beaconMetadata = getBeaconMetadata(beacon);
+            JSONArray contents = beaconMetadata.getJSONArray("contents");
             contents.put(filename);
             saveMetadata();
         } catch (Exception e) {
@@ -449,6 +503,12 @@ public class Exhibit {
         }
     }
 
+    /**
+     * Remove the content from this exhibit permanently and persistently
+     *
+     * @param content to be removed
+     * @param beacon  associated with content
+     */
     public void removeContent(final ExhibitContent content, Beacon beacon) {
         removeContentMetadata(content, beacon);
         contentsForBeacon.get(beacon).remove(content);
@@ -463,6 +523,7 @@ public class Exhibit {
         }).start();
     }
 
+    // remove content at beacon from metadata, writing changes to disk
     private void removeContentMetadata(ExhibitContent content, Beacon beacon) {
         try {
             JSONArray beaconContents = getBeaconMetadata(beacon).getJSONArray("contents");
@@ -474,21 +535,22 @@ public class Exhibit {
                     return;
                 }
             }
-        } catch(JSONException e) {
+        } catch (JSONException e) {
             Log.e(TAG, "Trouble removing content from metadata");
-        } catch(IOException e) {
+        } catch (IOException e) {
             Log.e(TAG, "Error updating metadata file while removing content");
         }
 
         throw new IllegalArgumentException("No such contents found");
     }
 
+    // get a JSONObject that contains the metadata for the provided beacon
     private JSONObject getBeaconMetadata(Beacon beacon) {
-        try  {
+        try {
             JSONArray beacons = metadata.getJSONArray("beacons");
-            for(int i = 0; i < beacons.length(); i++) {
+            for (int i = 0; i < beacons.length(); i++) {
                 JSONObject currentBeacon = beacons.getJSONObject(i);
-                if(currentBeacon.getLong("id") == beacon.id) {
+                if (currentBeacon.getLong("id") == beacon.id) {
                     return currentBeacon;
                 }
             }

@@ -42,9 +42,9 @@ public class BluetoothManager {
     private final static UUID EDDYSTONE_ADV_SLOT_CHARACTERISTIC =
             UUID.fromString("a3c8750a-8ed3-4bdf-8a39-a01bebede295");
 
-    private final static byte[] EDDYSTONE_LOCKED = new byte[] {(byte) 0x00};
-    private final static byte[] EDDYSTONE_UNLOCKED = new byte[] {(byte) 0x01};
-    private final static byte[] EDDYSTONE_UNLOCKED_WITH_NO_RELOCK = new byte[] {(byte) 0x02};
+    private final static byte[] EDDYSTONE_LOCKED = new byte[]{(byte) 0x00};
+    private final static byte[] EDDYSTONE_UNLOCKED = new byte[]{(byte) 0x01};
+    private final static byte[] EDDYSTONE_UNLOCKED_WITH_NO_RELOCK = new byte[]{(byte) 0x02};
 
     private final static byte EDDYSTONE_URL_FRAMETYPE = (byte) 0x10;
     private final static byte EDDSTONE_URL_HTTPS_PREFIX = (byte) 0x03; // prefix for "https://"
@@ -85,7 +85,7 @@ public class BluetoothManager {
     public void listConfigurableEddystoneBeacons(final BeaconEventListener event) {
         // in case there are old com.physical_web.cms.physicalwebcms.beacons stored in the device list
         scannedDevices.clear();
-        UUID[] desiredServices = new UUID[] {EDDYSTONE_CONFIGURATION_SERVICE};
+        UUID[] desiredServices = new UUID[]{EDDYSTONE_CONFIGURATION_SERVICE};
 
         bluetoothAdapter.startLeScan(desiredServices, listBeaconsCallback);
         scanHandler.postDelayed(new Runnable() {
@@ -125,8 +125,8 @@ public class BluetoothManager {
      * Configures the passed beacon to broadcast the given URI. Result of configuration returned
      * through callback
      *
-     * @param beacon Eddystone beacon to be updated
-     * @param Uri ASCII encoded webpage address
+     * @param beacon        Eddystone beacon to be updated
+     * @param Uri           ASCII encoded webpage address
      * @param eventListener where callbacks will be returned
      */
     public void updateBeaconUri(final BluetoothDevice beacon, final String Uri,
@@ -179,7 +179,7 @@ public class BluetoothManager {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
-            if(characteristic.getUuid().equals(EDDYSTONE_LOCK_STATE_CHARACTERISTIC)) {
+            if (characteristic.getUuid().equals(EDDYSTONE_LOCK_STATE_CHARACTERISTIC)) {
                 BluetoothDevice device = gatt.getDevice();
                 byte[] lockState = characteristic.getValue();
 
@@ -201,10 +201,10 @@ public class BluetoothManager {
             BluetoothGattCharacteristic dataSlot =
                     eddystoneConfig.getCharacteristic(EDDYSTONE_ADV_SLOT_CHARACTERISTIC);
 
-            byte[] framePrefix = new byte[] {EDDYSTONE_URL_FRAMETYPE, EDDSTONE_URL_HTTPS_PREFIX};
+            byte[] framePrefix = new byte[]{EDDYSTONE_URL_FRAMETYPE, EDDSTONE_URL_HTTPS_PREFIX};
             byte[] frameStoredURI = shortenedUri.getBytes(Charset.forName("ASCII"));
 
-            for(int i = 0; i < newFrameValue.length; i++) {
+            for (int i = 0; i < newFrameValue.length; i++) {
                 // fill unused bytes with spaces
                 newFrameValue[i] = ASCII_SPACE;
             }
@@ -224,9 +224,9 @@ public class BluetoothManager {
 
         // called because we're using reliable write
         @Override
-        public void onCharacteristicWrite (BluetoothGatt gatt,
-                                           BluetoothGattCharacteristic characteristic,
-                                           int status) {
+        public void onCharacteristicWrite(BluetoothGatt gatt,
+                                          BluetoothGattCharacteristic characteristic,
+                                          int status) {
             BeaconEventListener eventToCallback = eventParentMap.get(gatt.getDevice());
             BluetoothDevice device = gatt.getDevice();
 
@@ -252,7 +252,7 @@ public class BluetoothManager {
 
     // due to length constraints, URIs of over MAX_URI_LENGTH bytes length must be shortened
     private String shortenIfNeeded(String Uri) {
-        if(Uri.getBytes(Charset.forName("ASCII")).length < MAX_URI_LENGTH) {
+        if (Uri.getBytes(Charset.forName("ASCII")).length < MAX_URI_LENGTH) {
             return Uri;
         } else {
             // TODO connect to google shortner API

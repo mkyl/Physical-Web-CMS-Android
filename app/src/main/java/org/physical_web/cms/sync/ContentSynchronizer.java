@@ -21,11 +21,6 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
-
-import org.physical_web.cms.exhibits.ExhibitManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,7 +38,7 @@ import util.RecursiveFileObserver;
 /**
  * Handles syncing data about the beacons and exhibits with the user's
  * Google Drive.
- *
+ * <p>
  * Call {@link ContentSynchronizer#connectReceiver} in the parent Activity onResume() and
  * {@link ContentSynchronizer#disconnectReceiver()} in its onPause()
  */
@@ -79,11 +74,15 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         return INSTANCE;
     }
 
-    private ContentSynchronizer() {};
+    private ContentSynchronizer() {
+    }
+
+    ;
 
     /**
      * Must be called before any other methods are used in this class
-     * @param ctx context
+     *
+     * @param ctx             context
      * @param internalStorage folder to sync
      */
     public void init(Context ctx, File internalStorage) {
@@ -107,6 +106,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     /**
      * Subscribe to notifications about changing sync status.
+     *
      * @param listener
      */
     public void registerSyncStatusListener(SyncStatusListener listener) {
@@ -175,6 +175,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     /**
      * Only called by FileObserver to notify us of need to sync
+     *
      * @param event
      * @param file
      */
@@ -184,7 +185,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         interestingEvents &= (FileObserver.MODIFY | FileObserver.CREATE | FileObserver.DELETE);
 
 
-        if((event & interestingEvents) != 0) {
+        if ((event & interestingEvents) != 0) {
             Log.v(TAG, "Detected change in file: " + file.getPath());
             syncNeeded();
         }
@@ -213,7 +214,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // begin sync process
     private void syncNeeded() {
-        if(!currentlySyncing) {
+        if (!currentlySyncing) {
             currentlySyncing = true;
 
             notifyAllSyncListeners(SYNC_IN_PROGRESS);
@@ -224,6 +225,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     /**
      * Callback for when Drive connection is successful
+     *
      * @param b
      */
     @Override
@@ -293,12 +295,12 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                     }
                 }
 
-                if(remoteCopy != null)
+                if (remoteCopy != null)
                     alreadyExaminedFiles.add(remoteCopy);
             }
 
             for (Metadata remoteFile : remoteFiles) {
-                if(alreadyExaminedFiles.contains(remoteFile))
+                if (alreadyExaminedFiles.contains(remoteFile))
                     continue;
 
                 if (!remoteFile.isFolder()) {
@@ -322,7 +324,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 }
             }
 
-            if(isRootFolder) {
+            if (isRootFolder) {
                 notifyAllSyncListeners(SYNC_COMPLETE);
                 Log.v(TAG, "Drive sync success");
             }
@@ -331,7 +333,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             Log.e(TAG, e.toString());
         } finally {
             remoteFiles.release();
-            if(isRootFolder) {
+            if (isRootFolder) {
                 currentlySyncing = false;
             }
         }
@@ -340,20 +342,20 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // resolve conflict when two versions of a file exist, both local and remote. One with most
     // recent modification date is prefered.
     private void resolveConflict(File localCopy, Metadata remoteCopy, DriveFolder remoteDir)
-            throws  IOException {
+            throws IOException {
         Log.v(TAG, "Starting conflict resolution");
         Date localModified = new Date(localCopy.lastModified());
         // drive doesn't allow changing modification time, so we store it in last viewed time
         Date remoteModified = remoteCopy.getLastViewedByMeDate();
 
-        if(localModified.after(remoteModified)) {
+        if (localModified.after(remoteModified)) {
             // TODO implement
             // overwrite remote with local
             Log.v(TAG, "Overwriting remote with local");
             DriveFile fileToDelete = remoteCopy.getDriveId().asDriveFile();
             deleteDriveFile(fileToDelete);
             uploadFileToDriveFolder(localCopy, remoteDir);
-        } else if (remoteModified.after(localModified)){
+        } else if (remoteModified.after(localModified)) {
             Log.v(TAG, "Overwriting local with remote");
             // overwrite local with remote
             File localDirectory = localCopy.getParentFile();
@@ -367,7 +369,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // download a drive folder into a local folder
     private void downloadFolderFromDriveFolder(Metadata remoteFolder, File localFolderBeingSynced)
-            throws IOException{
+            throws IOException {
         String folderName = remoteFolder.getTitle();
         DriveFolder driveFolder = remoteFolder.getDriveId().asDriveFolder();
 
@@ -420,7 +422,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
         Log.d(TAG, "Downloading file from Drive: " + fileToDownloadName);
 
-        File fileBeingDownloaded = new File (localFolderBeingSynced, fileToDownloadName);
+        File fileBeingDownloaded = new File(localFolderBeingSynced, fileToDownloadName);
         fileBeingDownloaded.createNewFile();
 
         PendingResult<DriveApi.DriveContentsResult> request
@@ -447,7 +449,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // upload local file to Drive folder
     private void uploadFileToDriveFolder(File localFile, DriveFolder remoteFolder)
-            throws IOException{
+            throws IOException {
         Log.d(TAG, "Uploading file to Drive: " + localFile.getPath());
         Date localModificationTime = new Date(localFile.lastModified());
 
@@ -475,7 +477,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 .setLastViewedByMeDate(localModificationTime)
                 .build();
 
-        PendingResult <DriveFolder.DriveFileResult> creationRequest
+        PendingResult<DriveFolder.DriveFileResult> creationRequest
                 = remoteFolder.createFile(apiClient, metadataChangeSet, driveContents);
         DriveFolder.DriveFileResult creationResult = creationRequest.await();
 
@@ -500,15 +502,20 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             throw new IllegalStateException("Couldn't delete folder");
     }
 
+    /**
+     * Deletes the remote Drive equivalent (the synced version) of a local file.
+     *
+     * @param deleteTarget local file whose remote equivalent should be deleted
+     */
     public void deleteSyncedEquivalent(File deleteTarget) {
         List<File> localHierarchy = new LinkedList<>();
         getFolderHierarchy(deleteTarget, localHierarchy);
         DriveFolder remoteFolder = traverseHierarchy(localHierarchy);
 
         if (deleteTarget.isFile()) {
-            MetadataBuffer result =remoteFolder.listChildren(apiClient).await().getMetadataBuffer();
-            for(Metadata md : result) {
-                if(md.getTitle().equals(deleteTarget.getName())) {
+            MetadataBuffer result = remoteFolder.listChildren(apiClient).await().getMetadataBuffer();
+            for (Metadata md : result) {
+                if (md.getTitle().equals(deleteTarget.getName())) {
                     deleteDriveFile(md.getDriveId().asDriveFile());
                     result.release();
                     return;
@@ -521,6 +528,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
+    // returns a list of parent folders that contain the given file or folder
     private void getFolderHierarchy(File folder, List<File> hierarchy) {
         if (folder.equals(localStorageFolder))
             return;
@@ -530,6 +538,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         getFolderHierarchy(folder.getParentFile(), hierarchy);
     }
 
+    // traverse a list of local folders, provided by getFolderHeirarchy, and return the Drive Folder
+    // that has the same parents as the local folder
     private DriveFolder traverseHierarchy(List<File> hierarchy) {
         return traverseHierarchy(Drive.DriveApi.getAppFolder(apiClient), hierarchy);
     }
@@ -538,13 +548,14 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         if (hierarchy.size() == 0)
             return currentFolder;
 
+        // shallowest level is stored at end
         File lastElement = hierarchy.get(hierarchy.size() - 1);
         hierarchy.remove(lastElement);
 
         MetadataBuffer result = currentFolder.listChildren(apiClient)
                 .await().getMetadataBuffer();
-        for(Metadata md : result) {
-            if(md.getTitle().equals(lastElement.getName())) {
+        for (Metadata md : result) {
+            if (md.getTitle().equals(lastElement.getName())) {
                 DriveFolder targetFolder = md.getDriveId().asDriveFolder();
                 result.release();
                 return traverseHierarchy(targetFolder, hierarchy);
@@ -556,9 +567,9 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // check if a drive directory immediately contains a file (non-recursive)
     private Metadata driveFolderContainsFile(File file, MetadataBuffer remoteFiles) {
-        for(Metadata remoteFile : remoteFiles) {
+        for (Metadata remoteFile : remoteFiles) {
             // TODO check below line
-            if(file.getName().equals(getDriveFileName(remoteFile))) {
+            if (file.getName().equals(getDriveFileName(remoteFile))) {
                 return remoteFile;
             }
         }
@@ -567,8 +578,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // check if a local folder contains a file with the same name as a drive file
     private File localFolderContainsDriveFile(Metadata driveFile, File localFolder) {
-        for(File file : localFolder.listFiles()) {
-            if(file.isFile()) {
+        for (File file : localFolder.listFiles()) {
+            if (file.isFile()) {
                 String driveFileName = getDriveFileName(driveFile);
                 if (driveFileName.equals(file.getName()))
                     return file;
@@ -579,8 +590,8 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // check if a folder in Google Drive contains a folder with the same name as a local one
     private Metadata driveFolderContainsLocalFolder(File localFolder, MetadataBuffer driveFolders) {
-        for(Metadata driveFolder : driveFolders) {
-            if(driveFolder.getTitle().equals(localFolder.getName())) {
+        for (Metadata driveFolder : driveFolders) {
+            if (driveFolder.getTitle().equals(localFolder.getName())) {
                 return driveFolder;
             }
         }
@@ -589,9 +600,9 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
     // check if local folder contains a folder with same name as a folder stored in Drive
     private File localFolderContainsDriveFolder(Metadata driveFolder, File localFolder) {
-        for(File folder : localFolder.listFiles()) {
-            if(!folder.isFile()) {
-                if(folder.getName().equals(driveFolder.getTitle()))
+        for (File folder : localFolder.listFiles()) {
+            if (!folder.isFile()) {
+                if (folder.getName().equals(driveFolder.getTitle()))
                     return folder;
             }
         }
@@ -607,7 +618,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // send notification about sync status to all listeners that have subscribed via
     // registerSyncStatusListener
     private void notifyAllSyncListeners(final int status) {
-        if(syncStatusListeners != null) {
+        if (syncStatusListeners != null) {
             for (final SyncStatusListener listener : syncStatusListeners) {
                 listener.syncStatusChanged(status);
             }
