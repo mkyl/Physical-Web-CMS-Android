@@ -4,6 +4,7 @@ package org.physical_web.cms.exhibits;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,6 +44,10 @@ public class ExhibitContentFragment extends Fragment {
     private final static String FRAGMENT_TITLE = "Editing ";
 
     private final static int FILE_PICKER_ROUTING_CODE = 1032;
+    private int IMAGE_CARD_MAX_WIDTH;
+    private int IMAGE_CARD_MAX_HEIGHT;
+
+
 
     private Exhibit workingExhibit;
     private Beacon workingBeacon;
@@ -93,6 +99,10 @@ public class ExhibitContentFragment extends Fragment {
         DragHelperCallback dragHelperCallback = new DragHelperCallback(contentAdapter);
         dragHelper = new ItemTouchHelper(dragHelperCallback);
         dragHelper.attachToRecyclerView(contentList);
+
+        IMAGE_CARD_MAX_WIDTH = getResources().getDisplayMetrics().widthPixels;
+        IMAGE_CARD_MAX_HEIGHT = (int) (200 * getResources().getDisplayMetrics()
+                .density + 0.5f);
 
         return result;
     }
@@ -166,7 +176,8 @@ public class ExhibitContentFragment extends Fragment {
             viewHolder.textView.setVisibility(View.GONE);
 
             if(content instanceof ImageContent) {
-                viewHolder.imageView.setImageBitmap(((ImageContent) content).getBitmap());
+                viewHolder.imageView.setImageBitmap(((ImageContent) content)
+                        .getSampledBitmap(IMAGE_CARD_MAX_HEIGHT, IMAGE_CARD_MAX_WIDTH));
                 viewHolder.imageView.setVisibility(View.VISIBLE);
             } else if (content instanceof VideoContent) {
                 viewHolder.videoView.setVideoPath(((VideoContent) content).getVideoPath());
