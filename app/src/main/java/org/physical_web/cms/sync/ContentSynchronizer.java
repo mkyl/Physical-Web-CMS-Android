@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import util.RecursiveFileObserver;
@@ -492,45 +493,65 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
             throw new IllegalStateException("Couldn't delete file");
     }
 
-    public void deleteDriveFileByName(String name) {
-        Query query = new Query.Builder()
-                .addFilter(Filters.eq(SearchableField.TITLE, name))
-                .build();
-
-        PendingResult<DriveApi.MetadataBufferResult> request = Drive.DriveApi.query(apiClient, query);
-        DriveApi.MetadataBufferResult result = request.await();
-        Metadata md = result.getMetadataBuffer().iterator().next();
-        deleteDriveFile(md.getDriveId().asDriveFile());
+    private void deleteDriveFolder(DriveFolder folder) {
+        PendingResult<Status> request = folder.delete(apiClient);
+        Status result = request.await();
+        if (!result.isSuccess())
+            throw new IllegalStateException("Couldn't delete folder");
     }
 
-    public void removeExhibit(String name) {
-        DriveFolder appFolder = Drive.DriveApi.getAppFolder(apiClient);
-        DriveFolder exhibitFolder = null;
-        MetadataBuffer result = appFolder.listChildren(apiClient)
+    public void deleteSyncedEquivalent(File deleteTarget) {
+        List<File> localHierarchy = new LinkedList<>();
+        getFolderHierarchy(deleteTarget, localHierarchy);
+        DriveFolder remoteFolder = traverseHierarchy(localHierarchy);
+
+        if (deleteTarget.isFile()) {
+            MetadataBuffer result =remoteFolder.listChildren(apiClient).await().getMetadataBuffer();
+            for(Metadata md : result) {
+                if(md.getTitle().equals(deleteTarget.getName())) {
+                    deleteDriveFile(md.getDriveId().asDriveFile());
+                    result.release();
+                    return;
+                }
+            }
+            result.release();
+            throw new IllegalArgumentException("Found Drive folder, but it doesn't have the file");
+        } else {
+            deleteDriveFolder(remoteFolder);
+        }
+    }
+
+    private void getFolderHierarchy(File folder, List<File> hierarchy) {
+        if (folder.equals(localStorageFolder))
+            return;
+
+        if (!folder.isFile())
+            hierarchy.add(folder);
+        getFolderHierarchy(folder.getParentFile(), hierarchy);
+    }
+
+    private DriveFolder traverseHierarchy(List<File> hierarchy) {
+        return traverseHierarchy(Drive.DriveApi.getAppFolder(apiClient), hierarchy);
+    }
+
+    private DriveFolder traverseHierarchy(DriveFolder currentFolder, List<File> hierarchy) {
+        if (hierarchy.size() == 0)
+            return currentFolder;
+
+        File lastElement = hierarchy.get(hierarchy.size() - 1);
+        hierarchy.remove(lastElement);
+
+        MetadataBuffer result = currentFolder.listChildren(apiClient)
                 .await().getMetadataBuffer();
         for(Metadata md : result) {
-            if(md.getTitle().equals(ExhibitManager.EXHIBIT_FOLDER_NAME)) {
-                exhibitFolder = md.getDriveId().asDriveFolder();
+            if(md.getTitle().equals(lastElement.getName())) {
+                DriveFolder targetFolder = md.getDriveId().asDriveFolder();
+                result.release();
+                return traverseHierarchy(targetFolder, hierarchy);
             }
         }
-        if (exhibitFolder == null)
-            throw new IllegalStateException("No exhibits folder found on Drive");
-        result.release();
 
-        DriveFolder targetFolder = null;
-        result = exhibitFolder.listChildren(apiClient)
-                .await().getMetadataBuffer();
-        for(Metadata md : result) {
-            if(md.getTitle().equals(name)) {
-                targetFolder = md.getDriveId().asDriveFolder();
-            }
-        }
-        result.release();
-
-        if (targetFolder == null)
-            throw new IllegalArgumentException("No such exhibit");
-        else
-            targetFolder.delete(apiClient).await();
+        throw new IllegalArgumentException("No equivalent drive folder found");
     }
 
     // check if a drive directory immediately contains a file (non-recursive)
