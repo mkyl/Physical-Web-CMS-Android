@@ -68,5 +68,15 @@
             android:layout_marginStart="-5dp"
             android:background="@color/cardview_light_background"
             app:srcCompat="@mipmap/drag_handle" />
+
+        <ImageButton
+            android:id="@+id/item_exhibit_content_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:background="@color/cardview_light_background"
+            android:tint="@android:color/black"
+            app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
     </RelativeLayout>
 </android.support.v7.widget.CardView>

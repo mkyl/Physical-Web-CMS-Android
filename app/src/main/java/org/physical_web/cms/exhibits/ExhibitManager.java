@@ -72,18 +72,17 @@ public class ExhibitManager {
         exhibits.add(createdExhibit);
     }
 
-    public void removeExhibit(final Exhibit exhibit) {
+    public void removeExhibit(Exhibit exhibit) {
+        final File folderToDelete = exhibit.getExhibitFolder();
         new Thread(new Runnable() {
             @Override
             public void run() {
-                contentSynchronizer.removeExhibit(exhibit.getTitle());
+                contentSynchronizer.deleteSyncedEquivalent(folderToDelete);
             }
         }).start();
+
         exhibits.remove(exhibit);
-        Boolean deleteSuccess = exhibit.getExhibitFolder().delete();
-        if(!deleteSuccess)
-            Log.e(TAG, "Failed to delete exhibit at: "
-                    + exhibit.getExhibitFolder().getAbsolutePath());
+        util.MiscFile.deleteDir(exhibit.getExhibitFolder());
     }
 
     public void configureNewBeacon(Beacon beacon) {

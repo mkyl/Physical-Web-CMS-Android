@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.beacons.BeaconManager;
+import org.physical_web.cms.sync.ContentSynchronizer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -213,8 +214,11 @@ public class Exhibit {
                 changedContentList.put(exhibitContent.getContentName());
             }
             beaconMetadata.put("contents", changedContentList);
+            saveMetadata();
         } catch (JSONException e) {
             Log.e(TAG, "Error persisting content changes: " + e);
+        } catch (IOException e) {
+            Log.e(TAG, "Error writing new content order to JSON" + e);
         }
     }
 
@@ -443,6 +447,40 @@ public class Exhibit {
         } catch (Exception e) {
             Log.e(TAG, "modifying metadata failed for content with filename: " + filename);
         }
+    }
+
+    public void removeContent(final ExhibitContent content, Beacon beacon) {
+        removeContentMetadata(content, beacon);
+        contentsForBeacon.get(beacon).remove(content);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                File contentFile = content.getContentFile();
+                ContentSynchronizer.getInstance().deleteSyncedEquivalent(contentFile);
+                contentFile.delete();
+            }
+        }).start();
+    }
+
+    private void removeContentMetadata(ExhibitContent content, Beacon beacon) {
+        try {
+            JSONArray beaconContents = getBeaconMetadata(beacon).getJSONArray("contents");
+            for (int i = 0; i < beaconContents.length(); i++) {
+                String contentName = beaconContents.getString(i);
+                if (contentName.equals(content.getContentName())) {
+                    beaconContents.remove(i);
+                    saveMetadata();
+                    return;
+                }
+            }
+        } catch(JSONException e) {
+            Log.e(TAG, "Trouble removing content from metadata");
+        } catch(IOException e) {
+            Log.e(TAG, "Error updating metadata file while removing content");
+        }
+
+        throw new IllegalArgumentException("No such contents found");
     }
 
     private JSONObject getBeaconMetadata(Beacon beacon) {

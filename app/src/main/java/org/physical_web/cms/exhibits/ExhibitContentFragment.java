@@ -4,6 +4,7 @@ package org.physical_web.cms.exhibits;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -136,7 +137,8 @@ public class ExhibitContentFragment extends Fragment {
     private void handleURI(Uri uri) {
         Log.d(TAG, "received URI: " + uri);
         workingExhibit.insertContent(uri, workingBeacon, getActivity());
-        contentAdapter.notifyDataSetChanged();
+        // inserted at very end
+        contentAdapter.notifyItemInserted(contentAdapter.getItemCount() - 1);
     }
 
     class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ViewHolder>
@@ -152,7 +154,7 @@ public class ExhibitContentFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(final ViewHolder viewHolder, int position) {
-            ExhibitContent content = workingExhibit.getContentForBeacon(workingBeacon)
+            final ExhibitContent content = workingExhibit.getContentForBeacon(workingBeacon)
                     .get(position);
             String contentName = content.getContentName();
             viewHolder.contentTitle.setText(contentName);
@@ -190,6 +192,14 @@ public class ExhibitContentFragment extends Fragment {
                     return false;
                 }
             });
+
+            viewHolder.delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    workingExhibit.removeContent(content, workingBeacon);
+                    contentAdapter.notifyItemRemoved(viewHolder.getLayoutPosition());
+                }
+            });
         }
 
         @Override
@@ -222,6 +232,7 @@ public class ExhibitContentFragment extends Fragment {
             LinearLayout soundView;
             TextView textView;
             ImageButton dragHandle;
+            ImageButton delete;
 
             ViewHolder(View view) {
                 super(view);
@@ -231,6 +242,7 @@ public class ExhibitContentFragment extends Fragment {
                 soundView = (LinearLayout) view.findViewById(R.id.item_exhibit_content_audio);
                 textView = (TextView) view.findViewById(R.id.item_exhibit_content_text);
                 dragHandle = (ImageButton) view.findViewById(R.id.item_exhibit_content_handle);
+                delete = (ImageButton) view.findViewById(R.id.item_exhibit_content_delete);
             }
         }
     }

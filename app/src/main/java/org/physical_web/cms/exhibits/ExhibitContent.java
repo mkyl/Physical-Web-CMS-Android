@@ -27,6 +27,7 @@ public abstract class ExhibitContent {
     private final static String MIME_VIDEO_PREFIX = "video/";
 
     private String contentName;
+    private File contentFile;
 
     public static ExhibitContent fromFile(File contentFile) {
         ExhibitContent result;
@@ -49,6 +50,7 @@ public abstract class ExhibitContent {
             throw new IllegalArgumentException("Exhibit content has unrecognized file type");
 
         result.setContentName(contentFile.getName());
+        result.setContentFile(contentFile);
         return result;
     }
 
@@ -57,6 +59,13 @@ public abstract class ExhibitContent {
     }
     public void setContentName(String contentName){
         this.contentName = contentName;
+    }
+
+    public File getContentFile() {
+        return this.contentFile;
+    }
+    private void setContentFile(File file) {
+        this.contentFile = file;
     }
 
     public abstract String toHTML();
