@@ -10,10 +10,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
@@ -23,6 +26,9 @@ import android.widget.VideoView;
 import org.physical_web.cms.R;
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.beacons.BeaconManager;
+
+import java.util.Collections;
+import java.util.List;
 
 import nl.changer.audiowife.AudioWife;
 
@@ -40,6 +46,7 @@ public class ExhibitContentFragment extends Fragment {
     private Beacon workingBeacon;
 
     private ContentAdapter contentAdapter;
+    private ItemTouchHelper dragHelper;
 
     public ExhibitContentFragment() {
         // required empty constructor
@@ -80,6 +87,11 @@ public class ExhibitContentFragment extends Fragment {
 
         contentAdapter = new ContentAdapter();
         contentList.setAdapter(contentAdapter);
+
+        // set up card dragging code
+        DragHelperCallback dragHelperCallback = new DragHelperCallback(contentAdapter);
+        dragHelper = new ItemTouchHelper(dragHelperCallback);
+        dragHelper.attachToRecyclerView(contentList);
 
         return result;
     }
@@ -127,7 +139,8 @@ public class ExhibitContentFragment extends Fragment {
         contentAdapter.notifyDataSetChanged();
     }
 
-    class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ViewHolder> {
+    class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ViewHolder>
+            implements CardDragNotifier {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewtype) {
             View listItem = LayoutInflater
@@ -138,7 +151,7 @@ public class ExhibitContentFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder viewHolder, int position) {
+        public void onBindViewHolder(final ViewHolder viewHolder, int position) {
             ExhibitContent content = workingExhibit.getContentForBeacon(workingBeacon)
                     .get(position);
             String contentName = content.getContentName();
@@ -170,6 +183,13 @@ public class ExhibitContentFragment extends Fragment {
                 viewHolder.textView.setText(((TextContent) content).getText());
                 viewHolder.textView.setVisibility(View.VISIBLE);
             }
+
+            viewHolder.dragHandle.setOnTouchListener(new View.OnTouchListener(){
+                public boolean onTouch(View v, MotionEvent event) {
+                    dragHelper.startDrag(viewHolder);
+                    return false;
+                }
+            });
         }
 
         @Override
@@ -187,13 +207,21 @@ public class ExhibitContentFragment extends Fragment {
             return itemCount;
         }
 
+        @Override
+        public void onItemMove(int fromPosition, int toPosition) {
+            List<ExhibitContent> contentList = workingExhibit.getContentForBeacon(workingBeacon);
+            Collections.swap(contentList, fromPosition, toPosition);
+            contentAdapter.notifyItemMoved(fromPosition, toPosition);
+            workingExhibit.persistContentChanges(workingBeacon);
+        }
+
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView contentTitle;
             ImageView imageView;
             VideoView videoView;
             LinearLayout soundView;
             TextView textView;
-            View background;
+            ImageButton dragHandle;
 
             ViewHolder(View view) {
                 super(view);
@@ -202,8 +230,53 @@ public class ExhibitContentFragment extends Fragment {
                 videoView = (VideoView) view.findViewById(R.id.item_exhibit_content_video);
                 soundView = (LinearLayout) view.findViewById(R.id.item_exhibit_content_audio);
                 textView = (TextView) view.findViewById(R.id.item_exhibit_content_text);
-                background = view;
+                dragHandle = (ImageButton) view.findViewById(R.id.item_exhibit_content_handle);
             }
         }
     }
+}
+
+class DragHelperCallback extends ItemTouchHelper.Callback {
+    private CardDragNotifier cardDragNotifier;
+
+    public DragHelperCallback(CardDragNotifier helperAdapter) {
+        this.cardDragNotifier = helperAdapter;
+    }
+
+    @Override
+    public boolean isLongPressDragEnabled() {
+        // yes, we want to drag, but only from drag handles
+        return false;
+    }
+
+    @Override
+    public boolean isItemViewSwipeEnabled() {
+        return false;
+    }
+
+    @Override
+    public int getMovementFlags(RecyclerView recyclerView,
+                                RecyclerView.ViewHolder viewHolder) {
+        int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+        int swipeFlags = 0;
+        return makeMovementFlags(dragFlags, swipeFlags);
+    }
+
+    @Override
+    public boolean onMove(RecyclerView recyclerView,
+                          RecyclerView.ViewHolder viewHolder,
+                          RecyclerView.ViewHolder target) {
+        cardDragNotifier.onItemMove(viewHolder.getAdapterPosition(),
+                target.getAdapterPosition());
+        return true;
+    }
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder,
+                         int direction) {
+        // do nothing, swipe is disabled
+    }
+}
+
+interface CardDragNotifier {
+    void onItemMove(int fromPosition, int toPosition);
 }

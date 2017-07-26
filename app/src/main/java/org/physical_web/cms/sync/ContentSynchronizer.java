@@ -184,7 +184,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
 
         if((event & interestingEvents) != 0) {
-            Log.d(TAG, "Detected change in file: " + file.getPath());
+            Log.v(TAG, "Detected change in file: " + file.getPath());
             syncNeeded();
         }
     }
@@ -227,7 +227,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
      */
     @Override
     public void onConnected(Bundle b) {
-        Log.d(TAG, "Starting drive synchronization");
+        Log.v(TAG, "Starting drive synchronization");
         syncRoot = true;
 
         new Thread(new Runnable() {
@@ -323,7 +323,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
             if(isRootFolder) {
                 notifyAllSyncListeners(SYNC_COMPLETE);
-                Log.d(TAG, "Drive sync success");
+                Log.v(TAG, "Drive sync success");
             }
         } catch (Exception e) {
             notifyAllSyncListeners(NO_SYNC_DRIVE_ERROR);
@@ -340,7 +340,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     // recent modification date is prefered.
     private void resolveConflict(File localCopy, Metadata remoteCopy, DriveFolder remoteDir)
             throws  IOException {
-        Log.d(TAG, "Starting conflict resolution");
+        Log.v(TAG, "Starting conflict resolution");
         Date localModified = new Date(localCopy.lastModified());
         // drive doesn't allow changing modification time, so we store it in last viewed time
         Date remoteModified = remoteCopy.getLastViewedByMeDate();
@@ -348,19 +348,19 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         if(localModified.after(remoteModified)) {
             // TODO implement
             // overwrite remote with local
-            Log.d(TAG, "Overwriting remote with local");
+            Log.v(TAG, "Overwriting remote with local");
             DriveFile fileToDelete = remoteCopy.getDriveId().asDriveFile();
             deleteDriveFile(fileToDelete);
             uploadFileToDriveFolder(localCopy, remoteDir);
         } else if (remoteModified.after(localModified)){
-            Log.d(TAG, "Overwriting local with remote");
+            Log.v(TAG, "Overwriting local with remote");
             // overwrite local with remote
             File localDirectory = localCopy.getParentFile();
             localCopy.delete();
             downloadFileFromDriveFolder(remoteCopy, localDirectory);
         } else {
             // already synced do nothing
-            Log.d(TAG, "File matches remote " + localCopy.getPath());
+            Log.v(TAG, "File matches remote " + localCopy.getPath());
         }
     }
 
