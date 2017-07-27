@@ -46,3 +46,5 @@ dependencies {
     androidTestCompile 'com.linkedin.dexmaker:dexmaker-mockito:2.2.0'
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0-alpha3'
 }
+
+apply plugin: 'com.google.gms.google-services'
