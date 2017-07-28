@@ -18,6 +18,7 @@ import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
@@ -61,7 +62,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     private Boolean syncRoot;
     private List<SyncStatusListener> syncStatusListeners;
     private File localStorageFolder;
-    private List<Metadata> alreadyExaminedFiles;
+    private List<DriveId> alreadyExaminedFiles;
 
     private Boolean initialized = false;
     private Boolean currentlySyncing;
@@ -93,7 +94,6 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         context = ctx.getApplicationContext();
         localStorageFolder = internalStorage;
         currentlySyncing = false;
-        alreadyExaminedFiles = new ArrayList<>();
 
         setupNetworkHandling();
         setupDriveSync(internalStorage);
@@ -232,6 +232,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
     public void onConnected(Bundle b) {
         Log.v(TAG, "Starting drive synchronization");
         syncRoot = true;
+        alreadyExaminedFiles = new LinkedList<>();
 
         new Thread(new Runnable() {
             @Override
@@ -296,11 +297,12 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
                 }
 
                 if (remoteCopy != null)
-                    alreadyExaminedFiles.add(remoteCopy);
+                    alreadyExaminedFiles.add(remoteCopy.getDriveId());
             }
 
+            Log.v(TAG, "start checking remote files");
             for (Metadata remoteFile : remoteFiles) {
-                if (alreadyExaminedFiles.contains(remoteFile))
+                if (alreadyExaminedFiles.contains(remoteFile.getDriveId()))
                     continue;
 
                 if (!remoteFile.isFolder()) {
@@ -326,7 +328,7 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
 
             if (isRootFolder) {
                 notifyAllSyncListeners(SYNC_COMPLETE);
-                Log.v(TAG, "Drive sync success");
+                Log.d(TAG, "Drive sync success");
             }
         } catch (Exception e) {
             notifyAllSyncListeners(NO_SYNC_DRIVE_ERROR);
@@ -351,12 +353,12 @@ public class ContentSynchronizer implements GoogleApiClient.ConnectionCallbacks,
         if (localModified.after(remoteModified)) {
             // TODO implement
             // overwrite remote with local
-            Log.v(TAG, "Overwriting remote with local");
+            Log.d(TAG, "Overwriting remote with local");
             DriveFile fileToDelete = remoteCopy.getDriveId().asDriveFile();
             deleteDriveFile(fileToDelete);
             uploadFileToDriveFolder(localCopy, remoteDir);
         } else if (remoteModified.after(localModified)) {
-            Log.v(TAG, "Overwriting local with remote");
+            Log.d(TAG, "Overwriting local with remote");
             // overwrite local with remote
             File localDirectory = localCopy.getParentFile();
             localCopy.delete();
