@@ -172,12 +172,13 @@ public class Exhibit {
         for (File folder : exhibitFolder.listFiles()) {
             if (!folder.isFile()) {
                 // beacon folder names are the id's of the corresponding beacon
-                Beacon correspondingBeacon = beaconManager
-                        .getBeaconById(Long.valueOf(folder.getName()));
-                if (correspondingBeacon != null)
+                try {
+                    Beacon correspondingBeacon = beaconManager
+                            .getBeaconById(Long.valueOf(folder.getName()));
                     beaconFileMap.put(correspondingBeacon, folder);
-                else
+                } catch (IllegalArgumentException e) {
                     Log.w(TAG, "Odd, no beacon for folder: " + folder.getAbsolutePath());
+                }
             }
         }
 
