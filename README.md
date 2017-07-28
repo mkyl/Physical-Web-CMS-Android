@@ -1,6 +1,7 @@
 # Physical Web Content Manager
-![smartphone running the app, surrounded by Physical web beacons](readme-image.jpg)
 Provide a seamless layer of digital information to the visitors of your museum, gallery or other large space.
+
+![smartphone running the app, surrounded by Physical web beacons](readme-image.jpg)
 
 The Physical Web Content Manager app allows you to enroll your beacons, set up the contents that will be served to users in their proximity, and configure exhibits to rotate the contents of the beacons conveniently.
 
