@@ -1,18 +1,15 @@
 # Physical Web Content Manager
-The aim of this project is to implement a backend for museums and exhibits that utilizes
-Physical Web technology. The backend will allow visitors to access information about exhibit
-pieces without the need to install any apps. Physically, this will be accomplished using
-Eddystone beacons located near each piece. We focus on developing the software side used to
-configure these beacons.
+Provide a seamless layer of digital information to the visitors of your museum, gallery or other large space.
 
-To achieve this, we will create an Android App that allows museum curators to configure the
-Physical Web beacons they want to deploy and then upload the content that will be served. The
-app will support combinations of text, images, audio and video. It will use Google Drive API for
-its storage backend. The app will also allow the curators to create a map of the exhibition and
-the beacons deployed, with the map also being stored on Google Drive. The app will also
-support storing multiple entire configurations (a map and its associated beacon content) so that
-the end-user can quickly deploy the content they need when exhibits change.
+![smartphone running the app, surrounded by Physical web beacons](readme-image.jpg)
 
-### Icon Credits
-Wireless by Edward Boatman from the Noun Project
-sculpture by Ivan Novelo from the Noun Project
+The Physical Web Content Manager app allows you to enroll your beacons, set up the contents that will be served to users in their proximity, and configure exhibits to rotate the contents of the beacons conveniently.
+
+This app is a companion to the Physical Web webapp package, allowing you to configure the content that is served to your visitors. All content is stored in open formats on Google Drive, so that the contents of your beacons are easily accessed, without lock-in.
+
+### Credits
+Developed by Mohammad Kayali for Google Summer of Code 2017, with generous support from his mentors Andreu Ibanez, Jorge Carballo and Fran Cabrera.
+
+#### Graphics
+* Wireless by Edward Boatman from the Noun Project
+* sculpture by Ivan Novelo from the Noun Project
