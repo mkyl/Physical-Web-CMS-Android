@@ -298,7 +298,7 @@ public class EnrollmentActivity extends AppCompatActivity {
         findViewById(R.id.noDevicesYetText).setVisibility(View.VISIBLE);
         findViewById(R.id.scannedBeaconsTitle).setVisibility(View.VISIBLE);
         findViewById(R.id.scannedBeaconsList).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.noDevicesYetText)).setText("Seaching for com.physical_web.cms.physicalwebcms.beacons...");
+        ((TextView) findViewById(R.id.noDevicesYetText)).setText("Seaching for beacons...");
     }
 
     // warn the user that they have made an error by not allowing BT or location access
@@ -350,7 +350,7 @@ public class EnrollmentActivity extends AppCompatActivity {
             }
 
             if (beacon.getName() == null || beacon.getName().equals(""))
-                holder.nameTextView.setText("Unnamed Beacon");
+                holder.nameTextView.setText("Unnamed Device");
             else
                 holder.nameTextView.setText(beacon.getName());
 
