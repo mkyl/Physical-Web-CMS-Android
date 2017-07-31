@@ -3,24 +3,21 @@ package org.physical_web.cms.beacons;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import javax.crypto.Mac;
+
 /**
  * This class represents an Eddystone Beacon, with a physical address, internal ID
  * and user friendly name
  */
 @Entity(tableName = "beacons")
 public class Beacon {
-    @PrimaryKey(autoGenerate = true)
-    public long id;
-
-    public String address;
+    @PrimaryKey(autoGenerate = false)
+    public MacAddress address;
     public String friendlyName;
-    public Boolean unconfigured;
-    // public Bitmap locationImage;
 
-    public Beacon(String address, String friendlyName) {
+    public Beacon(MacAddress address, String friendlyName) {
         this.address = address;
         this.friendlyName = friendlyName;
-        this.unconfigured = false;
     }
 
     @Override
@@ -33,7 +30,7 @@ public class Beacon {
             return false;
 
         Beacon otherBeacon = (Beacon) other;
-        return (this.address.equalsIgnoreCase(otherBeacon.address));
+        return (this.address.equals(otherBeacon.address));
     }
 
     /**

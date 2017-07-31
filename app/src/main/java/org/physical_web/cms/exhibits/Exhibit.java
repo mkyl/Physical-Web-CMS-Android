@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.beacons.BeaconManager;
+import org.physical_web.cms.beacons.MacAddress;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
 import java.io.File;
@@ -27,6 +28,8 @@ import java.util.Random;
 import java.util.Scanner;
 
 import static util.MiscFile.deleteDir;
+import static util.MiscFile.readFile;
+import static util.MiscFile.writeToFile;
 
 /**
  * Represents an exhibition, or a set of content assigned to a number of beacons. These sets can
@@ -112,7 +115,7 @@ public class Exhibit {
 
         for (Beacon beacon : beacons) {
             // content is stored inside folder with name that matches beacon id
-            String beaconContentFolderName = String.valueOf(beacon.id);
+            String beaconContentFolderName = String.valueOf(beacon.address.toString());
             File beaconContentFolder = new File(exhibitFolder, beaconContentFolderName);
             Boolean createContentFolderSuccess = beaconContentFolder.mkdir();
             if (!createContentFolderSuccess)
@@ -143,7 +146,7 @@ public class Exhibit {
             JSONArray beacons = new JSONArray();
             for (Beacon beacon : beaconList) {
                 JSONObject beaconJSONMetadata = new JSONObject();
-                beaconJSONMetadata.put("id", beacon.id);
+                beaconJSONMetadata.put("address", beacon.address.toString());
                 beaconJSONMetadata.put("contents", new JSONArray());
                 beacons.put(beaconJSONMetadata);
             }
@@ -173,8 +176,9 @@ public class Exhibit {
             if (!folder.isFile()) {
                 // beacon folder names are the id's of the corresponding beacon
                 try {
+                    MacAddress targetAddress = MacAddress.fromString(folder.getName());
                     Beacon correspondingBeacon = beaconManager
-                            .getBeaconById(Long.valueOf(folder.getName()));
+                            .getBeaconByAddress(targetAddress);
                     beaconFileMap.put(correspondingBeacon, folder);
                 } catch (IllegalArgumentException e) {
                     Log.w(TAG, "Odd, no beacon for folder: " + folder.getAbsolutePath());
@@ -340,26 +344,27 @@ public class Exhibit {
      * @param newBeacon beacon to add to exhibit
      */
     public void configureForAdditionalBeacon(Beacon newBeacon) {
-        long beaconId = newBeacon.id;
+        MacAddress beaconAddress = newBeacon.address;
 
-        File beaconContentFolder = new File(exhibitFolder, String.valueOf(beaconId));
-        if (beaconContentFolder.exists())
-            throw new IllegalArgumentException("Beacon content folder already setup");
-        contentFolderForBeacon.put(newBeacon, beaconContentFolder);
+        File beaconContentFolder = new File(exhibitFolder, beaconAddress.toString());
+        beaconContentFolder.mkdir();
 
-        try {
-            JSONObject beacon = new JSONObject();
-            beacon.put("id", beaconId);
-            JSONArray contents = new JSONArray();
-            beacon.put("contents", contents);
+        if (getContentForBeacon(newBeacon) == null) {
+            try {
+                JSONObject beacon = new JSONObject();
+                beacon.put("address", beaconAddress.toString());
+                JSONArray contents = new JSONArray();
+                beacon.put("contents", contents);
 
-            metadata.getJSONArray("beacons").put(beacon);
-            saveMetadata();
-        } catch (Exception e) {
-            Log.e(TAG, "Error editing JSON: " + e);
+                metadata.getJSONArray("beacons").put(beacon);
+                saveMetadata();
+            } catch (Exception e) {
+                Log.e(TAG, "Error editing JSON: " + e);
+            }
         }
 
-        beaconContentFolder.mkdir();
+        contentFolderForBeacon.put(newBeacon, beaconContentFolder);
+        contentsForBeacon.put(newBeacon, loadBeaconContents(newBeacon));
     }
 
     /**
@@ -381,7 +386,8 @@ public class Exhibit {
                 JSONObject currentBeacon = beacons.getJSONObject(i);
 
                 // name is stored in first field
-                if (currentBeacon.getLong("id") == removedBeacon.id) {
+                if (currentBeacon.getString("address")
+                        .equals(removedBeacon.address.toString())) {
                     targetIndex = i;
                 }
             }
@@ -396,6 +402,7 @@ public class Exhibit {
             Log.e(TAG, "Removing beacon from metadata failed: " + e);
         }
 
+        ContentSynchronizer.getInstance().deleteSyncedEquivalent(beaconContentFolder);
         deleteDir(beaconContentFolder);
     }
 
@@ -407,32 +414,6 @@ public class Exhibit {
      */
     public List<ExhibitContent> getContentForBeacon(Beacon beacon) {
         return contentsForBeacon.get(beacon);
-    }
-
-    // read file into string
-    private static String readFile(File file) throws IOException {
-        StringBuilder fileContents = new StringBuilder((int) file.length());
-        Scanner scanner = new Scanner(file);
-        String lineSeparator = System.getProperty("line.separator");
-
-        try {
-            while (scanner.hasNextLine()) {
-                fileContents.append(scanner.nextLine());
-                // avoid extra line separator at end of file
-                if (scanner.hasNextLine())
-                    fileContents.append(lineSeparator);
-            }
-            return fileContents.toString();
-        } finally {
-            scanner.close();
-        }
-    }
-
-    // just save a string to a file
-    private static void writeToFile(File file, String string) throws IOException {
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(file));
-        outputStreamWriter.write(string);
-        outputStreamWriter.close();
     }
 
     /**
@@ -551,7 +532,8 @@ public class Exhibit {
             JSONArray beacons = metadata.getJSONArray("beacons");
             for (int i = 0; i < beacons.length(); i++) {
                 JSONObject currentBeacon = beacons.getJSONObject(i);
-                if (currentBeacon.getLong("id") == beacon.id) {
+                if (currentBeacon.getString("address").equals(beacon.address.toString()))
+                {
                     return currentBeacon;
                 }
             }

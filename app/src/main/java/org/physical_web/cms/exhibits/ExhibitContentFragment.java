@@ -26,6 +26,7 @@ import android.widget.VideoView;
 import org.physical_web.cms.R;
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.beacons.BeaconManager;
+import org.physical_web.cms.beacons.MacAddress;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,8 +66,9 @@ public class ExhibitContentFragment extends Fragment {
         Long exhibitId = passedArguments.getLong("exhibit-id");
         workingExhibit = ExhibitManager.getInstance().getById(exhibitId);
 
-        Long beaconId = passedArguments.getLong("beacon-id");
-        workingBeacon = BeaconManager.getInstance().getBeaconById(beaconId);
+        String normalizedAddress = passedArguments.getString("beacon-address");
+        MacAddress targetAddress = MacAddress.fromString(normalizedAddress);
+        workingBeacon = BeaconManager.getInstance().getBeaconByAddress(targetAddress);
 
         // Inflate the layout for this fragment
         View result = inflater.inflate(R.layout.fragment_exhibit_content, container, false);

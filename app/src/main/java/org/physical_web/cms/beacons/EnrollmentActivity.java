@@ -31,6 +31,8 @@ import org.physical_web.cms.exhibits.ExhibitManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.crypto.Mac;
+
 /**
  * This class allows the user to enroll new beacons into the beacon DB.
  */
@@ -206,7 +208,9 @@ public class EnrollmentActivity extends AppCompatActivity {
     public void onAddBeacon(View v) {
         findViewById(R.id.editBeaconNameText).setEnabled(false);
         final String name = ((TextView) findViewById(R.id.editBeaconNameText)).getText().toString();
-        final String address = ((TextView) findViewById(R.id.textBeaconAddress)).getText().toString();
+        final String formattedAddress = ((TextView) findViewById(R.id.textBeaconAddress)).getText()
+                .toString();
+        final MacAddress address = MacAddress.fromString(formattedAddress, ':');
 
         Beacon newBeacon = new Beacon(address, name);
         beaconManager.insertBeacons(newBeacon);
