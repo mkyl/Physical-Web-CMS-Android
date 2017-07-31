@@ -179,6 +179,6 @@ public class ContentSynchronizerTest {
 
     @After
     public void deleteDriveTestingFiles() {
-        contentSynchronizer.deleteDriveFileByName(randomFileName);
+        contentSynchronizer.deleteSyncedEquivalent((new File(testingDirectory, randomFileName)));
     }
 }

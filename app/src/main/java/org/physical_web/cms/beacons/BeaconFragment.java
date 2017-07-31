@@ -198,7 +198,7 @@ public class BeaconFragment extends Fragment {
                 ((EditText) sheetView.findViewById(R.id.edit_beacon_name)).
                         setText(selectedBeacon.friendlyName);
                 ((EditText) sheetView.findViewById(R.id.edit_beacon_mac)).
-                        setText(selectedBeacon.address);
+                        setText(selectedBeacon.address.toString());
                 bottomSheet.showWithSheetView(sheetView);
             }
         };

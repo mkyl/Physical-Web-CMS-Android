@@ -6,6 +6,8 @@ import android.util.Log;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import javax.crypto.Mac;
+
 /**
  * Singleton class to manage beacons. {@link #setContext(Context)} must be called
  * before calling any methods other than {@link #getInstance()}. Call {@link #closeAndSave()} when
@@ -112,17 +114,18 @@ public class BeaconManager {
     }
 
     /**
-     * Get beacon by id, internal field stored in {@link Beacon#id}. NOT SAME AS INDEX.
+     * Get beacon by its mac address, internal field stored in {@link Beacon#address}
      */
-    public Beacon getBeaconById(long id) {
+    public Beacon getBeaconByAddress(MacAddress macAddress) {
         waitOnLatch();
 
         for (Beacon beacon : beacons) {
-            if (beacon.id == id)
+            if (beacon.address.equals(macAddress))
                 return beacon;
         }
 
-        throw new IllegalArgumentException("no beacon with id " + id + " found");
+        throw new IllegalArgumentException("no beacon with address "
+                + macAddress.toString() + " found");
     }
 
     /**

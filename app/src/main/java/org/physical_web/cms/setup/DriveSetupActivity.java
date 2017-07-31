@@ -73,6 +73,10 @@ public class DriveSetupActivity extends AppCompatActivity implements
     public void onConnected(Bundle connectionHint) {
         Log.d(TAG, "Drive connection successful");
 
+        // disconnect so that first sync works
+        apiClient.disconnect();
+        apiClient = null;
+
         unlockInterface();
 
         Button button = (Button) findViewById(R.id.start_setup_button);

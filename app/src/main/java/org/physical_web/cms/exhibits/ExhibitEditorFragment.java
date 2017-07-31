@@ -130,7 +130,8 @@ public class ExhibitEditorFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
             String beaconName = beaconManager.getBeaconByIndex(position).friendlyName;
-            final long beaconId = beaconManager.getBeaconByIndex(position).id;
+            final String beaconAddress = beaconManager.getBeaconByIndex(position)
+                    .address.toString();
 
             viewHolder.beaconTitle.setText(beaconName);
             viewHolder.background.setOnClickListener(new View.OnClickListener() {
@@ -140,7 +141,7 @@ public class ExhibitEditorFragment extends Fragment {
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
                     Bundle bundle = new Bundle();
                     bundle.putLong("exhibit-id", workingExhibit.getId());
-                    bundle.putLong("beacon-id", beaconId);
+                    bundle.putString("beacon-address", beaconAddress);
                     contentEditor.setArguments(bundle);
                     transaction.replace(R.id.fragment_container, contentEditor);
                     transaction.addToBackStack(null);
