@@ -49,7 +49,7 @@ public class BeaconFragment extends Fragment {
     public void onResume() {
         super.onResume();
         adapter.notifyDataSetChanged();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class BeaconFragment extends Fragment {
                 Snackbar undoSnackbar = Snackbar.
                         make(getView(), "Deleted beacon '" + deletedBeacon.friendlyName + "'",
                                 Snackbar.LENGTH_LONG).
-                        setAction("UNDO", new View.OnClickListener(){
+                        setAction("UNDO", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
                                 beaconManager.insertBeacons(deletedBeacon);

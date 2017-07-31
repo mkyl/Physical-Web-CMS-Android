@@ -94,7 +94,7 @@ public class BaseActivity extends AppCompatActivity {
     private void setupActionBar() {
         ActionBar actionBar = getSupportActionBar();
 
-        if(actionBar == null) {
+        if (actionBar == null) {
             throw new IllegalStateException("Current theme doesn't have an action bar");
         } else {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -149,7 +149,7 @@ public class BaseActivity extends AppCompatActivity {
 
         private void switchFragment(String name) {
             Fragment switchFragment;
-            switch(name) {
+            switch (name) {
                 case "Home":
                     switchFragment = new WelcomeFragment();
                     break;

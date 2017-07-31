@@ -202,8 +202,8 @@ public class DriveSetupActivity extends AppCompatActivity implements
     public boolean isGooglePlayServicesAvailable(Activity activity) {
         GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
         int status = googleApiAvailability.isGooglePlayServicesAvailable(activity);
-        if(status != ConnectionResult.SUCCESS) {
-            if(googleApiAvailability.isUserResolvableError(status)) {
+        if (status != ConnectionResult.SUCCESS) {
+            if (googleApiAvailability.isUserResolvableError(status)) {
                 // not much that we can do if Play Services not installed
                 googleApiAvailability.getErrorDialog(activity, status,
                         GOOGLE_PLAY_SERVICES_ERROR).show();

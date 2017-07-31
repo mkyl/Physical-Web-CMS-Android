@@ -67,13 +67,14 @@ public class ExhibitFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
+    // pulls up a sheet from the bottom of the screen to allow user to input details of new exhibit
     private void showNewExhibitSheet() {
         bottomSheet = (BottomSheetLayout) getView().findViewById(R.id.exhibit_sheet);
 
-        if(bottomSheet == null)
+        if (bottomSheet == null)
             throw new IllegalStateException("No bottom sheet in current view");
 
         View sheetView = LayoutInflater.from(getActivity())
@@ -82,15 +83,16 @@ public class ExhibitFragment extends Fragment {
 
         sheetView.findViewById(R.id.sheet_new_exhibit_close)
                 .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bottomSheet.dismissSheet();
-            }
-        });
+                    @Override
+                    public void onClick(View v) {
+                        bottomSheet.dismissSheet();
+                    }
+                });
 
         bottomSheet.showWithSheetView(sheetView);
     }
 
+    // called by new exhibit sheet when user hits "add exhibit" button
     private View.OnClickListener addExhibit = new View.OnClickListener() {
         @Override
         public void onClick(View exhibitSheet) {
@@ -105,11 +107,12 @@ public class ExhibitFragment extends Fragment {
         }
     };
 
+    // allows for undeletion of exhibit
     private void showDeletionUndoBar(final String exhibitName) {
         Snackbar undoSnackbar = Snackbar.
                 make(getView(), "Deleted exhibit '" + exhibitName + "'",
                         Snackbar.LENGTH_LONG)
-                .setAction("UNDO", new View.OnClickListener(){
+                .setAction("UNDO", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Log.d(TAG, "Undeleting exhibit: " + exhibitName);
@@ -135,24 +138,26 @@ public class ExhibitFragment extends Fragment {
         public void onBindViewHolder(ViewHolder viewHolder, int position) {
             final Exhibit exhibitToDraw = exhibitManager.getExhibit(position);
 
+            // contents of overflow menu
             final PopupMenu.OnMenuItemClickListener menuListener =
                     new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    switch (item.getItemId()) {
-                        case R.id.exhibit_overflow_delete:
-                            Log.d(TAG, "Deleting exhibit with name: " + exhibitToDraw.getTitle());
-                            showDeletionUndoBar(exhibitToDraw.getTitle());
-                            exhibitManager.removeExhibit(exhibitToDraw);
-                            exhibitAdapter.notifyDataSetChanged();
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            };
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch (item.getItemId()) {
+                                case R.id.exhibit_overflow_delete:
+                                    Log.d(TAG, "Deleting exhibit with name: " + exhibitToDraw.getTitle());
+                                    showDeletionUndoBar(exhibitToDraw.getTitle());
+                                    exhibitManager.removeExhibit(exhibitToDraw);
+                                    exhibitAdapter.notifyDataSetChanged();
+                                    return true;
+                                default:
+                                    return false;
+                            }
+                        }
+                    };
 
             viewHolder.exhibitTitle.setText(exhibitToDraw.getTitle());
+            // called when user presses overflow button
             viewHolder.overflowListener.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -163,9 +168,11 @@ public class ExhibitFragment extends Fragment {
                 }
             });
 
+            // called when user clicks on any part that's not a button
             viewHolder.background.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // switch to exhibit editor fragment
                     Fragment exhibitEditor = new ExhibitEditorFragment();
                     Bundle args = new Bundle();
                     args.putLong("exhibit-id", exhibitToDraw.getId());
@@ -192,7 +199,7 @@ public class ExhibitFragment extends Fragment {
             return itemCount;
         }
 
-        class ViewHolder extends RecyclerView.ViewHolder{
+        class ViewHolder extends RecyclerView.ViewHolder {
             TextView exhibitTitle;
             ImageButton overflowListener;
             View background;

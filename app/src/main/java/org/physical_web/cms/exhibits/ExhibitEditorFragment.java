@@ -27,7 +27,6 @@ public class ExhibitEditorFragment extends Fragment {
     private ExhibitManager exhibitManager = ExhibitManager.getInstance();
     private BeaconManager beaconManager = BeaconManager.getInstance();
     private Exhibit workingExhibit;
-    private ExhibitEditor exhibitEditor;
 
     private BeaconAdapter beaconAdapter;
 
@@ -46,11 +45,11 @@ public class ExhibitEditorFragment extends Fragment {
         if (bundle == null)
             throw new IllegalArgumentException("No exhibit provided to edit");
 
+        // get exhibit we are editing, by ID
         Long exhibitId = bundle.getLong("exhibit-id");
         workingExhibit = exhibitManager.getById(exhibitId);
 
-        exhibitEditor = new ExhibitEditor(workingExhibit);
-
+        // setup the metadata section of the editor
         ((EditText) editorView.findViewById(R.id.exhibit_editor_title))
                 .setText(workingExhibit.getTitle());
         ((EditText) editorView.findViewById(R.id.exhibit_editor_description))
@@ -60,6 +59,7 @@ public class ExhibitEditorFragment extends Fragment {
                 .setOnClickListener(onEditButtonPress);
         editorView.findViewById(R.id.exhibit_editor_save).setOnClickListener(onSaveButtonPress);
 
+        // setup the list of beacons
         RecyclerView beaconList = (RecyclerView) editorView
                 .findViewById(R.id.exhibit_editor_beacon_list);
 
@@ -69,6 +69,7 @@ public class ExhibitEditorFragment extends Fragment {
         beaconAdapter = new BeaconAdapter();
         beaconList.setAdapter(beaconAdapter);
 
+        // place divider between beacon items
         DividerItemDecoration dividerItemDecoration =
                 new DividerItemDecoration(beaconList.getContext(), DividerItemDecoration.VERTICAL);
         beaconList.addItemDecoration(dividerItemDecoration);
@@ -79,14 +80,16 @@ public class ExhibitEditorFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+        // set the app bar title
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
+    // called when the "EDIT" button is pressed
     private View.OnClickListener onEditButtonPress = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             View fragmentView = getView();
-            if(fragmentView == null)
+            if (fragmentView == null)
                 throw new RuntimeException("Looks like we aren't in the fragment");
 
             v.setVisibility(View.INVISIBLE);
@@ -95,11 +98,12 @@ public class ExhibitEditorFragment extends Fragment {
         }
     };
 
+    // called when the save button is pressed, after editing
     private View.OnClickListener onSaveButtonPress = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             View fragmentView = getView();
-            if(fragmentView == null)
+            if (fragmentView == null)
                 throw new RuntimeException("Looks like we aren't in the fragment");
 
             v.setVisibility(View.INVISIBLE);
@@ -109,21 +113,9 @@ public class ExhibitEditorFragment extends Fragment {
             String description = ((EditText) fragmentView
                     .findViewById(R.id.exhibit_editor_description))
                     .getText().toString();
-            exhibitEditor.setDescription(description);
+            workingExhibit.setDescription(description);
         }
     };
-
-    class ExhibitEditor {
-        private Exhibit workingExhibit;
-
-        public ExhibitEditor(Exhibit exhibit) {
-            this.workingExhibit = exhibit;
-        }
-
-        public void setDescription(String newDescription) {
-            this.workingExhibit.setDescription(newDescription);
-        }
-    }
 
     class BeaconAdapter extends RecyclerView.Adapter<BeaconAdapter.ViewHolder> {
         @Override

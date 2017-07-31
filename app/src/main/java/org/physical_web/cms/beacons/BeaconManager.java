@@ -22,12 +22,18 @@ public class BeaconManager {
     private List<Beacon> beacons = null;
     private CountDownLatch latch = null;
 
-    private BeaconManager() {}
+    private BeaconManager() {
+    }
 
     public static BeaconManager getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * Set context that this class will operate in. MUST BE CALLED BEFORE ANY OTHER METHODS.
+     *
+     * @param context to work in
+     */
     public void setContext(final Context context) {
         this.context = context;
         latch = new CountDownLatch(1);
@@ -43,6 +49,11 @@ public class BeaconManager {
         }).run();
     }
 
+    /**
+     * Store new beacons persistently
+     *
+     * @param beacons new beacons
+     */
     public void insertBeacons(final Beacon... beacons) {
         waitOnLatch();
 
@@ -58,6 +69,11 @@ public class BeaconManager {
 
     }
 
+    /**
+     * Provide a list of modified beacons that will be persisted to disk
+     *
+     * @param beacons changed beacons
+     */
     public void updateBeacons(final Beacon... beacons) {
         waitOnLatch();
 
@@ -72,6 +88,11 @@ public class BeaconManager {
         }).start();
     }
 
+    /**
+     * Get a list of all stored beacons
+     *
+     * @return all stored beacons
+     */
     public List<Beacon> getAllBeacons() {
         waitOnLatch();
 
@@ -84,7 +105,7 @@ public class BeaconManager {
     public Beacon getBeaconByIndex(int index) {
         waitOnLatch();
 
-        if(index >= 0 && index < beacons.size())
+        if (index >= 0 && index < beacons.size())
             return beacons.get(index);
         else
             throw new IllegalArgumentException("Bad beacon index");
@@ -96,7 +117,7 @@ public class BeaconManager {
     public Beacon getBeaconById(long id) {
         waitOnLatch();
 
-        for(Beacon beacon : beacons) {
+        for (Beacon beacon : beacons) {
             if (beacon.id == id)
                 return beacon;
         }
@@ -104,6 +125,11 @@ public class BeaconManager {
         throw new IllegalArgumentException("no beacon with id " + id + " found");
     }
 
+    /**
+     * Remove beacons from persistent storage
+     *
+     * @param beacons to be removed
+     */
     public void deleteBeacons(final Beacon... beacons) {
         waitOnLatch();
 
@@ -119,11 +145,15 @@ public class BeaconManager {
         }).start();
     }
 
+    /**
+     * Call when done making changes to beacons. No other methods may be called after this one.
+     */
     public void closeAndSave() {
         waitOnLatch();
         db.close();
     }
 
+    // wait while other database operations complete
     private void waitOnLatch() {
         try {
             if (latch != null)
@@ -133,6 +163,7 @@ public class BeaconManager {
         }
     }
 
+    // reload beacons from database
     private void refreshBeacons() {
         final CountDownLatch refreshLatch = new CountDownLatch(1);
         new Thread(new Runnable() {

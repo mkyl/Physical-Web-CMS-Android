@@ -35,7 +35,7 @@ public abstract class ExhibitContent {
         String mimeType = mimeTypeFromExtension(contentFile);
 
         // more resource intensive, peek into content if no file extension
-        if(mimeType == null)
+        if (mimeType == null)
             mimeType = mimeTypeFromContent(contentFile);
 
         if (mimeType.startsWith(MIME_TEXT_PREFIX))
@@ -57,13 +57,15 @@ public abstract class ExhibitContent {
     public String getContentName() {
         return this.contentName;
     }
-    public void setContentName(String contentName){
+
+    public void setContentName(String contentName) {
         this.contentName = contentName;
     }
 
     public File getContentFile() {
         return this.contentFile;
     }
+
     private void setContentFile(File file) {
         this.contentFile = file;
     }
@@ -110,15 +112,15 @@ class TextContent extends ExhibitContent {
     }
 
     private String readFile(File file) throws IOException {
-        StringBuilder fileContents = new StringBuilder((int)file.length());
+        StringBuilder fileContents = new StringBuilder((int) file.length());
         Scanner scanner = new Scanner(file);
         String lineSeparator = System.getProperty("line.separator");
 
         try {
-            while(scanner.hasNextLine()) {
+            while (scanner.hasNextLine()) {
                 fileContents.append(scanner.nextLine());
                 // avoid extra line separator at end of file
-                if(scanner.hasNextLine())
+                if (scanner.hasNextLine())
                     fileContents.append(lineSeparator);
             }
             return fileContents.toString();

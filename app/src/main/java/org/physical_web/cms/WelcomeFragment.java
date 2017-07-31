@@ -42,12 +42,12 @@ public class WelcomeFragment extends Fragment implements SyncStatusListener {
     public void onResume() {
         super.onResume();
         contentSynchronizer.kickStartSync();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
     }
 
     @Override
     public void syncStatusChanged(int status) {
-        if(getActivity() == null ||
+        if (getActivity() == null ||
                 getActivity().findViewById(R.id.welcome_sync_text) == null)
             return;
 

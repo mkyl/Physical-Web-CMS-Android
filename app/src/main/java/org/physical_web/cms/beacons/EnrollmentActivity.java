@@ -91,10 +91,10 @@ public class EnrollmentActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)  {
-        switch(requestCode) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
             case REQUEST_ENABLE_BT:
-                if(resultCode == RESULT_OK)
+                if (resultCode == RESULT_OK)
                     enableNetworkIfNeeded();
                 else
                     displayUserWarning();
@@ -105,7 +105,7 @@ public class EnrollmentActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[],
                                            int[] grantResults) {
-        switch(requestCode) {
+        switch (requestCode) {
             case REQUEST_ENABLE_LOCATION:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     prepareForScan();
@@ -117,6 +117,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     /**
      * Shows system dialog asking to enable bluetooth
+     *
      * @param view
      */
     public void enableBluetooth(View view) {
@@ -143,7 +144,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     // returns wether we've seen this device in the latest scan
     private boolean hasBeenAlreadyScanned(BluetoothDevice device) {
-        for (BluetoothDevice storedDevice: bluetoothDevices) {
+        for (BluetoothDevice storedDevice : bluetoothDevices) {
             if (device.getAddress().equalsIgnoreCase(storedDevice.getAddress()))
                 return true;
         }
@@ -156,6 +157,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     /**
      * Setups up interface to display scan results, starts scan
+     *
      * @param v
      */
     public void prepareForScan(View v) {
@@ -186,7 +188,7 @@ public class EnrollmentActivity extends AppCompatActivity {
     private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            if(!hasBeenAlreadyScanned(device)) {
+            if (!hasBeenAlreadyScanned(device)) {
                 bluetoothDevices.add(device);
                 findViewById(R.id.noDevicesYetText).setVisibility(View.INVISIBLE);
                 findViewById(R.id.scannedBeaconsList).setVisibility(View.VISIBLE);
@@ -198,6 +200,7 @@ public class EnrollmentActivity extends AppCompatActivity {
     /**
      * Called by addBeacon method from a BottomSheet containing info about the beacon the user
      * wants to add. Creates a beacon object and adds it to database.
+     *
      * @param v
      */
     public void onAddBeacon(View v) {
@@ -224,7 +227,7 @@ public class EnrollmentActivity extends AppCompatActivity {
             public void run() {
                 BluetoothAdapter.getDefaultAdapter().stopLeScan(leScanCallback);
                 findViewById(R.id.scanningDevicesBar).setVisibility(View.INVISIBLE);
-                if(bluetoothDevices.isEmpty()) {
+                if (bluetoothDevices.isEmpty()) {
                     noDevicesFound();
                 }
             }
@@ -263,6 +266,7 @@ public class EnrollmentActivity extends AppCompatActivity {
 
     /**
      * Indicates whether the device is equiped with bluetooth.
+     *
      * @return
      */
     public Boolean deviceHasBluetoothAdapter() {
@@ -341,10 +345,10 @@ public class EnrollmentActivity extends AppCompatActivity {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            if(beacon.getName() == null || beacon.getName().equals(""))
+            if (beacon.getName() == null || beacon.getName().equals(""))
                 holder.nameTextView.setText("Unnamed Beacon");
             else
-               holder.nameTextView.setText(beacon.getName());
+                holder.nameTextView.setText(beacon.getName());
 
             holder.addressTextView.setText(beacon.getAddress());
 
