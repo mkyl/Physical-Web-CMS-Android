@@ -15,6 +15,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLConnection;
 import java.util.Scanner;
 
+import util.BitmapResampling;
+
 /**
  * Abstract class representing the types of content that can be stored in an exhibit
  */
@@ -153,51 +155,11 @@ class SoundContent extends ExhibitContent {
 }
 
 class ImageContent extends ExhibitContent {
-    private Bitmap bitmap;
-
     public ImageContent(File contentFile) {
     }
 
     public Bitmap getSampledBitmap(int height, int width) {
-        return decodeSampledBitmapFromFile(getContentFile(), width, height);
-    }
-
-    // method from https://developer.android.com/topic/performance/graphics/load-bitmap.html
-    private static Bitmap decodeSampledBitmapFromFile(File file, int reqWidth, int reqHeight) {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-    }
-
-    // method from https://developer.android.com/topic/performance/graphics/load-bitmap.html
-    private static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
+        return BitmapResampling.decodeSampledBitmapFromFile(getContentFile(), width, height);
     }
 
     @Override

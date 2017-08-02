@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
+import util.MiscFile;
+
 import static util.MiscFile.deleteDir;
 import static util.MiscFile.readFile;
 import static util.MiscFile.writeToFile;
@@ -428,49 +430,19 @@ public class Exhibit {
         String displayName;
         InputStream inputStream;
 
-        try {
             Cursor cursor = ctx.getContentResolver().query(uri, null, null, null, null, null);
             cursor.moveToFirst();
             displayName = cursor.getString(
                     cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
             cursor.close();
 
-            inputStream = ctx.getContentResolver().openInputStream(uri);
-        } catch (FileNotFoundException e) {
-            Log.e(TAG, "failed to find file: " + e);
-            return;
-        }
+        File beaconFolder = contentFolderForBeacon.get(beacon);
+        File localCopy = MiscFile.copyURIContentsToFolder(uri, displayName, beaconFolder, ctx);
+        if (localCopy == null)
+            throw new IllegalStateException("Couldn't make local copy of contents at URI");
 
-        File localCopy = writeToExhibitFolder(displayName, inputStream, beacon, ctx);
         appendContentToMetadata(displayName, beacon);
         contentsForBeacon.get(beacon).add(ExhibitContent.fromFile(localCopy));
-    }
-
-    // copy from input stream to beacon folder
-    private File writeToExhibitFolder(String filename, InputStream inputStream,
-                                      Beacon beacon, Context ctx) {
-        File beaconContentFolder = contentFolderForBeacon.get(beacon);
-        if (beaconContentFolder == null)
-            throw new IllegalArgumentException("No such beacon found");
-
-        File localCopy = new File(beaconContentFolder, filename);
-
-        try {
-            FileOutputStream outputStream = new FileOutputStream(localCopy);
-
-            byte[] buffer = new byte[8 * 1024];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-
-            outputStream.close();
-            inputStream.close();
-            return localCopy;
-        } catch (IOException e) {
-            Log.e(TAG, "Error copying file with name " + filename + ": " + e);
-            return null;
-        }
     }
 
     // add content at end of metadata for provided beacon
