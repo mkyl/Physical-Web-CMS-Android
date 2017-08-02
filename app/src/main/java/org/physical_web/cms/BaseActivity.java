@@ -19,6 +19,7 @@ import org.physical_web.cms.beacons.BeaconFragment;
 import org.physical_web.cms.beacons.BeaconManager;
 import org.physical_web.cms.exhibits.ExhibitFragment;
 import org.physical_web.cms.exhibits.ExhibitManager;
+import org.physical_web.cms.maps.PhysicalMapFragment;
 import org.physical_web.cms.setup.SetupManager;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
@@ -155,6 +156,9 @@ public class BaseActivity extends AppCompatActivity {
                     break;
                 case "Exhibits":
                     switchFragment = new ExhibitFragment();
+                    break;
+                case "Map":
+                    switchFragment = new PhysicalMapFragment();
                     break;
                 case "Beacons":
                     switchFragment = new BeaconFragment();

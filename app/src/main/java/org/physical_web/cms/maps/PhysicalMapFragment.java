@@ -1,8 +1,9 @@
 package org.physical_web.cms.maps;
 
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import org.physical_web.cms.R;
  * beacons within it.
  */
 public class PhysicalMapFragment extends Fragment {
+    private static final String FRAGMENT_TITLE = "Beacon Map";
     public PhysicalMapFragment() {
         // Required empty public constructor
     }
@@ -26,4 +28,9 @@ public class PhysicalMapFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_map, container, false);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+    }
 }
