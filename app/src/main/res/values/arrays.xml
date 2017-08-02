@@ -4,6 +4,7 @@
         name="navigation_drawer_items">
         <item>Home</item>
         <item>Exhibits</item>
+        <item>Map</item>
         <item>Beacons</item>
         <item>Analytics</item>
         <item>Settings</item>
