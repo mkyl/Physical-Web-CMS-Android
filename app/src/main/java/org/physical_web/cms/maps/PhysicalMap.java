@@ -88,7 +88,7 @@ public class PhysicalMap {
      * @param context to create map in and store data in
      * @return newly created PhysicalMap, null if creation failed
      */
-    public static PhysicalMap newMap(Uri floorPlan, Context context) {
+    public static PhysicalMap newMap(Uri floorPlan, Activity context) {
         PhysicalMap result = new PhysicalMap();
 
         File imageFile = MiscFile.copyURIContentsToFolder(floorPlan, MAP_IMAGE_FILE,
@@ -106,7 +106,7 @@ public class PhysicalMap {
             return null;
         }
 
-        return result;
+        return loadFromDisk(context);
     }
 
     /**
@@ -133,7 +133,7 @@ public class PhysicalMap {
      * Get the location of a beacon
      *
      * @param beacon target of the search
-     * @return Point representing the location of the beacon on the map
+     * @return Point representing the location of the beacon on the map or null if no beacon found
      * @throws IllegalArgumentException if no such beacon is found
      */
     public Point getBeaconLocation(Beacon beacon) {
@@ -149,7 +149,12 @@ public class PhysicalMap {
             return null;
         }
 
-        throw new IllegalArgumentException("No such beacon found");
+        return null;
+        //throw new IllegalArgumentException("No such beacon found");
+    }
+
+    public Bitmap getFloorPlan() {
+        return floorPlan;
     }
 
     // for use in by other, public constructors
