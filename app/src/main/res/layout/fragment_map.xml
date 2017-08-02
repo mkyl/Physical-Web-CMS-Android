@@ -1,13 +1,41 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="org.physical_web.cms.maps.PhysicalMapFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <org.physical_web.cms.maps.PhysicalMapCanvas
+        android:id="@+id/fragment_map_canvas"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
 
-</FrameLayout>
+    <RelativeLayout
+        android:id="@+id/fragment_map_warn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/fragment_map_warn_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_margin="6dp"
+            android:text="Load an image of the floorplan below."
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textColor="@android:color/darker_gray" />
+
+        <Button
+            android:id="@+id/fragment_map_warn_button"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/fragment_map_warn_text"
+            android:layout_centerHorizontal="true"
+            android:text="Load Floorplan" />
+    </RelativeLayout>
+
+</RelativeLayout>
