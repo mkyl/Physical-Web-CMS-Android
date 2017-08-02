@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import org.physical_web.cms.R;
 
@@ -108,5 +109,8 @@ public class PhysicalMapFragment extends Fragment {
     private void handleURI(Uri uri) {
         physicalMap = PhysicalMap.newMap(uri, getActivity());
         displayMap();
+        Toast.makeText(getActivity(),
+                "To place a beacon, touch a location on map",
+                Toast.LENGTH_LONG).show();
     }
 }

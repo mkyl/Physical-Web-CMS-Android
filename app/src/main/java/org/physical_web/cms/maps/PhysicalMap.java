@@ -129,6 +129,28 @@ public class PhysicalMap {
         saveMetadata();
     }
 
+    public void removeBeacon(Beacon beacon) {
+        String formattedBeaconMac = beacon.address.toString();
+        try {
+            JSONArray beacons = metadata.getJSONArray("beacons");
+            int removalTarget = -1;
+            for (int i = 0; i < beacons.length(); i++) {
+                if (formattedBeaconMac.equals(beacons.getJSONObject(i).getString("address"))) {
+                    removalTarget = i;
+                }
+            }
+
+            if (removalTarget == -1)
+                throw new IllegalArgumentException("No such beacon to remove");
+            else {
+                beacons.remove(removalTarget);
+                saveMetadata();
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "JSON problems while removing beacon from map: " + e);
+        }
+    }
+
     /**
      * Get the location of a beacon
      *
@@ -141,8 +163,13 @@ public class PhysicalMap {
             JSONArray beaconsInfo = metadata.getJSONArray("beacons");
             for (int i = 0; i < beaconsInfo.length(); i++) {
                 JSONObject beaconEntry = beaconsInfo.getJSONObject(i);
-                if (beacon.address.toString().equals(beaconEntry.getString("address")))
-                    return new Point(beaconEntry.getInt("x"), beaconEntry.getInt("y"));
+                if (beacon.address.toString().equals(beaconEntry.getString("address"))) {
+                    if (beaconEntry.get("x") == JSONObject.NULL ||
+                            beaconEntry.get("y") == JSONObject.NULL)
+                        return null;
+                    else
+                        return new Point(beaconEntry.getInt("x"), beaconEntry.getInt("y"));
+                }
             }
         } catch (JSONException e) {
             Log.e(TAG, "Trouble parsing JSON: " + e);
