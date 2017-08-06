@@ -37,7 +37,7 @@ public abstract class ExhibitContent {
         String mimeType = mimeTypeFromExtension(contentFile);
 
         // more resource intensive, peek into content if no file extension
-        if (mimeType == null)
+        if ("application/octet-stream".equals(mimeType))
             mimeType = mimeTypeFromContent(contentFile);
 
         if (mimeType.startsWith(MIME_TEXT_PREFIX))
@@ -75,9 +75,17 @@ public abstract class ExhibitContent {
     public abstract String toHTML();
 
     private static String mimeTypeFromExtension(File contentFile) {
-        String fileName = contentFile.toURI().toString();
-        String extensionFromUrl = MimeTypeMap.getFileExtensionFromUrl(fileName);
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extensionFromUrl);
+        String fileName = contentFile.getAbsolutePath();
+
+        String extension = "";
+        int i = fileName.lastIndexOf('.');
+        if (i > 0) {
+            extension = fileName.substring(i+1);
+        }
+        // MimeTypeMap is case sensitive - i.e. 'JPG' is an invalid extension to it
+        extension = extension.toLowerCase();
+
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
     }
 
     private static String mimeTypeFromContent(File contentFile) {
