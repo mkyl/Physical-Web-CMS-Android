@@ -116,6 +116,9 @@ public class PhysicalMap {
      * @param location location of the beacon
      */
     public void setBeaconLocation(Beacon beacon, Point location) {
+        if (location == null)
+            throw new IllegalArgumentException("Invalid point provided");
+        
         try {
             JSONObject beaconEntry = new JSONObject();
             beaconEntry.put("address", beacon.address.toString());
@@ -196,16 +199,8 @@ public class PhysicalMap {
 
             mapData.put("map-width", width);
             mapData.put("map-height", height);
+            mapData.put("beacons", new JSONArray());
 
-            JSONArray beaconData = new JSONArray();
-            for(Beacon beacon : BeaconManager.getInstance().getAllBeacons()) {
-                JSONObject beaconEntry = new JSONObject();
-                beaconEntry.put("address", beacon.address);
-                beaconEntry.put("x", JSONObject.NULL);
-                beaconEntry.put("y", JSONObject.NULL);
-                beaconData.put(beaconEntry);
-            }
-            mapData.put("beacons", beaconData);
 
             return mapData;
         } catch (JSONException e) {
