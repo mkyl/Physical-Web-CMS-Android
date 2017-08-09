@@ -3,6 +3,7 @@ package org.physical_web.cms.setup;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.EditTextPreference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +29,8 @@ public class SettingsFragment extends PreferenceFragment implements BeaconEventL
 
     public SettingsFragment() {
         // Required empty public constructor
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     @Override
@@ -45,7 +48,7 @@ public class SettingsFragment extends PreferenceFragment implements BeaconEventL
     }
 
     private void updateHint() {
-        String hint;
+        final String hint;
         if (configuredBeacons == 0)
             hint = "Scanning for beacons...";
         else if (configuredBeacons == 1)
@@ -53,24 +56,49 @@ public class SettingsFragment extends PreferenceFragment implements BeaconEventL
         else
             hint = "" + configuredBeacons + " beacons successfully configured";
 
-        ((TextView)getView().findViewById(R.id.preferences_status_text)).setText(hint);
-        getView().findViewById(R.id.preferences_status_text).setVisibility(View.VISIBLE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)getView().findViewById(R.id.preferences_status_text)).setText(hint);
+                getView().findViewById(R.id.preferences_status_text).setVisibility(View.VISIBLE);
+            }
+        });
     }
 
-    private View.OnClickListener scanAndSetup = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
+    public void scanAndSetup(View v) {
+        if (setupUriAndValidate()) {
             getView().findViewById(R.id.preferences_scan_button).setEnabled(false);
             getView().findViewById(R.id.preferences_scan_progress).setVisibility(View.VISIBLE);
             manager.listConfigurableEddystoneBeacons(SettingsFragment.this);
         }
-    };
+    }
+
+    private Boolean setupUriAndValidate() {
+        String inputText = serverUriPreference.getText();
+        Boolean bluetoothOn = manager.bluetoothIsEnabled();
+        if (!bluetoothOn) {
+            getView().findViewById(R.id.preferences_warning_bt).setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.preferences_warning_text).setVisibility(View.GONE);
+            return false;
+        } else if (!inputText.startsWith("https://")) {
+            getView().findViewById(R.id.preferences_warning_text).setVisibility(View.VISIBLE);
+            getView().findViewById(R.id.preferences_warning_bt).setVisibility(View.GONE);
+            return false;
+        } else {
+            // all good, continue
+            uri = inputText;
+            getView().findViewById(R.id.preferences_warning_text).setVisibility(View.GONE);
+            getView().findViewById(R.id.preferences_warning_bt).setVisibility(View.GONE);
+            return true;
+        }
+    }
 
     @Override
     public void onConfigurableBeaconFound(BluetoothDevice device) {
         if (uri == null)
             throw new IllegalStateException();
 
+        Log.d(TAG, "Trying to update beacon to URI: " + uri);
         manager.updateBeaconUri(device, uri, this);
     }
 
@@ -86,10 +114,18 @@ public class SettingsFragment extends PreferenceFragment implements BeaconEventL
 
     @Override
     public void onScanComplete() {
-        if (configuredBeacons == 0) {
-            ((TextView)getView().findViewById(R.id.preferences_status_text)).setText("No beacons found");
-        }
-        getView().findViewById(R.id.preferences_scan_button).setEnabled(true);
-        getView().findViewById(R.id.preferences_scan_progress).setVisibility(View.GONE);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (configuredBeacons == 0) {
+                    ((TextView)getView().findViewById(R.id.preferences_status_text))
+                            .setText("No beacons found");
+                    getView().findViewById(R.id.preferences_status_text)
+                            .setVisibility(View.VISIBLE);
+                }
+                getView().findViewById(R.id.preferences_scan_button).setEnabled(true);
+                getView().findViewById(R.id.preferences_scan_progress).setVisibility(View.GONE);
+            }
+        });
     }
 }

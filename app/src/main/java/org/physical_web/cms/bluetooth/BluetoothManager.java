@@ -45,7 +45,7 @@ import static org.physical_web.cms.bluetooth.BeaconEventListener.WRITE_SUCCESS;
  */
 public class BluetoothManager {
     private final static String TAG = BluetoothManager.class.getSimpleName();
-    private final static int SCAN_PERIOD = 5000; // milliseconds
+    private final static int SCAN_PERIOD = 15000; // milliseconds
 
     private final static UUID EDDYSTONE_CONFIGURATION_SERVICE =
             UUID.fromString("a3c87500-8ed3-4bdf-8a39-a01bebede295");
@@ -91,6 +91,14 @@ public class BluetoothManager {
     public Boolean deviceSupportsBLE() {
         PackageManager pm = context.getPackageManager();
         return pm.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE);
+    }
+
+    /**
+     * Returns true only if a bluetooth adapter exists and is on.
+     * @return
+     */
+    public Boolean bluetoothIsEnabled() {
+        return (bluetoothAdapter != null && bluetoothAdapter.isEnabled());
     }
 
     /**
@@ -152,6 +160,7 @@ public class BluetoothManager {
     public void updateBeaconUri(final BluetoothDevice beacon, final String Uri,
                                 BeaconEventListener eventListener) {
         this.shortenedUri = shortenIfNeeded(Uri);
+        Log.d(TAG, "Shortened URI: " + shortenedUri);
         eventParentMap.put(beacon, eventListener);
         if (context instanceof Activity) {
             ((Activity)context).runOnUiThread(new Runnable() {

@@ -184,4 +184,11 @@ public class BaseActivity extends AppCompatActivity {
             drawerLayout.closeDrawer(Gravity.START);
         }
     }
+
+    // hack to allow refresh button in settings page to function
+    public void clickedInSettings(View v) {
+        SettingsFragment fragment = (SettingsFragment) getFragmentManager()
+                .findFragmentById(R.id.fragment_container);
+        fragment.scanAndSetup(v);
+    }
 }
