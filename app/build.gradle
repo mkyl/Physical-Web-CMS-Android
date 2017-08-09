@@ -28,6 +28,7 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
+        exclude group: 'com.google.code.findbugs'
     })
 
     // this is required due to some kind of bug with mockito and Android M
@@ -42,11 +43,19 @@ dependencies {
     compile 'android.arch.persistence.room:runtime:1.0.0-alpha3'
     compile 'net.the4thdimension:audio-wife:1.0.3'
     compile 'com.google.firebase:firebase-crash:11.0.2'
+
+    // URI shortner stuff
+    compile group: 'com.google.apis', name: 'google-api-services-urlshortener',
+            version: 'v1-rev48-1.22.0'
+    compile group: 'com.google.http-client', name: 'google-http-client-android', version: '1.22.0'
+
+
     testCompile 'junit:junit:4.12'
     androidTestCompile 'org.mockito:mockito-core:2.8.47'
     androidTestCompile 'com.linkedin.dexmaker:dexmaker-mockito:2.2.0'
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0-alpha3'
 }
+
 
 
 apply plugin: 'com.google.gms.google-services'

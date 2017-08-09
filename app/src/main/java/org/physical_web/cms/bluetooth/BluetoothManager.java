@@ -8,11 +8,24 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Handler;
 import android.util.Log;
 
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.services.urlshortener.Urlshortener;
+import com.google.api.services.urlshortener.model.Url;
+import com.google.common.io.BaseEncoding;
+
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,7 +36,7 @@ import java.util.UUID;
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
 
 /**
- * Handles discovering and configuring to Eddystone com.physical_web.cms.physicalwebcms.beacons over a Bluetooth Low Energy link.
+ * Handles discovering and configuring to Eddystone beacons over a Bluetooth Low Energy link.
  */
 public class BluetoothManager {
     public final static int WRITE_SUCCESS = 0;
@@ -52,7 +65,7 @@ public class BluetoothManager {
     private final static byte ASCII_SPACE = (byte) 0x20;
     private final static int MAX_URI_LENGTH = 16;
 
-    private Activity context;
+    private Context context;
     private BluetoothAdapter bluetoothAdapter;
     private Handler scanHandler;
 
@@ -61,7 +74,7 @@ public class BluetoothManager {
     private String shortenedUri;
     private byte[] newFrameValue = new byte[19];
 
-    public BluetoothManager(Activity context) {
+    public BluetoothManager(Context context) {
         this.context = context;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.scanHandler = new Handler(context.getMainLooper());
@@ -83,7 +96,7 @@ public class BluetoothManager {
      * @param event Callback called when scan complete
      */
     public void listConfigurableEddystoneBeacons(final BeaconEventListener event) {
-        // in case there are old com.physical_web.cms.physicalwebcms.beacons stored in the device list
+        // in case there are old beacons stored in the device list
         scannedDevices.clear();
         UUID[] desiredServices = new UUID[]{EDDYSTONE_CONFIGURATION_SERVICE};
 
@@ -97,7 +110,7 @@ public class BluetoothManager {
         }, SCAN_PERIOD);
     }
 
-    // called when the scan for nearby com.physical_web.cms.physicalwebcms.beacons is complete
+    // called when the scan for nearby beacons is complete
     private final BluetoothAdapter.LeScanCallback listBeaconsCallback =
             new BluetoothAdapter.LeScanCallback() {
                 @Override
@@ -133,12 +146,17 @@ public class BluetoothManager {
                                 BeaconEventListener eventListener) {
         this.shortenedUri = shortenIfNeeded(Uri);
         eventParentMap.put(beacon, eventListener);
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                beacon.connectGatt(context, false, updateUriCallback);
-            }
-        });
+        if (context instanceof Activity) {
+            ((Activity)context).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    beacon.connectGatt(context, false, updateUriCallback);
+                }
+            });
+        } else {
+            beacon.connectGatt(context, false, updateUriCallback);
+        }
+
     }
 
     // actions to be taken when connection to beacon is made
@@ -251,14 +269,71 @@ public class BluetoothManager {
     };
 
     // due to length constraints, URIs of over MAX_URI_LENGTH bytes length must be shortened
-    private String shortenIfNeeded(String Uri) {
-        if (Uri.getBytes(Charset.forName("ASCII")).length < MAX_URI_LENGTH) {
-            return Uri;
+    // TODO make private once done testing
+    public String shortenIfNeeded(String Uri) {
+        if (!Uri.startsWith("https://"))
+            throw new IllegalArgumentException("Must be HTTPS URI due to Eddystone spec");
+
+        String uriWithoutPrefix = Uri.substring("https://".length());
+
+        if (uriWithoutPrefix.getBytes(Charset.forName("ASCII")).length < MAX_URI_LENGTH) {
+            return uriWithoutPrefix;
         } else {
-            // TODO connect to google shortner API
-            throw new UnsupportedOperationException("URIs over MAX_URI_LENGTH bytes" +
-                    " large must be shortened.");
+            // we have to shorten it
+
+            Urlshortener.Builder builder = new Urlshortener.Builder(AndroidHttp
+                    .newCompatibleTransport(), AndroidJsonFactory.getDefaultInstance(),
+                    // this portion is required because the API key is restricted
+                    new HttpRequestInitializer() {
+                        @Override
+                        public void initialize(HttpRequest request) throws IOException {
+                            String packageName = context.getPackageName();
+                            String SHA1 = getSHA1OfPackage(packageName);
+
+                            request.getHeaders().set("X-Android-Package", packageName);
+                            request.getHeaders().set("X-Android-Cert", SHA1);
+                        }
+                    });
+
+            Urlshortener urlshortener = builder.build();
+
+            com.google.api.services.urlshortener.model.Url url = new Url();
+            url.setLongUrl(Uri);
+
+            try {
+                url = urlshortener.url()
+                        .insert(url)
+                        // Let me save you some trouble: don't try stealing this API key,
+                        // it's restricted to the developers' debugging keys
+                        .setKey("AIzaSyBGSGDdaottaW0DZQJB8284BK4YWg-fCxA")
+                        .execute();
+
+                String shortenedUri = url.getId();
+                if (shortenedUri.startsWith("https://"))
+                    return shortenedUri.substring("https://".length());
+                else
+                    throw new IllegalStateException("Google URI shortner provided non https URI");
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
+    }
+
+    private String getSHA1OfPackage(String packageName){
+        try {
+            Signature[] signatures = context.getPackageManager().getPackageInfo(packageName,
+                    PackageManager.GET_SIGNATURES).signatures;
+            for (Signature signature: signatures) {
+                MessageDigest md;
+                md = MessageDigest.getInstance("SHA-1");
+                md.update(signature.toByteArray());
+                return BaseEncoding.base16().encode(md.digest());
+            }
+        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

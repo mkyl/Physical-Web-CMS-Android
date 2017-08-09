@@ -19,7 +19,7 @@ public interface BeaconEventListener {
      * Returns result of beacon URI update attempt.
      *
      * @param device beacon which operation was attempted on.
-     * @param status WRITE_SUCCESS if succesful
+     * @param status WRITE_SUCCESS if successful
      */
     void uriWriteCallback(BluetoothDevice device, int status);
 }
