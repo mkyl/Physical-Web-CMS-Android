@@ -34,17 +34,16 @@ import java.util.Map;
 import java.util.UUID;
 
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
+import static org.physical_web.cms.bluetooth.BeaconEventListener.WRITE_FAIL_LOCKED;
+import static org.physical_web.cms.bluetooth.BeaconEventListener.WRITE_FAIL_NOT_EDDYSTONE;
+import static org.physical_web.cms.bluetooth.BeaconEventListener.WRITE_FAIL_NO_CONNECTION;
+import static org.physical_web.cms.bluetooth.BeaconEventListener.WRITE_FAIL_OTHER;
+import static org.physical_web.cms.bluetooth.BeaconEventListener.WRITE_SUCCESS;
 
 /**
  * Handles discovering and configuring to Eddystone beacons over a Bluetooth Low Energy link.
  */
 public class BluetoothManager {
-    public final static int WRITE_SUCCESS = 0;
-    public final static int WRITE_FAIL_NO_CONNECTION = 1;
-    public final static int WRITE_FAIL_NOT_EDDYSTONE = 2;
-    public final static int WRITE_FAIL_LOCKED = 3;
-    public final static int WRITE_FAIL_OTHER = 4;
-
     private final static String TAG = BluetoothManager.class.getSimpleName();
     private final static int SCAN_PERIOD = 5000; // milliseconds
 
@@ -65,12 +64,17 @@ public class BluetoothManager {
     private final static byte ASCII_SPACE = (byte) 0x20;
     private final static int MAX_URI_LENGTH = 16;
 
+    // Let me save you some trouble: don't try stealing this API key,
+    // it's restricted to the developers' debugging keychain
+    private final static String API_KEY = "AIzaSyBGSGDdaottaW0DZQJB8284BK4YWg-fCxA";
+
     private Context context;
     private BluetoothAdapter bluetoothAdapter;
     private Handler scanHandler;
 
     private List<BluetoothDevice> scannedDevices;
     private Map<BluetoothDevice, BeaconEventListener> eventParentMap = new HashMap<>();
+    private BeaconEventListener scanListener;
     private String shortenedUri;
     private byte[] newFrameValue = new byte[19];
 
@@ -99,13 +103,14 @@ public class BluetoothManager {
         // in case there are old beacons stored in the device list
         scannedDevices.clear();
         UUID[] desiredServices = new UUID[]{EDDYSTONE_CONFIGURATION_SERVICE};
+        scanListener = event;
 
         bluetoothAdapter.startLeScan(desiredServices, listBeaconsCallback);
         scanHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 BluetoothAdapter.getDefaultAdapter().stopLeScan(listBeaconsCallback);
-                event.onScanComplete(scannedDevices);
+                event.onScanComplete();
             }
         }, SCAN_PERIOD);
     }
@@ -115,8 +120,10 @@ public class BluetoothManager {
             new BluetoothAdapter.LeScanCallback() {
                 @Override
                 public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    if (!deviceSeenBefore(device))
+                    if (!deviceSeenBefore(device)) {
                         scannedDevices.add(device);
+                        scanListener.onConfigurableBeaconFound(device);
+                    }
                 }
             };
 
@@ -269,7 +276,7 @@ public class BluetoothManager {
     };
 
     // due to length constraints, URIs of over MAX_URI_LENGTH bytes length must be shortened
-    // TODO make private once done testing
+    // returns shortened Uri WITHOUT https:// prefix, null if shortening fails
     public String shortenIfNeeded(String Uri) {
         if (!Uri.startsWith("https://"))
             throw new IllegalArgumentException("Must be HTTPS URI due to Eddystone spec");
@@ -303,9 +310,7 @@ public class BluetoothManager {
             try {
                 url = urlshortener.url()
                         .insert(url)
-                        // Let me save you some trouble: don't try stealing this API key,
-                        // it's restricted to the developers' debugging keys
-                        .setKey("AIzaSyBGSGDdaottaW0DZQJB8284BK4YWg-fCxA")
+                        .setKey(API_KEY)
                         .execute();
 
                 String shortenedUri = url.getId();
@@ -314,8 +319,7 @@ public class BluetoothManager {
                 else
                     throw new IllegalStateException("Google URI shortner provided non https URI");
             } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+                throw new IllegalStateException("Uri Shortening failed");
             }
         }
     }

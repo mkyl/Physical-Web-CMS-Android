@@ -4,8 +4,6 @@ import android.arch.persistence.room.TypeConverter;
 
 import java.util.Arrays;
 
-import javax.crypto.Mac;
-
 /**
  * Represents a mac address
  */

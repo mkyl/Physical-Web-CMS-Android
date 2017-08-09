@@ -15,17 +15,13 @@ import org.physical_web.cms.beacons.MacAddress;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Scanner;
 
 import util.MiscFile;
 

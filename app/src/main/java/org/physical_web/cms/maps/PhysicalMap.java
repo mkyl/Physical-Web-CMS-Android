@@ -1,7 +1,6 @@
 package org.physical_web.cms.maps;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
@@ -118,7 +117,7 @@ public class PhysicalMap {
     public void setBeaconLocation(Beacon beacon, Point location) {
         if (location == null)
             throw new IllegalArgumentException("Invalid point provided");
-        
+
         try {
             JSONObject beaconEntry = new JSONObject();
             beaconEntry.put("address", beacon.address.toString());

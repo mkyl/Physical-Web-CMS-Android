@@ -2,18 +2,22 @@ package org.physical_web.cms.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 
-import java.util.List;
-
 /**
  * This interface must be implemented to receive data from the BluetoothManager class.
  */
 public interface BeaconEventListener {
+    int WRITE_SUCCESS = 0;
+    int WRITE_FAIL_NO_CONNECTION = 1;
+    int WRITE_FAIL_NOT_EDDYSTONE = 2;
+    int WRITE_FAIL_LOCKED = 3;
+    int WRITE_FAIL_OTHER = 4;
+
     /**
-     * Returns list of configurable Eddystone beacons after scan complete.
+     * Returns a configurable Eddystone beacons when it is first detected in a scan.
      *
-     * @param beacons Beacons in configuration mode
+     * @param device Beacons in configuration mode
      */
-    void onScanComplete(List<BluetoothDevice> beacons);
+    void onConfigurableBeaconFound(BluetoothDevice device);
 
     /**
      * Returns result of beacon URI update attempt.
@@ -22,4 +26,9 @@ public interface BeaconEventListener {
      * @param status WRITE_SUCCESS if successful
      */
     void uriWriteCallback(BluetoothDevice device, int status);
+
+    /**
+     * Indicates scan is finished
+     */
+    void onScanComplete();
 }

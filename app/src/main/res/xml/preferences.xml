@@ -8,5 +8,9 @@
             android:singleLine="true"
             android:summary="URI pointing to the server hosting the content"
             android:title="Server Address" />
+
+        <Preference
+            android:layout="@layout/settings_configure_beacons_container"
+            android:id="@+id/lolwhat"/>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -3,8 +3,6 @@ package org.physical_web.cms.beacons;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
-import javax.crypto.Mac;
-
 /**
  * This class represents an Eddystone Beacon, with a physical address, internal ID
  * and user friendly name

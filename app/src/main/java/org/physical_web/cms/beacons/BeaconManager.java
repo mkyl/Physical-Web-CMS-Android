@@ -6,8 +6,6 @@ import android.util.Log;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import javax.crypto.Mac;
-
 /**
  * Singleton class to manage beacons. {@link #setContext(Context)} must be called
  * before calling any methods other than {@link #getInstance()}. Call {@link #closeAndSave()} when
