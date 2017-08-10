@@ -68,6 +68,20 @@ public class ExhibitFragment extends Fragment {
     public void onResume() {
         super.onResume();
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+        updateActiveExhibitCard();
+    }
+
+    private void updateActiveExhibitCard() {
+        Exhibit activeExhibit = exhibitManager.getActiveExhibit();
+        if (activeExhibit != null) {
+            getActivity().findViewById(R.id.exhibit_active_warning).setVisibility(View.GONE);
+
+            TextView title = (TextView) getActivity().findViewById(R.id.exhibit_active_title);
+            title.setText(activeExhibit.getTitle());
+            title.setVisibility(View.VISIBLE);
+
+            getActivity().findViewById(R.id.exhibit_active_subtitle).setVisibility(View.VISIBLE);
+        }
     }
 
     // pulls up a sheet from the bottom of the screen to allow user to input details of new exhibit

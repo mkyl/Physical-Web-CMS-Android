@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.physical_web.cms.exhibits.Exhibit;
+import org.physical_web.cms.exhibits.ExhibitManager;
 import org.physical_web.cms.sync.ContentSynchronizer;
 import org.physical_web.cms.sync.SyncStatusListener;
 
@@ -43,6 +45,12 @@ public class WelcomeFragment extends Fragment implements SyncStatusListener {
         super.onResume();
         contentSynchronizer.kickStartSync();
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+
+        Exhibit activeExhibit = ExhibitManager.getInstance().getActiveExhibit();
+        if (activeExhibit != null) {
+            ((TextView) getView().findViewById(R.id.welcome_exhibit_title))
+                    .setText(activeExhibit.getTitle());
+        }
     }
 
     @Override

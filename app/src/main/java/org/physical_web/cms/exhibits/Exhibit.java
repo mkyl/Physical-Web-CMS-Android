@@ -225,6 +225,15 @@ public class Exhibit {
         }
     }
 
+    public void setTitle(String newTitle) {
+        try {
+            this.metadata.put("name", newTitle);
+            saveMetadata();
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
+        }
+    }
+
     /**
      * Sets the description of the exhibit, storing it persistently
      *

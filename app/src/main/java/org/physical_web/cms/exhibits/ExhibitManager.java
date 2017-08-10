@@ -1,13 +1,21 @@
 package org.physical_web.cms.exhibits;
 
 import android.content.Context;
+import android.util.JsonReader;
+import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import util.MiscFile;
 
 /**
  * Manages the {@link Exhibit}s stored by the app. Get a copy with a call to {@link #getInstance()}.
@@ -60,6 +68,32 @@ public class ExhibitManager {
         }
 
         return result;
+    }
+
+    public Exhibit getActiveExhibit() {
+        try {
+            File metadataFile = new File(exhibitsFolder, "metadata.json");
+            JSONObject metadata = new JSONObject(MiscFile.readFile(metadataFile));
+            return this.getById(metadata.getLong("active-exhibit"));
+        } catch (IOException | JSONException e) {
+            Log.e(TAG, "Couldn't get active exhibit: " + e);
+            return null;
+        }
+    }
+
+    public void setActiveExhibit(Exhibit activeExhibit) {
+        try {
+            File metadataFile = new File(exhibitsFolder, "metadata.json");
+            if (!metadataFile.exists()) {
+                metadataFile.createNewFile();
+                MiscFile.writeToFile(metadataFile, "{}");
+            }
+            JSONObject metadata = new JSONObject(MiscFile.readFile(metadataFile));
+            metadata.put("active-exhibit", activeExhibit.getId());
+            MiscFile.writeToFile(metadataFile, metadata.toString());
+        } catch (IOException | JSONException e) {
+            Log.e(TAG, "Couldn't set active exhibit: " + e);
+        }
     }
 
     /**
