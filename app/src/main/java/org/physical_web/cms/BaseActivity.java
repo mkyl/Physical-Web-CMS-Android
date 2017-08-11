@@ -20,6 +20,7 @@ import org.physical_web.cms.beacons.BeaconManager;
 import org.physical_web.cms.exhibits.ExhibitFragment;
 import org.physical_web.cms.exhibits.ExhibitManager;
 import org.physical_web.cms.maps.PhysicalMapFragment;
+import org.physical_web.cms.setup.SettingsFragment;
 import org.physical_web.cms.setup.SetupManager;
 import org.physical_web.cms.sync.ContentSynchronizer;
 
@@ -166,7 +167,8 @@ public class BaseActivity extends AppCompatActivity {
                 case "Analytics":
                     throw new UnsupportedOperationException("Not implemented yet");
                 case "Settings":
-                    throw new UnsupportedOperationException("Not implemented yet");
+                    switchFragment = new SettingsFragment();
+                    break;
                 case "About":
                     switchFragment = new AboutFragment();
                     break;
@@ -181,5 +183,12 @@ public class BaseActivity extends AppCompatActivity {
 
             drawerLayout.closeDrawer(Gravity.START);
         }
+    }
+
+    // hack to allow refresh button in settings page to function
+    public void clickedInSettings(View v) {
+        SettingsFragment fragment = (SettingsFragment) getFragmentManager()
+                .findFragmentById(R.id.fragment_container);
+        fragment.scanAndSetup(v);
     }
 }

@@ -3,7 +3,6 @@ package org.physical_web.cms.maps;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -19,7 +18,6 @@ import org.physical_web.cms.beacons.Beacon;
 import org.physical_web.cms.beacons.BeaconManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;

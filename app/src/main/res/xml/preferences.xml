@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Content Server">
+        <EditTextPreference
+            android:defaultValue="@string/settings_server_default"
+            android:key="server_uri_preference"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="URI pointing to the server hosting the content"
+            android:title="Server Address" />
+
+        <Preference
+            android:layout="@layout/settings_configure_beacons_container"
+            android:id="@+id/lolwhat"/>
+    </PreferenceCategory>
+</PreferenceScreen>

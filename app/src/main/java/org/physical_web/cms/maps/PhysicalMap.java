@@ -118,7 +118,7 @@ public class PhysicalMap {
     public void setBeaconLocation(Beacon beacon, Point location) {
         if (location == null)
             throw new IllegalArgumentException("Invalid point provided");
-        
+
         try {
             JSONObject beaconEntry = new JSONObject();
             beaconEntry.put("address", beacon.address.toString());

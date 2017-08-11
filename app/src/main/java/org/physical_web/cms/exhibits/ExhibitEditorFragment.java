@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -82,6 +83,7 @@ public class ExhibitEditorFragment extends Fragment {
         super.onResume();
         // set the app bar title
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(FRAGMENT_TITLE);
+        updateActiveButton();
     }
 
     // called when the "EDIT" button is pressed
@@ -95,6 +97,7 @@ public class ExhibitEditorFragment extends Fragment {
             v.setVisibility(View.INVISIBLE);
             fragmentView.findViewById(R.id.exhibit_editor_save).setVisibility(View.VISIBLE);
             fragmentView.findViewById(R.id.exhibit_editor_description_layout).setEnabled(true);
+            fragmentView.findViewById(R.id.exhibit_editor_title_layout).setEnabled(true);
         }
     };
 
@@ -109,13 +112,35 @@ public class ExhibitEditorFragment extends Fragment {
             v.setVisibility(View.INVISIBLE);
             fragmentView.findViewById(R.id.exhibit_editor_edit_info).setVisibility(View.VISIBLE);
             fragmentView.findViewById(R.id.exhibit_editor_description_layout).setEnabled(false);
+            fragmentView.findViewById(R.id.exhibit_editor_title_layout).setEnabled(false);
 
             String description = ((EditText) fragmentView
                     .findViewById(R.id.exhibit_editor_description))
                     .getText().toString();
             workingExhibit.setDescription(description);
+
+            String title = ((EditText) fragmentView
+                    .findViewById(R.id.exhibit_editor_title))
+                    .getText().toString();
+            workingExhibit.setTitle(title);
         }
     };
+
+    private View.OnClickListener makeActiveExhibit = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            exhibitManager.setActiveExhibit(workingExhibit);
+            updateActiveButton();
+        }
+    };
+
+    private void updateActiveButton() {
+        Button makeActive = (Button) getView().findViewById(R.id.exhibit_editor_make_active);
+        makeActive.setOnClickListener(makeActiveExhibit);
+        Exhibit activeExhibit = exhibitManager.getActiveExhibit();
+        if (workingExhibit.equals(activeExhibit))
+            makeActive.setEnabled(false);
+    }
 
     class BeaconAdapter extends RecyclerView.Adapter<BeaconAdapter.ViewHolder> {
         @Override
