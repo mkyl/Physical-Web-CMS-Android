@@ -1,6 +1,7 @@
 package org.physical_web.cms.maps;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;

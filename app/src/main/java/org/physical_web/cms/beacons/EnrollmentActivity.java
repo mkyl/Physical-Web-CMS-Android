@@ -31,6 +31,8 @@ import org.physical_web.cms.exhibits.ExhibitManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.crypto.Mac;
+
 /**
  * This class allows the user to enroll new beacons into the beacon DB.
  */

@@ -56,6 +56,4 @@ dependencies {
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0-alpha3'
 }
 
-
-
 apply plugin: 'com.google.gms.google-services'
