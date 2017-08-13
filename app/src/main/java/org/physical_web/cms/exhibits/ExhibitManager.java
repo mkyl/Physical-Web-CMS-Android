@@ -29,6 +29,7 @@ public class ExhibitManager {
 
     private ContentSynchronizer contentSynchronizer;
     private List<Exhibit> exhibits;
+
     private File exhibitsFolder = null;
 
     private ExhibitManager() {
@@ -79,6 +80,10 @@ public class ExhibitManager {
             Log.e(TAG, "Couldn't get active exhibit: " + e);
             return null;
         }
+    }
+
+    public File getExhibitsFolder() {
+        return exhibitsFolder;
     }
 
     public void setActiveExhibit(Exhibit activeExhibit) {

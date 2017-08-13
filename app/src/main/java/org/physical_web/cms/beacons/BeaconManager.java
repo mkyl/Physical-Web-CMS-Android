@@ -3,10 +3,19 @@ package org.physical_web.cms.beacons;
 import android.content.Context;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.physical_web.cms.exhibits.ExhibitManager;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.crypto.Mac;
+
+import util.MiscFile;
 
 /**
  * Singleton class to manage beacons. {@link #setContext(Context)} must be called
@@ -64,6 +73,7 @@ public class BeaconManager {
             @Override
             public void run() {
                 beaconDao.insertBeacons(beacons);
+                updateBeaconMetadata(beacons);
                 refreshBeacons();
                 latch.countDown();
             }
@@ -84,6 +94,7 @@ public class BeaconManager {
             @Override
             public void run() {
                 beaconDao.updateBeacons(beacons);
+                updateBeaconMetadata(beacons);
                 refreshBeacons();
                 latch.countDown();
             }
@@ -181,6 +192,32 @@ public class BeaconManager {
             refreshLatch.await();
         } catch (InterruptedException e) {
             Log.e(TAG, "Refresh interrupted: " + e);
+        }
+    }
+
+    private void updateBeaconMetadata(Beacon... beacons) {
+        try {
+            File metadataFile = new File(ExhibitManager.getInstance().getExhibitsFolder(),
+                    "metadata.json");
+            if (!metadataFile.exists()) {
+                metadataFile.createNewFile();
+                JSONObject md = new JSONObject();
+                JSONArray beaconNames = new JSONArray();
+                md.put("beacon-names", beaconNames);
+                MiscFile.writeToFile(metadataFile, md.toString());
+            }
+
+            JSONObject metadata = new JSONObject(MiscFile.readFile(metadataFile));
+            JSONArray beaconName = metadata.getJSONArray("beacon-names");
+            for (Beacon beacon : beacons) {
+                JSONObject beaconMd = new JSONObject();
+                beaconMd.put("address", beacon.address);
+                beaconMd.put("friendly-name", beacon.friendlyName);
+                beaconName.put(beaconMd);
+            }
+            MiscFile.writeToFile(metadataFile, metadata.toString());
+        } catch (IOException | JSONException e) {
+            Log.e(TAG, "Couldn't update beacon metadata: " + e);
         }
     }
 }
