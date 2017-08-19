@@ -51,6 +51,8 @@ public class BluetoothManager {
             UUID.fromString("a3c87500-8ed3-4bdf-8a39-a01bebede295");
     private final static UUID EDDYSTONE_LOCK_STATE_CHARACTERISTIC =
             UUID.fromString("a3c87506-8ed3-4bdf-8a39-a01bebede295");
+    private final static UUID EDDYSTONE_ACTIVE_SLOT_CHARACTERISTIC =
+            UUID.fromString("a3c87502-8ed3-4bdf-8a39-a01bebede295");
     private final static UUID EDDYSTONE_ADV_SLOT_CHARACTERISTIC =
             UUID.fromString("a3c8750a-8ed3-4bdf-8a39-a01bebede295");
 
@@ -172,7 +174,6 @@ public class BluetoothManager {
         } else {
             beacon.connectGatt(context, false, updateUriCallback);
         }
-
     }
 
     // actions to be taken when connection to beacon is made
@@ -182,6 +183,8 @@ public class BluetoothManager {
                                             int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 gatt.discoverServices();
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                gatt.close();
             }
         }
 
@@ -200,12 +203,12 @@ public class BluetoothManager {
                 } else {
                     // beacon doesn't support eddystone configuration service
                     eventParentMap.get(device).uriWriteCallback(device, WRITE_FAIL_NOT_EDDYSTONE);
-                    gatt.close();
+                    gatt.disconnect();
                 }
             } else {
                 Log.w(TAG, "Could not connect to beacon with address: " + device.getAddress());
                 eventParentMap.get(device).uriWriteCallback(device, WRITE_FAIL_NO_CONNECTION);
-                gatt.close();
+                gatt.disconnect();
             }
         }
 
@@ -223,7 +226,7 @@ public class BluetoothManager {
                     writeToBeacon(gatt, status);
                 } else {
                     eventParentMap.get(device).uriWriteCallback(device, WRITE_FAIL_LOCKED);
-                    gatt.close();
+                    gatt.disconnect();
                 }
             }
         }
@@ -268,20 +271,34 @@ public class BluetoothManager {
                 if (Arrays.equals(characteristic.getValue(), newFrameValue)) {
                     // data on beacon side matches our side, proceed
                     gatt.executeReliableWrite();
-                    eventToCallback.uriWriteCallback(device, WRITE_SUCCESS);
+                    // continues in onReliableWriteCompleted
                 } else {
                     // beacon didn't recieve data correctly
                     Log.e(TAG, "Beacon recieved corrupted data");
                     gatt.abortReliableWrite(device);
                     eventToCallback.uriWriteCallback(device, WRITE_FAIL_OTHER);
+                    gatt.disconnect();
                 }
             } else {
                 eventToCallback.uriWriteCallback(device, WRITE_FAIL_OTHER);
+                gatt.disconnect();
             }
 
-            gatt.close();
         }
 
+        @Override
+        public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
+            super.onReliableWriteCompleted(gatt, status);
+            BeaconEventListener eventToCallback = eventParentMap.get(gatt.getDevice());
+            BluetoothDevice device = gatt.getDevice();
+
+            if (status == GATT_SUCCESS) {
+                eventToCallback.uriWriteCallback(device, WRITE_SUCCESS);
+            } else {
+                eventToCallback.uriWriteCallback(device, WRITE_FAIL_OTHER);
+            }
+            gatt.disconnect();
+        }
     };
 
     // due to length constraints, URIs of over MAX_URI_LENGTH bytes length must be shortened
