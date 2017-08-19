@@ -164,8 +164,6 @@ public class BaseActivity extends AppCompatActivity {
                 case "Beacons":
                     switchFragment = new BeaconFragment();
                     break;
-                case "Analytics":
-                    throw new UnsupportedOperationException("Not implemented yet");
                 case "Settings":
                     switchFragment = new SettingsFragment();
                     break;

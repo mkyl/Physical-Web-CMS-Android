@@ -40,6 +40,6 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true"
             android:layout_below="@+id/PWLogo"
-            android:text="Lorem ipsum dolor sit amet, errem elitr pro ea. Natum pertinax consulatu ei eum. Cu duo iisque menandri, veniam oportere sed ad. Ea veri audire appellantur nec, quod temporibus cu eos, utroque inimicus vulputate an vix. Ut usu viris recteque elaboraret. Per ne harum voluptua, at pri natum incorrupte consequuntur."
+            android:text="@string/app_description"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
     </RelativeLayout>

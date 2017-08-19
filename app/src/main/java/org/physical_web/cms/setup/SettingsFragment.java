@@ -67,6 +67,7 @@ public class SettingsFragment extends PreferenceFragment implements BeaconEventL
 
     public void scanAndSetup(View v) {
         if (setupUriAndValidate()) {
+            updateHint();
             getView().findViewById(R.id.preferences_scan_button).setEnabled(false);
             getView().findViewById(R.id.preferences_scan_progress).setVisibility(View.VISIBLE);
             manager.listConfigurableEddystoneBeacons(SettingsFragment.this);
@@ -119,7 +120,7 @@ public class SettingsFragment extends PreferenceFragment implements BeaconEventL
             public void run() {
                 if (configuredBeacons == 0) {
                     ((TextView)getView().findViewById(R.id.preferences_status_text))
-                            .setText("No beacons found");
+                            .setText("No configurable beacons found");
                     getView().findViewById(R.id.preferences_status_text)
                             .setVisibility(View.VISIBLE);
                 }

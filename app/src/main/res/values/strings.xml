@@ -4,10 +4,6 @@
     <string name="title_activity_beacon">Beacons</string>
     <string name="drawer_open">Open side menu</string>
     <string name="drawer_close">Close side menu</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
     <string name="about_description">Created by Mohammad Kayali for Google Summer of Code 2017, with
         generous help provided by Physical Web Project mentors Andreu Ibáñez, Jorge Carballo and Frank
         Cabrera. \n\nLicensed under Apache version 2.0.\n\nBug reports and feature requests
@@ -15,4 +11,6 @@
     <string name="about_icon_description">App icon</string>
     <string name="add_beacon">Add Beacon</string>
     <string name="settings_server_default"> example.com </string>
+    <string name="app_description">The Physical Web Beacon Manager will let you utilize beacons
+        to contextually inform visitors about your museum, gallery or other space.</string>
 </resources>

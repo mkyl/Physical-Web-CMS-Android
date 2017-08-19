@@ -16,54 +16,11 @@
         android:layout_gravity="start"
         android:background="#FFF">
 
-        <RelativeLayout
-            android:id="@+id/drawer_header"
-            android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:background="#555">
-
-            <com.mikhaellopez.circularimageview.CircularImageView
-                android:id="@+id/userPhoto"
-                android:layout_width="75dp"
-                android:layout_height="75dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginBottom="4dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
-                android:src="@drawable/drive"
-                app:civ_border_width="0dp"
-                app:civ_shadow="false" />
-
-            <TextView
-                android:id="@+id/usernameDisplay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/userPhoto"
-                android:layout_marginStart="16dp"
-                android:text="Average User"
-                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="#FFFFFF" />
-
-            <TextView
-                android:id="@+id/emailDisplay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/usernameDisplay"
-                android:layout_marginStart="16dp"
-                android:text="myemail@institution.org"
-                android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-                android:textColor="#FFFFFF" />
-        </RelativeLayout>
-
         <ListView
             android:id="@+id/drawer_top_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/drawer_header"
+            android:layout_alignParentTop="true"
             android:choiceMode="singleChoice"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp" />
