@@ -76,7 +76,7 @@ public class ExhibitManager {
             File metadataFile = new File(exhibitsFolder, "metadata.json");
             JSONObject metadata = new JSONObject(MiscFile.readFile(metadataFile));
             return this.getById(metadata.getLong("active-exhibit"));
-        } catch (IOException | JSONException e) {
+        } catch (IOException | JSONException | IllegalArgumentException e) {
             Log.e(TAG, "Couldn't get active exhibit: " + e);
             return null;
         }
