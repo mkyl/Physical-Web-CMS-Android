@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.Button;
 
 import org.physical_web.cms.R;
+import org.physical_web.cms.sync.ContentSynchronizer;
+
+import java.io.File;
 
 /**
  * This class introduces the user to the app and gets them set up
@@ -59,6 +62,11 @@ public class WelcomeActivity extends AppCompatActivity {
                     SharedPreferences sharedPreferences = PreferenceManager
                             .getDefaultSharedPreferences(this);
                     sharedPreferences.edit().putBoolean("drive-setup-completed", false).commit();
+
+                    File folderToSync = getFilesDir();
+                    ContentSynchronizer contentSynchronizer = ContentSynchronizer.getInstance();
+                    contentSynchronizer.init(this, folderToSync);
+
                     setResult(Activity.RESULT_OK);
                     finish();
                 }
